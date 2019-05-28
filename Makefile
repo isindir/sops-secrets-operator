@@ -12,6 +12,9 @@ SRC = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 all: clean gen fmt check test build
 
+repo-tag:
+	@git tag -a ${VERSION} -m "sops-secrets-operator ${VERSION}"
+
 release: build push
 
 echo:
