@@ -72,3 +72,11 @@ required = [
   [[prune.project]]
     name = "k8s.io/gengo"
     non-go = false
+
+[[constraint]]
+  name = "go.mozilla.org/sops"
+  version = "3.3.0"
+
+[[constraint]]
+  name = "github.com/mozilla/sops"
+  version = "3.3.0"

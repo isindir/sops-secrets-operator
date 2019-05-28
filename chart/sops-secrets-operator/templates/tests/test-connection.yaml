@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "sops-secrets-operator.fullname" . }}-test-connection"
+  labels:
+{{ include "sops-secrets-operator.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['kubectl']
+      args:
+        - 'get'
+        - 'pods'
+  restartPolicy: Never
