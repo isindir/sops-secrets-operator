@@ -47,7 +47,7 @@ spec:
         password: 'Pa$$word'
     - name: some-token
       data:
-        tolen: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
+        token: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
 EOF
 ```
 
