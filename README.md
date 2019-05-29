@@ -51,7 +51,7 @@ spec:
 EOF
 ```
 
-* Encrypt file using `sops` and `gpg` key
+* Encrypt file using `sops` and AWS kms key:
 
 ```bash
 sops -e -k 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
