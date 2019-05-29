@@ -1,6 +1,6 @@
 # Operator Installation
 
-## Prerequsites
+## Requirements
 
 ### AWS
 
@@ -45,6 +45,9 @@ spec:
       data:
         username: myUsername
         password: 'Pa$$word'
+    - name: some-token
+      data:
+        tolen: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
 EOF
 ```
 
@@ -58,17 +61,16 @@ sops -e -k 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
 
 # Roadmap
 
-Theoretically the operator should work with GCP KMS and Azure KMS, but is
-subject to testing.
+With little changes operator should work with GCP KMS and Azure KMS.
 
 # License
 
 Mozilla Public License Version 2.0
 
-# Links - Tools inspiring
+# Links - Projects and tools inspired development of Sops-Secrets-Operator
 
 * [sops](https://github.com/mozilla/sops)
-  * [Configuting AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
+  * [Configuring AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
   * [helm secrets plugin](https://github.com/futuresimple/helm-secrets)
 * [kiam](https://github.com/uswitch/kiam)
 * [Weaveworks Flux - GitOps](https://www.weave.works/blog/managing-helm-releases-the-gitops-way)
