@@ -67,7 +67,9 @@ With little changes operator should work with GCP KMS and Azure KMS.
 
 Mozilla Public License Version 2.0
 
-# Links - Projects and tools inspired development of Sops-Secrets-Operator
+# Links
+
+Projects and tools inspired development of `sops-secrets-operator`:
 
 * [sops](https://github.com/mozilla/sops)
   * [Configuring AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
