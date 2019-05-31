@@ -4,24 +4,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// spec:
-//   secret_templates:
-//     - name: my-secret-name
-//       labels:
-//         label0: value0
-//         ...
-//         labelK: valueK
-//       annotations:
-//         key0: value0
-//         ...
-//         keyN: valueN
-//       data:
-//         data-name0: data-value0
-//         ...
-//         data-nameL: data-valueL
 
 // SopsSecretTemplate defines the map of secrets to create
 // +k8s:openapi-gen=true
@@ -35,6 +18,7 @@ type SopsSecretTemplate struct {
 // SopsSecretSpec defines the desired state of SopsSecret
 // +k8s:openapi-gen=true
 type SopsSecretSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 	SecretsTemplate []SopsSecretTemplate `json:"secret_templates"`
@@ -76,6 +60,7 @@ type SopsSecretStatus struct {
 
 // SopsSecret is the Schema for the sopssecrets API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type SopsSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

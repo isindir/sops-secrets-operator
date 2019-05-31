@@ -77,6 +77,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
+// blank assignment to verify that ReconcileSopsSecret implements reconcile.Reconciler
 var _ reconcile.Reconciler = &ReconcileSopsSecret{}
 
 // ReconcileSopsSecret reconciles a SopsSecret object

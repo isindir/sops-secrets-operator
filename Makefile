@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: build echo clean build push gen fmt check test release
+.PHONY: repo-tag release mod echo clean build push gen fmt check test local/run
 
 IMAGE_NAME?="isindir/sops-secrets-operator"
 VERSION?=$(shell awk 'BEGIN { FS=" = " } $$0~/Version = / \
@@ -10,12 +10,17 @@ SRC = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 #LDFLAGS=-ldflags "-X=version.Version=$(VERSION) -X=version.Build=$(BUILD)"
 
-all: clean gen fmt check test build
+all: clean gen mod fmt check test build
 
 repo-tag:
 	@git tag -a ${VERSION} -m "sops-secrets-operator ${VERSION}"
 
 release: build push
+
+mod:
+	@echo "Go Mod Vendor"
+	@go mod vendor
+	@echo
 
 echo:
 	@echo "${IMAGE_NAME}:${VERSION}"
