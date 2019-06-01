@@ -1,17 +1,17 @@
+[![CircleCI](https://circleci.com/gh/isindir/sops-secrets-operator.svg?style=svg)](https://circleci.com/gh/isindir/sops-secrets-operator)
+
 # Operator Installation
 
 ## Requirements
 
 ### AWS
 
-* Create KMS key for use
+* Create KMS key
 * Create AWS Role which can be used by operator to decrypt CR data structure,
   follow [sops documentation](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
 * Deploy CRD:
 
 ```bash
-kubectl create namespace sops
-
 kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
 ```
 > **NOTE:** to grant access to aws for `sops-secret-operator` -
@@ -20,10 +20,11 @@ kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
 * Deploy helm chart:
 
 ```bash
+kubectl create namespace sops
+
 helm upgrade --install sops chart/sops-secrets-operator/ \
   --namespace sops
 ```
-> **NOTE:** pod annotations can be used to specify AWS role if `kiam` is used.
 
 ### SopsSecret Resource File encryption
 

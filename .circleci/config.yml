@@ -1,14 +1,18 @@
 version: 2
 jobs:
   build:
+    working_directory: /go/src/github.com/isindir/sops-secrets-operator
     docker:
-      - image: alpine:latest
+      - image: isindir/sdk:latest
     steps:
+      - setup_remote_docker:
+          version: 18.09.3
+          docker_layer_caching: true
       - checkout
       - run:
           name: sops-secrets-operator
           command: |
-            echo "Placeholder for CI/CD pipeline"
+            make test/operator
 
 workflows:
   version: 2

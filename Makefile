@@ -3,6 +3,7 @@ SHELL := /bin/bash
 .PHONY: repo-tag release mod echo clean build push gen fmt check test local/run
 
 IMAGE_NAME?="isindir/sops-secrets-operator"
+SDK_IMAGE_NAME?="isindir/sdk"
 VERSION?=$(shell awk 'BEGIN { FS=" = " } $$0~/Version = / \
 				 { gsub(/"/, ""); print $$2; }' version/version.go)
 BUILD:=`git rev-parse HEAD`
@@ -10,7 +11,9 @@ SRC = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 #LDFLAGS=-ldflags "-X=version.Version=$(VERSION) -X=version.Build=$(BUILD)"
 
-all: clean gen mod fmt check test build
+all: clean gen mod fmt check test inspect build
+
+test/operator: fmt check test
 
 repo-tag:
 	@git tag -a ${VERSION} -m "sops-secrets-operator ${VERSION}"
@@ -32,16 +35,31 @@ clean:
 	@rm -fr build/_output
 	@echo
 
+inspect:
+	@echo "Inspect remote image"
+	@! DOCKER_CLI_EXPERIMENTAL="enabled" docker manifest inspect ${IMAGE_NAME}:${VERSION} >/dev/null \
+		|| { echo "Image already exists"; exit 1; }
+
 build:
 	@echo "Building"
 	@operator-sdk build "${IMAGE_NAME}:${VERSION}"
 	@docker tag "${IMAGE_NAME}:${VERSION}" "${IMAGE_NAME}:latest"
 	@echo
 
+build/sdk:
+	@echo "Building sdk image"
+	@docker build .circleci -t "${SDK_IMAGE_NAME}"
+	@echo
+
 push:
 	@echo "Pushing"
 	@docker push "${IMAGE_NAME}:latest"
 	@docker push "${IMAGE_NAME}:${VERSION}"
+	@echo
+
+push/sdk:
+	@echo "Pushing"
+	@docker push "${SDK_IMAGE_NAME}"
 	@echo
 
 gen:
@@ -64,5 +82,12 @@ test:
 	@echo "TODO: Testing"
 	@echo
 
-local/run:
+run/local:
 	@OPERATOR_NAME=sops-secrets-operator operator-sdk up local --namespace=sops
+
+run/sdk:
+	@docker run -v ~/.gitconfig:/root/.gitconfig \
+		-v ~/.gnupg:/root/.gnupg \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v ${PWD}:/go/src/github.com/isindir/sops-secrets-operator \
+		-ti "${SDK_IMAGE_NAME}" bash
