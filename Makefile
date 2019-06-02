@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: repo-tag release mod echo clean build push gen fmt check test local/run
+.PHONY: repo-tag release mod echo clean build push gen fmt check test/e2e test/operator test local/run
 
 IMAGE_NAME?="isindir/sops-secrets-operator"
 SDK_IMAGE_NAME?="isindir/sdk"
@@ -12,8 +12,6 @@ SRC = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 #LDFLAGS=-ldflags "-X=version.Version=$(VERSION) -X=version.Build=$(BUILD)"
 
 all: clean gen mod fmt check test inspect build
-
-test/operator: fmt check test
 
 repo-tag:
 	@git tag -a ${VERSION} -m "sops-secrets-operator ${VERSION}"
@@ -78,7 +76,14 @@ check:
 	@echo
 	@#go vet ${SRC}
 
-test:
+test/e2e:
+	@echo "Running e2e tests"
+	@operator-sdk test local ./test/e2e --up-local --namespace sops
+	@echo
+
+test/operator: fmt check test/e2e
+
+test: test/operator
 	@echo "TODO: Testing"
 	@echo
 

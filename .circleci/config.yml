@@ -5,14 +5,37 @@ jobs:
     docker:
       - image: isindir/sdk:latest
     steps:
+      #- restore-cache:
+      #    keys:
+      #      - source-{{ .Branch }}-{{ .Revision }}
+      #      - source-{{ .Branch }}-
+      #      - source-
+      - checkout
       - setup_remote_docker:
           version: 18.09.3
           docker_layer_caching: true
-      - checkout
+      - restore-cache:
+          keys:
+            - modules-{{ .Branch }}-{{ checksum "go.sum" }}
+            - modules-{{ .Branch }}-
+            - modules-
+      #- save_cache:
+      #    key: source-{{ .Branch }}-{{ .Revision }}
+      #    paths:
+      #      - "."
       - run:
-          name: sops-secrets-operator
+          name: Fetch Go dependencies
           command: |
-            make test/operator
+            make mod
+      - save_cache:
+          key: modules-{{ .Branch }}-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg"
+      - run:
+          name: Run Tests
+          command: |
+            make test
+
 
 workflows:
   version: 2
