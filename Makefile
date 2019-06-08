@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: repo-tag release mod echo clean build push gen fmt check test/e2e test/operator test local/run
+.PHONY: repo-tag release mod echo clean build push gen fmt check test/unit test/e2e test/operator test local/run
 
 IMAGE_NAME?="isindir/sops-secrets-operator"
 SDK_IMAGE_NAME?="isindir/sdk"
@@ -76,15 +76,20 @@ check:
 	@echo
 	@#go vet ${SRC}
 
+test/unit:
+	@echo "Running unit tests"
+	@go test -count=1 -short ./pkg/controller/...
+	@echo
+
 test/e2e:
 	@echo "Running e2e tests"
 	@operator-sdk test local ./test/e2e --up-local --namespace sops
 	@echo
 
-test/operator: fmt check test/e2e
+test/operator: fmt check test/unit test/e2e
 
 test: test/operator
-	@echo "TODO: Testing"
+	@echo "TODO: Write some usefull unit and e2e tests"
 	@echo
 
 run/local:
