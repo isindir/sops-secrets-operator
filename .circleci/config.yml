@@ -28,9 +28,9 @@ jobs:
       - checkout
       - restore-cache:
           keys:
-            - modules-{{ .Branch }}-{{ checksum "go.sum" }}
-            - modules-{{ .Branch }}-
-            - modules-
+            - v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
+            - v2-modules-{{ .Branch }}-
+            - v2-modules-
       - run:
           name: setup golang
           command: |
@@ -98,7 +98,7 @@ jobs:
           command: |
             make mod
       - save_cache:
-          key: modules-{{ .Branch }}-{{ checksum "go.sum" }}
+          key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/gogo/pkg"
       - run:
