@@ -1,44 +1,106 @@
+# based on https://github.com/gavinzhou/ci-minikube
+# https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
 version: 2
+
 jobs:
   build:
-    working_directory: /go/src/github.com/isindir/sops-secrets-operator
-    docker:
-      - image: isindir/sdk:latest
+    working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      K8S_VERSION: v1.13.7
+      MINIKUBE_VERSION: v1.1.1
+      HELM_VERSION: v2.14.1
+      GOLANG_VERSION: 1.12.5
+      OPERATOR_SDK_VERSION: 0.8.1
+
+      KUBECONFIG: /home/circleci/.kube/config
+
+      MINIKUBE_WANTUPDATENOTIFICATION: false
+      MINIKUBE_WANTREPORTERRORPROMPT: false
+      MINIKUBE_HOME: /home/circleci
+      CHANGE_MINIKUBE_NONE_USER: true
+
+      GOPATH: /home/circleci/gogo
+      GOROOT: /usr/local/go
+      GO111MODULE: "on"
     steps:
+      - checkout
+      - run:
+          name: setup golang
+          command: |
+            sudo rm -fr ${GOROOT}
+            curl -LO https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz 
+            tar -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz
+            sudo mv go /usr/local
+            rm -fr go${GOLANG_VERSION}.linux-amd64.tar.gz
+            mkdir -p $GOPATH/{src/github.com/isindir,bin,pkg}
+            go get -u golang.org/x/lint/golint
+            go version
+            go env
+      - run:
+          name: setup kubectl
+          command: |
+            curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+            mkdir -p ${HOME}/.kube
+            touch ${HOME}/.kube/config
+      - run:
+          name: setup operator-sdk
+          command: |
+            curl -Lo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk-v${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
+            chmod +x operator-sdk
+            sudo mv operator-sdk /usr/local/bin/
+      - run:
+          name: setup minikube
+          command: |
+            curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+      - run:
+          name: setup helm
+          command: curl -L https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xzvf - linux-amd64/helm && chmod +x linux-amd64/helm && sudo mv linux-amd64/helm /usr/local/bin/ && rm -fr linux-amd64
+      - run:
+          name: start minikube
+          command: |
+            sudo -E minikube start --vm-driver=none --cpus 2 --memory 2048 --kubernetes-version=${K8S_VERSION} &> $HOME/minikube.log 2>&1 < /dev/null
+      - run:
+          name: wait for minikube
+          command: |
+            JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
+            until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
+              sleep 1;
+            done
+      - run:
+          name: fix RBAC
+          command: |
+            # make default account cluster-admin
+            kubectl create clusterrolebinding add-on-cluster-admin --clusterrole cluster-admin --serviceaccount=kube-system:default
+      - run:
+          name: dump cluster-info
+          command: |
+            kubectl cluster-info
+            kubectl get po --all-namespaces
+            kubectl get nodes -o wide
+      - run:
+          name: install helm in cluster
+          command: |
+            kubectl -n kube-system create sa tiller
+            kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+            helm init --wait --service-account tiller
+            helm version
       #- restore-cache:
       #    keys:
-      #      - source-{{ .Branch }}-{{ .Revision }}
-      #      - source-{{ .Branch }}-
-      #      - source-
-      - checkout
-      - setup_remote_docker:
-          version: 18.09.3
-          docker_layer_caching: true
-      - restore-cache:
-          keys:
-            - modules-{{ .Branch }}-{{ checksum "go.sum" }}
-            - modules-{{ .Branch }}-
-            - modules-
-      #- save_cache:
-      #    key: source-{{ .Branch }}-{{ .Revision }}
-      #    paths:
-      #      - "."
+      #      - modules-{{ .Branch }}-{{ checksum "go.sum" }}
+      #      - modules-{{ .Branch }}-
+      #      - modules-
       - run:
           name: Fetch Go dependencies
           command: |
             make mod
-      - save_cache:
-          key: modules-{{ .Branch }}-{{ checksum "go.sum" }}
-          paths:
-            - "/go/pkg"
+      #- save_cache:
+      #    key: modules-{{ .Branch }}-{{ checksum "go.sum" }}
+      #    paths:
+      #      - "/go/pkg"
       - run:
           name: Run Tests
           command: |
+            export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
             make test
-
-
-workflows:
-  version: 2
-  build_test_deploy:
-    jobs:
-      - build
