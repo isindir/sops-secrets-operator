@@ -17,6 +17,8 @@ github.com/Azure/go-autorest/autorest/to
 github.com/Azure/go-autorest/autorest/validation
 github.com/Azure/go-autorest/autorest/azure/auth
 github.com/Azure/go-autorest/autorest/azure/cli
+# github.com/BurntSushi/toml v0.3.1
+github.com/BurntSushi/toml
 # github.com/PuerkitoBio/purell v1.1.0
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
@@ -152,6 +154,8 @@ github.com/hashicorp/golang-lru/simplelru
 github.com/howeyc/gopass
 # github.com/imdario/mergo v0.3.6
 github.com/imdario/mergo
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/joho/godotenv v1.3.0
@@ -193,6 +197,14 @@ github.com/operator-framework/operator-sdk/pkg/log/zap
 github.com/operator-framework/operator-sdk/pkg/metrics
 github.com/operator-framework/operator-sdk/pkg/restmapper
 github.com/operator-framework/operator-sdk/version
+github.com/operator-framework/operator-sdk/pkg/test
+github.com/operator-framework/operator-sdk/internal/pkg/scaffold
+github.com/operator-framework/operator-sdk/internal/util/k8sutil
+github.com/operator-framework/operator-sdk/internal/util/projutil
+github.com/operator-framework/operator-sdk/internal/util/yamlutil
+github.com/operator-framework/operator-sdk/internal/pkg/scaffold/input
+github.com/operator-framework/operator-sdk/internal/pkg/scaffold/internal/deps
+github.com/operator-framework/operator-sdk/internal/util/fileutil
 # github.com/pborman/uuid v0.0.0-20180906182336-adf5a7427709
 github.com/pborman/uuid
 # github.com/peterbourgon/diskv v2.0.1+incompatible
@@ -223,6 +235,8 @@ github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
+# github.com/spf13/cobra v0.0.3
+github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
 # go.mozilla.org/gopgagent v0.0.0-20170926210634-4d7ea76ff71a
@@ -416,6 +430,7 @@ k8s.io/api/admission/v1beta1
 # k8s.io/apiextensions-apiserver v0.0.0-20190228180357-d002e88f6236 => k8s.io/apiextensions-apiserver v0.0.0-20181213153335-0fe22c71c476
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
+k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme
 # k8s.io/apimachinery v0.0.0-20190221213512-86fb29eff628 => k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
 k8s.io/apimachinery/pkg/runtime
 k8s.io/apimachinery/pkg/apis/meta/v1
@@ -495,6 +510,7 @@ k8s.io/client-go/kubernetes
 k8s.io/client-go/tools/pager
 k8s.io/client-go/util/buffer
 k8s.io/client-go/util/retry
+k8s.io/client-go/discovery/cached
 k8s.io/client-go/pkg/apis/clientauthentication
 k8s.io/client-go/pkg/apis/clientauthentication/v1alpha1
 k8s.io/client-go/pkg/apis/clientauthentication/v1beta1

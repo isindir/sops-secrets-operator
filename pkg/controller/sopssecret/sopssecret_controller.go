@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-logr/logr"
 	isindirv1alpha1 "github.com/isindir/sops-secrets-operator/pkg/apis/isindir/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
@@ -111,28 +112,11 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{}, err
 	}
 
-	// TODO: decrypt data_template, if fails - set to reconcile on the next loop and log
-	instance := &isindirv1alpha1.SopsSecret{}
-	reqBodyBytes, err := json.Marshal(instanceEncrypted)
+	instance, err := decryptSopsSecretInstance(instanceEncrypted, reqLogger)
 	if err != nil {
-		reqLogger.Info("Failed to convert encrypted sops secret to bytes[].")
+		reqLogger.Info("Decryption error.")
 		return reconcile.Result{}, err
 	}
-
-	decryptedInstanceBytes, err := customDecryptData(reqBodyBytes, "json")
-	if err != nil {
-		reqLogger.Info("Failed to Decrypt encrypted sops secret instance.")
-		return reconcile.Result{}, err
-	}
-
-	// Decrypted instance is empty sturcture here
-	err = json.Unmarshal(decryptedInstanceBytes, &instance)
-	if err != nil {
-		reqLogger.Info("Failed to Unmarshal decrypted sops secret instance.")
-		return reconcile.Result{}, err
-	}
-
-	// TODO: from here to bottom check all usage of instance vs instanceEncrypted
 
 	// Garbage collection logic - for templates removed from SopsSecret
 	// Get List of all kube secrets for this sops secret in this namespace.
@@ -239,6 +223,34 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 	return reconcile.Result{}, nil
 }
 
+// decryptSopsSecretInstance decrypts data_template
+func decryptSopsSecretInstance(
+	instanceEncrypted *isindirv1alpha1.SopsSecret,
+	reqLogger logr.Logger,
+) (*isindirv1alpha1.SopsSecret, error) {
+	instance := &isindirv1alpha1.SopsSecret{}
+	reqBodyBytes, err := json.Marshal(instanceEncrypted)
+	if err != nil {
+		reqLogger.Info("Failed to convert encrypted sops secret to bytes[].")
+		return nil, err
+	}
+
+	decryptedInstanceBytes, err := customDecryptData(reqBodyBytes, "json")
+	if err != nil {
+		reqLogger.Info("Failed to Decrypt encrypted sops secret instance.")
+		return nil, err
+	}
+
+	// Decrypted instance is empty sturcture here
+	err = json.Unmarshal(decryptedInstanceBytes, &instance)
+	if err != nil {
+		reqLogger.Info("Failed to Unmarshal decrypted sops secret instance.")
+		return nil, err
+	}
+
+	return instance, nil
+}
+
 // newSecretForCR returns a secret with the same namespace as the cr
 func newSecretForCR(
 	cr *isindirv1alpha1.SopsSecret,
@@ -316,6 +328,7 @@ func labelsForSecret(cr *isindirv1alpha1.SopsSecret) map[string]string {
 // The format string can be `json`, `yaml`, `dotenv` or `binary`.
 // If the format string is empty, binary format is assumed.
 // NOTE: this function is taken from sops code and adjusted
+//       to ignore mac, as CR will always be mutated in k8s
 func customDecryptData(data []byte, format string) (cleartext []byte, err error) {
 	// Initialize a Sops JSON store
 	var store sops.Store
