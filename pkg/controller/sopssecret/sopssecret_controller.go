@@ -176,7 +176,10 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 	reqLogger.Info("Enetring template data loop.")
 	for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
 		// Define a new secret object
-		secret := newSecretForCR(instance, &secretTemplateValue)
+		secret, err := newSecretForCR(instance, &secretTemplateValue)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
 
 		// Set SopsSecret instance as the owner and controller
 		if err := controllerutil.SetControllerReference(
@@ -240,7 +243,7 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 func newSecretForCR(
 	cr *isindirv1alpha1.SopsSecret,
 	secretTpl *isindirv1alpha1.SopsSecretTemplate,
-) *corev1.Secret {
+) (*corev1.Secret, error) {
 
 	// Construct labels for the secret
 	// TODO: instead of using label for GC - find the way to query secrets by
@@ -263,6 +266,9 @@ func newSecretForCR(
 		data[key] = value
 	}
 
+	if secretTpl.Name == "" {
+		return nil, fmt.Errorf("newSecretForCR(): secret template name must be specified and not empty string")
+	}
 	reqLogger := log.WithValues(
 		"Request.Namespace",
 		cr.Namespace,
@@ -279,7 +285,7 @@ func newSecretForCR(
 	))
 
 	// return resulting secret
-	return &corev1.Secret{
+	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        secretTpl.Name,
 			Namespace:   cr.Namespace,
@@ -289,6 +295,7 @@ func newSecretForCR(
 		Type:       corev1.SecretTypeOpaque,
 		StringData: data,
 	}
+	return secret, nil
 }
 
 func sanitizeLabel(str string) string {
