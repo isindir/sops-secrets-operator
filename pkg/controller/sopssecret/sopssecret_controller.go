@@ -23,22 +23,14 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	// TODO: use to unencrypt sops encrypted data - !!TOP!!
 	"go.mozilla.org/sops"
 	sopsaes "go.mozilla.org/sops/aes"
 	sopsdotenv "go.mozilla.org/sops/stores/dotenv"
 	sopsjson "go.mozilla.org/sops/stores/json"
 	sopsyaml "go.mozilla.org/sops/stores/yaml"
-	//decrypt "github.com/mozilla/sops/decrypt"
-	//decrypt "go.mozilla.org/sops/cmd/sops"
 )
 
 var log = logf.Log.WithName("controller_sopssecret")
-
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
 
 // Add creates a new SopsSecret Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -120,16 +112,13 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 	}
 
 	// TODO: decrypt data_template, if fails - set to reconcile on the next loop and log
-	//reqBodyBytes := new(bytes.Buffer)
 	instance := &isindirv1alpha1.SopsSecret{}
-	//err = json.NewEncoder(reqBodyBytes).Encode(instanceEncrypted)
 	reqBodyBytes, err := json.Marshal(instanceEncrypted)
 	if err != nil {
 		reqLogger.Info("Failed to convert encrypted sops secret to bytes[].")
 		return reconcile.Result{}, err
 	}
 
-	//decryptedInstanceBytes, err := decrypt.Data(reqBodyBytes, "json")
 	decryptedInstanceBytes, err := customDecryptData(reqBodyBytes, "json")
 	if err != nil {
 		reqLogger.Info("Failed to Decrypt encrypted sops secret instance.")
@@ -319,6 +308,7 @@ func labelsForSecret(cr *isindirv1alpha1.SopsSecret) map[string]string {
 // decrypts the data and returns its cleartext in an []byte.
 // The format string can be `json`, `yaml`, `dotenv` or `binary`.
 // If the format string is empty, binary format is assumed.
+// NOTE: this function is taken from sops code and adjusted
 func customDecryptData(data []byte, format string) (cleartext []byte, err error) {
 	// Initialize a Sops JSON store
 	var store sops.Store
