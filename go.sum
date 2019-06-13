@@ -197,6 +197,8 @@ go.mozilla.org/gopgagent v0.0.0-20170926210634-4d7ea76ff71a h1:N7VD+PwpJME2ZfQT8
 go.mozilla.org/gopgagent v0.0.0-20170926210634-4d7ea76ff71a/go.mod h1:YDKUvO0b//78PaaEro6CAPH6NqohCmL2Cwju5XI2HoE=
 go.mozilla.org/sops v0.0.0-20190527102941-300927c38ab6 h1:8+zeVWUyo6uRQY/rR8jBd/1rSoJYBFYFhV3CGbn+Z7c=
 go.mozilla.org/sops v0.0.0-20190527102941-300927c38ab6/go.mod h1:njv+SYMHy9urU/V330aYWmWAP6EwAfN0WaRafSBgwfs=
+go.mozilla.org/sops v0.0.0-20190611200209-e9e1e87723c8 h1:RGVnXInLdDvAWF8mT1gAl4M/6g4GyIRB0ltFPV7PtT4=
+go.mozilla.org/sops v0.0.0-20190611200209-e9e1e87723c8/go.mod h1:njv+SYMHy9urU/V330aYWmWAP6EwAfN0WaRafSBgwfs=
 go.opencensus.io v0.19.1/go.mod h1:gug0GbSHa8Pafr0d2urOSgoXHZ6x/RUlaiT0d9pqb4A=
 go.opencensus.io v0.19.2 h1:ZZpq6xI6kv/LuE/5s5UQvBU5vMjvRnPb8PvJrIntAnc=
 go.opencensus.io v0.19.2/go.mod h1:NO/8qkisMZLZ1FCsKNqtJPwc8/TaclWyY0B6wcYNg9M=

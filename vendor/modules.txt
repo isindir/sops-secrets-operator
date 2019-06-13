@@ -241,7 +241,7 @@ github.com/spf13/cobra
 github.com/spf13/pflag
 # go.mozilla.org/gopgagent v0.0.0-20170926210634-4d7ea76ff71a
 go.mozilla.org/gopgagent
-# go.mozilla.org/sops v0.0.0-20190527102941-300927c38ab6
+# go.mozilla.org/sops v0.0.0-20190611200209-e9e1e87723c8
 go.mozilla.org/sops
 go.mozilla.org/sops/aes
 go.mozilla.org/sops/stores/dotenv

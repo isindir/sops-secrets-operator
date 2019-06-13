@@ -35,7 +35,7 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/spf13/pflag v1.0.3
 	go.mozilla.org/gopgagent v0.0.0-20170926210634-4d7ea76ff71a // indirect
-	go.mozilla.org/sops v0.0.0-20190527102941-300927c38ab6
+	go.mozilla.org/sops v0.0.0-20190611200209-e9e1e87723c8
 	go.opencensus.io v0.19.2 // indirect
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
