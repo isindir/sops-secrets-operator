@@ -33,7 +33,7 @@ type KmsDataItem struct {
 	AwsProfile   string `json:"aws_profile,omitempty"`
 }
 
-// PgpDataItem defines AWS KMS specific encryption details
+// PgpDataItem defines PGP specific encryption details
 // +k8s:openapi-gen=true
 type PgpDataItem struct {
 	EncryptedKey string `json:"enc,omitempty"`
@@ -41,14 +41,24 @@ type PgpDataItem struct {
 	FingerPrint  string `json:"fp,omitempty"`
 }
 
+// AzureKmsItem defines Azure Keyvault Key specific encryption details
+// +k8s:openapi-gen=true
+type AzureKmsItem struct {
+	VaultURL     string `json:"vault_url,omitempty"`
+	KeyName      string `json:"name,omitempty"`
+	Version      string `json:"version,omitempty"`
+	EncryptedKey string `json:"enc,omitempty"`
+	CreationDate string `json:"created_at,omitempty"`
+}
+
 // SopsMetadata defines the encryption details
 // +k8s:openapi-gen=true
 type SopsMetadata struct {
-	AwsKms []KmsDataItem `json:"kms,omitempty"`
-	Pgp    []PgpDataItem `json:"pgp,omitempty"`
+	AwsKms   []KmsDataItem  `json:"kms,omitempty"`
+	Pgp      []PgpDataItem  `json:"pgp,omitempty"`
+	AzureKms []AzureKmsItem `json:"azure_kv,omitempty"`
 	//TODO: add following
 	//GcpKms   []GcpKmsDataItem `json:"gcp_kms,omitempty"`
-	//AzureKms []AzureKmsItem   `json:"azure_kv,omitempty"`
 
 	Mac             string `json:"mac,omitempty"`
 	LastModified    string `json:"lastmodified,omitempty"`
