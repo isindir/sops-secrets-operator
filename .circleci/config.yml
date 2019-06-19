@@ -13,6 +13,7 @@ jobs:
       HELM_VERSION: v2.14.1
       GOLANG_VERSION: 1.12.5
       OPERATOR_SDK_VERSION: 0.8.1
+      SOPS_VERSION: 3.3.1
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -32,10 +33,10 @@ jobs:
             - v2-modules-{{ .Branch }}-
             - v2-modules-
       - run:
-          name: setup golang
+          name: install golang
           command: |
             sudo rm -fr ${GOROOT}
-            curl -sSLO https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz 
+            curl -sSLO https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz
             tar -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz
             sudo mv go /usr/local
             rm -fr go${GOLANG_VERSION}.linux-amd64.tar.gz
@@ -44,7 +45,17 @@ jobs:
             go version
             go env
       - run:
-          name: setup kubectl
+          name: install bats
+          command: |
+            sudo add-apt-repository ppa:duggan/bats
+            sudo apt-get update
+            sudo apt-get install bats -y
+      - run:
+          name: install gpg2
+          command: |
+            sudo apt-get install gnupg2 -y
+      - run:
+          name: install kubectl
           command: |
             curl -sSLo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
             chmod +x kubectl
@@ -52,13 +63,19 @@ jobs:
             mkdir -p ${HOME}/.kube
             touch ${HOME}/.kube/config
       - run:
-          name: setup operator-sdk
+          name: install sops
+          command: |
+            curl -sSLo sops https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux
+            chmod +x sops
+            sudo mv sops /usr/local/bin/
+      - run:
+          name: install operator-sdk
           command: |
             curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk-v${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
             chmod +x operator-sdk
             sudo mv operator-sdk /usr/local/bin/
       - run:
-          name: setup minikube
+          name: install minikube
           command: |
             curl -sSLo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
             chmod +x minikube
@@ -71,7 +88,7 @@ jobs:
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;
             done
-            
+
             # make default account cluster-admin
             kubectl create clusterrolebinding add-on-cluster-admin --clusterrole cluster-admin --serviceaccount=kube-system:default
 
@@ -97,10 +114,62 @@ jobs:
           name: Fetch Go dependencies
           command: |
             make mod
+      - run:
+          name: Build
+          command: |
+            make build
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/gogo/pkg"
+      - run:
+          name: Run Local Tests
+          command: |
+            export GNUPGHOME="$(mktemp -d)"
+            cat >$GNUPGHOME/foo <<EOF
+                %echo Generating a basic OpenPGP key
+                Key-Type: DSA
+                Key-Length: 1024
+                Subkey-Type: ELG-E
+                Subkey-Length: 1024
+                Name-Real: Joe Tester
+                Name-Comment: with stupid passphrase
+                Name-Email: joe@foo.bar
+                Expire-Date: 0
+                Passphrase: abc
+                %no-protection
+                %commit
+                %echo done
+            EOF
+            gpg2 --batch --gen-key $GNUPGHOME/foo
+            export SOPS_GPG_EXEC=$( which gpg2 )
+            export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
+            echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
+            # TODO: replace some of this by bash unit tests
+            # Run k8s related commands
+            kubectl create namespace sops
+            kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
+            sleep 3
+            sops -e -p $FP                    \
+              --encrypted-suffix='_templates' \
+              deploy/crds/00init.yaml         \
+              > 00init.enc.yaml
+            kubectl apply -f 00init.enc.yaml --namespace sops
+            sleep 3
+            nohup make run/local &
+            sleep 75
+            kubectl get sops --namespace sops
+            echo
+            kubectl get secrets --namespace sops
+            echo
+            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
+              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+              | wc -l )
+            if [[ $SECRETS_NUMBER -ne 3 ]]; then
+              echo "Expected number of secrets in sops namespace is 3 - Failed"
+              exit 1
+            fi
+            rm -fr $GNUPGHOME
       - run:
           name: Run Tests
           command: |

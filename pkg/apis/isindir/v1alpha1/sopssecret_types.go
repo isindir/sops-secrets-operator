@@ -33,12 +33,20 @@ type KmsDataItem struct {
 	AwsProfile   string `json:"aws_profile,omitempty"`
 }
 
+// PgpDataItem defines AWS KMS specific encryption details
+// +k8s:openapi-gen=true
+type PgpDataItem struct {
+	EncryptedKey string `json:"enc,omitempty"`
+	CreationDate string `json:"created_at,omitempty"`
+	FingerPrint  string `json:"fp,omitempty"`
+}
+
 // SopsMetadata defines the encryption details
 // +k8s:openapi-gen=true
 type SopsMetadata struct {
 	AwsKms []KmsDataItem `json:"kms,omitempty"`
+	Pgp    []PgpDataItem `json:"pgp,omitempty"`
 	//TODO: add following
-	//Pgp      []PgpDataItem    `json:"pgp,omitempty"`
 	//GcpKms   []GcpKmsDataItem `json:"gcp_kms,omitempty"`
 	//AzureKms []AzureKmsItem   `json:"azure_kv,omitempty"`
 
