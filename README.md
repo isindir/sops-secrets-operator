@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/isindir/sops-secrets-operator.svg?style=svg)](https://circleci.com/gh/isindir/sops-secrets-operator)
-[![Dockeer pulls](https://img.shields.io/docker/pulls/isindir/sops-secrets-operator.svg)](https://hub.docker.com/r/isindir/sops-secrets-operator)
+[![Docker pulls](https://img.shields.io/docker/pulls/isindir/sops-secrets-operator.svg)](https://hub.docker.com/r/isindir/sops-secrets-operator)
 
 # Operator Installation
 
@@ -27,7 +27,7 @@ helm upgrade --install sops chart/sops-secrets-operator/ \
   --namespace sops
 ```
 
-### SopsSecret Resource File encryption
+## SopsSecret Custom Resource File creation
 
 * create SopsSecret file, for example:
 
@@ -56,14 +56,33 @@ EOF
 * Encrypt file using `sops` and AWS kms key:
 
 ```bash
-sops -e -k 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
+sops --encrypt \
+  --kms 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
   --encrypted-suffix='_templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
 ```
 
-# Roadmap
+* Encrypt file using `sops` and Azure Keyvault key:
 
-With little changes operator should work with GCP KMS and Azure KMS.
+```bash
+sops --encrypt \
+  --azure-kv "https://<vault-url>/keys/<key-name>/<key-version>" \
+  --encrypted-suffix='_templates' jenkins-secrets.yaml \
+  > jenkins-secrets.enc.yaml<Paste>
+```
+
+* Encrypt file using `sops` and PGP key:
+
+```bash
+sops --encrypt \
+  --pgp "<pgp-finger-print>" \
+  --encrypted-suffix='_templates' jenkins-secrets.yaml \
+  > jenkins-secrets.enc.yaml<Paste>
+```
+
+> **Note:** multiple keys can be used to encrypt secrets, at the time of decryption
+> access to one of these is needed, for more information see `sops`
+> documentation.
 
 # License
 
