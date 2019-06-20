@@ -80,8 +80,8 @@ sops --encrypt \
   > jenkins-secrets.enc.yaml
 ```
 
-> **Note:** multiple keys can be used to encrypt secrets, at the time of decryption
-> access to one of these is needed, for more information see `sops`
+> **Note:** Multiple keys can be used to encrypt secrets. At the time of decryption
+> access to one of these is needed. For more information see `sops`
 > documentation.
 
 # License
