@@ -68,7 +68,7 @@ sops --encrypt \
 sops --encrypt \
   --azure-kv "https://<vault-url>/keys/<key-name>/<key-version>" \
   --encrypted-suffix='_templates' jenkins-secrets.yaml \
-  > jenkins-secrets.enc.yaml<Paste>
+  > jenkins-secrets.enc.yaml
 ```
 
 * Encrypt file using `sops` and PGP key:
@@ -77,7 +77,7 @@ sops --encrypt \
 sops --encrypt \
   --pgp "<pgp-finger-print>" \
   --encrypted-suffix='_templates' jenkins-secrets.yaml \
-  > jenkins-secrets.enc.yaml<Paste>
+  > jenkins-secrets.enc.yaml
 ```
 
 > **Note:** multiple keys can be used to encrypt secrets, at the time of decryption
