@@ -62,11 +62,20 @@ sops --encrypt \
   > jenkins-secrets.enc.yaml
 ```
 
+* Encrypt file using `sops` and GCP KMS key:
+
+```bash
+sops --encrypt \
+  --gcp-kms 'projects/<project-name>/locations/<location>/keyRings/<keyring-name>/cryptoKeys/<key-name>' \
+  --encrypted-suffix='_templates' jenkins-secrets.yaml \
+  > jenkins-secrets.enc.yaml
+```
+
 * Encrypt file using `sops` and Azure Keyvault key:
 
 ```bash
 sops --encrypt \
-  --azure-kv "https://<vault-url>/keys/<key-name>/<key-version>" \
+  --azure-kv 'https://<vault-url>/keys/<key-name>/<key-version>' \
   --encrypted-suffix='_templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
 ```
@@ -75,7 +84,7 @@ sops --encrypt \
 
 ```bash
 sops --encrypt \
-  --pgp "<pgp-finger-print>" \
+  --pgp '<pgp-finger-print>' \
   --encrypted-suffix='_templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
 ```

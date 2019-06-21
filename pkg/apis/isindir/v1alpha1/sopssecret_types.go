@@ -51,14 +51,21 @@ type AzureKmsItem struct {
 	CreationDate string `json:"created_at,omitempty"`
 }
 
+// GcpKmsDataItem defines GCP KMS Key specific encryption details
+// +k8s:openapi-gen=true
+type GcpKmsDataItem struct {
+	VaultURL     string `json:"resource_id,omitempty"`
+	EncryptedKey string `json:"enc,omitempty"`
+	CreationDate string `json:"created_at,omitempty"`
+}
+
 // SopsMetadata defines the encryption details
 // +k8s:openapi-gen=true
 type SopsMetadata struct {
-	AwsKms   []KmsDataItem  `json:"kms,omitempty"`
-	Pgp      []PgpDataItem  `json:"pgp,omitempty"`
-	AzureKms []AzureKmsItem `json:"azure_kv,omitempty"`
-	//TODO: add following
-	//GcpKms   []GcpKmsDataItem `json:"gcp_kms,omitempty"`
+	AwsKms   []KmsDataItem    `json:"kms,omitempty"`
+	Pgp      []PgpDataItem    `json:"pgp,omitempty"`
+	AzureKms []AzureKmsItem   `json:"azure_kv,omitempty"`
+	GcpKms   []GcpKmsDataItem `json:"gcp_kms,omitempty"`
 
 	Mac             string `json:"mac,omitempty"`
 	LastModified    string `json:"lastmodified,omitempty"`
