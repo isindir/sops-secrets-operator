@@ -241,7 +241,7 @@ func decryptSopsSecretInstance(
 		return nil, err
 	}
 
-	// Decrypted instance is empty sturcture here
+	// Decrypted instance is empty structure here
 	err = json.Unmarshal(decryptedInstanceBytes, &instance)
 	if err != nil {
 		reqLogger.Info("Failed to Unmarshal decrypted sops secret instance.")
