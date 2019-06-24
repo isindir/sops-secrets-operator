@@ -97,6 +97,23 @@ sops --encrypt \
 
 Mozilla Public License Version 2.0
 
+# Known Issues
+
+* `sops-secrets-operator` is not following
+  [Kubernetes OpenAPI naming conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#naming-conventions),
+  because of that it is not possible to generate OpenAPI definition using
+  `operator-sdk generate openapi` command. This is due to the fact that `sops`
+  generates substructures in encrypted file with incompatible to OpenAPI names
+  (containing underscore symbols, where it should be `camelCase` for OpenAPI
+  compatibility).
+* `sops-secrets-operator` is not using standard `sops` library decryption
+  interface function, modified upstream function is used to decrypt data which
+  ignores `enc` signature field in `sops` metadata. This is due to the fact that
+  when Kubernetes resource is applied it is mutated by Kubernetes, for example
+  resource version is generation and added to the resource, where any mutation
+  invalidates `sops` metadata `enc` field and standard decryption function
+  fails.
+
 # Links
 
 Projects and tools inspired development of `sops-secrets-operator`:

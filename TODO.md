@@ -1,6 +1,5 @@
 # ToDo
 
-* Add GCP support
 * Add ability to mount secrets and configmaps as files/env variables in chart
 * Finish CI work
   * Add Unit Tests
