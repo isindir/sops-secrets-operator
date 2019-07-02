@@ -113,10 +113,10 @@ Mozilla Public License Version 2.0
 * `sops-secrets-operator` is not using standard `sops` library decryption
   interface function, modified upstream function is used to decrypt data which
   ignores `enc` signature field in `sops` metadata. This is due to the fact that
-  when Kubernetes resource is applied it is mutated by Kubernetes, for example
-  resource version is generation and added to the resource, where any mutation
-  invalidates `sops` metadata `enc` field and standard decryption function
-  fails.
+  when Kubernetes resource is applied it is always mutated by Kubernetes, for
+  example resource version is generated and added to the resource. But any
+  mutation invalidates `sops` metadata `enc` field and standard decryption
+  function fails.
 
 # Links
 
