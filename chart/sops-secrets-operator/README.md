@@ -48,7 +48,7 @@ gcp:
   svcAccSecret: |-
     {
       "type": "service_account",
-	  ...
+      ...
     }
 ```
 
