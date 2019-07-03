@@ -14,6 +14,11 @@ nameOverride: ""
 fullnameOverride: ""
 
 podAnnotations: {}
+watchNamespace: ''
+gcp:
+  enabled: false
+  svcAccSecretCustomName: ''
+  svcAccSecret: ''
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

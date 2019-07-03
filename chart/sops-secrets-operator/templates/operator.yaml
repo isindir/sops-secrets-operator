@@ -29,35 +29,54 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.gcp.enabled }}
+          volumeMounts:
+          - mountPath: /var/secrets/google
+            name: sops-operator-gke-svc-account
+          {{- end }}
           command:
           - sops-secrets-operator
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
-              value: ""
+              value: "{{ .Values.watchNamespace }}"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "sops-secrets-operator"
+            {{- if .Values.gcp.enabled }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/key.json
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.gcp.enabled }}
+      volumes:
+      - name: sops-operator-gke-svc-account
+        secret:
+        {{- if .Values.gcp.svcAccSecretCustomName }}
+          secretName: {{ .Values.gcp.svcAccSecretCustomName }}
+        {{- else }}
+          secretName: {{ include "sops-secrets-operator.name" . }}-gcp-secret
+        {{- end }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- if .Values.securityContext.enabled }}
+      {{- if .Values.securityContext.enabled }}
       securityContext:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
-{{- end }}
-    {{- with .Values.affinity }}
+      {{- end }}
+      {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
+      {{- end }}
+      {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-    {{- end }}
+      {{- end }}
