@@ -74,7 +74,7 @@ Parameter | Description | Default
 --- | --- | ---
 `replicaCount` | Deployment replica count  - should not be modified | `1`
 `image.repository` | Operator image | `isindir/sops-secrets-operator`
-`image.tag` | Operator image tag | `0.0.6`
+`image.tag` | Operator image tag | `0.0.7`
 `image.pullPolicy` | Operator image pull policy | `AlwaysPull`
 `imagePullSecrets` | Secrets to pull image from private docker repository | `[]`
 `nameOverride` | Overrides auto-generated short resource name | `""`
