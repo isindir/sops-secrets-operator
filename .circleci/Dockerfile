@@ -12,10 +12,10 @@ RUN apk add --no-cache \
         jq \
         make
 
-ARG HELM_VERSION=v2.14.0
+ARG HELM_VERSION=v2.14.3
 ARG CHART_RELEASER_VERSION=0.1.4
-ARG KUBEVAL_VERSION=0.9.2
-ARG OPERATOR_SDK_VERSION=0.8.1
+ARG KUBEVAL_VERSION=0.12.0
+ARG OPERATOR_SDK_VERSION=0.10.0
 
 RUN wget -q https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
