@@ -8,10 +8,10 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      K8S_VERSION: v1.13.9
-      MINIKUBE_VERSION: v1.1.1
+      K8S_VERSION: v1.15.2
+      KIND_VERSION: v0.4.0
       HELM_VERSION: v2.14.3
-      GOLANG_VERSION: 1.12.7
+      GOLANG_VERSION: 1.12.9
       OPERATOR_SDK_VERSION: 0.10.0
       SOPS_VERSION: 3.3.1
 
@@ -75,15 +75,16 @@ jobs:
             chmod +x operator-sdk
             sudo mv operator-sdk /usr/local/bin/
       - run:
-          name: install minikube
+          name: install kind
           command: |
-            curl -sSLo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
-            chmod +x minikube
-            sudo mv minikube /usr/local/bin/
+            curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
+            chmod +x kind
+            sudo mv kind /usr/local/bin/
       - run:
-          name: start minikube
+          name: start kind
           command: |
-            sudo -E minikube start --vm-driver=none --cpus 2 --memory 2048 --kubernetes-version=${K8S_VERSION} &> $HOME/minikube.log 2>&1 < /dev/null
+            kind create cluster
+            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;
@@ -98,6 +99,7 @@ jobs:
       - run:
           name: setup helm and install tiller
           command: |
+            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             # install helm
             curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xzvf - linux-amd64/helm
             chmod +x linux-amd64/helm
@@ -125,6 +127,7 @@ jobs:
       - run:
           name: Run Local Tests
           command: |
+            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             export GNUPGHOME="$(mktemp -d)"
             cat >$GNUPGHOME/foo <<EOF
                 %echo Generating a basic OpenPGP key
@@ -173,5 +176,6 @@ jobs:
       - run:
           name: Run Tests
           command: |
+            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
             make test
