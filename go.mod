@@ -2,7 +2,6 @@ module github.com/isindir/sops-secrets-operator
 
 require (
 	github.com/Azure/azure-sdk-for-go v30.0.0+incompatible // indirect
-	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.19.41 // indirect
 	github.com/dimchansky/utfbom v1.1.0 // indirect
 	github.com/fatih/color v1.7.0 // indirect
@@ -17,6 +16,8 @@ require (
 	github.com/spf13/pflag v1.0.3
 	go.mozilla.org/gopgagent v0.0.0-20170926210634-4d7ea76ff71a // indirect
 	go.mozilla.org/sops v0.0.0-20190611200209-e9e1e87723c8
+	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
+	golang.org/x/tools v0.0.0-20191106180341-622ba90fc810 // indirect
 	k8s.io/api v0.0.0-20190612125737-db0771252981
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
 	k8s.io/client-go v11.0.0+incompatible
@@ -48,3 +49,5 @@ replace (
 )
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.10.0
+
+go 1.13

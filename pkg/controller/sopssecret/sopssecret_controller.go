@@ -10,9 +10,9 @@ import (
 	isindirv1alpha1 "github.com/isindir/sops-secrets-operator/pkg/apis/isindir/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -118,49 +118,12 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 		return reconcile.Result{}, err
 	}
 
-	// Garbage collection logic - for templates removed from SopsSecret
-	// Get List of all kube secrets for this sops secret in this namespace.
-	existingSecretList := &corev1.SecretList{}
-	labelSelector := labels.SelectorFromSet(labelsForSecret(instanceEncrypted))
-	listOps := &client.ListOptions{
-		Namespace:     request.Namespace,
-		LabelSelector: labelSelector,
-	}
-	// Obtain List of secrets - filter by labels
-	if err = r.client.List(
-		context.TODO(),
-		listOps,
-		existingSecretList,
-	); err != nil {
-		return reconcile.Result{}, err
-	}
-
-	// Garbage collection loop - iterate through all fetched secrets and check
-	// for matching any template by name, if not - delete secret
-	for _, existingKubeSecret := range existingSecretList.Items {
-		found := false
-		for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
-			if secretTemplateValue.Name == existingKubeSecret.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			err = r.client.Delete(
-				context.TODO(),
-				&existingKubeSecret,
-				client.GracePeriodSeconds(0),
-			)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-		}
-	}
+	// Garbage collection logic - using the fact that owned objects automatically get cleaned up by k8s
 
 	reqLogger.Info("Enetring template data loop.")
 	for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
 		// Define a new secret object
-		secret, err := newSecretForCR(instance, &secretTemplateValue)
+		newSecret, err := newSecretForCR(instance, &secretTemplateValue)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
@@ -168,7 +131,7 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 		// Set SopsSecret instance as the owner and controller
 		if err := controllerutil.SetControllerReference(
 			instance,
-			secret,
+			newSecret,
 			r.scheme,
 		); err != nil {
 			return reconcile.Result{}, err
@@ -179,47 +142,60 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 		err = r.client.Get(
 			context.TODO(),
 			types.NamespacedName{
-				Name:      secret.Name,
-				Namespace: secret.Namespace,
+				Name:      newSecret.Name,
+				Namespace: newSecret.Namespace,
 			},
 			foundSecret,
 		)
-		if err != nil && errors.IsNotFound(err) {
+		if errors.IsNotFound(err) {
 			reqLogger.Info(
 				"Creating a new Secret",
 				"Secret.Namespace",
-				secret.Namespace,
+				newSecret.Namespace,
 				"Secret.Name",
-				secret.Name,
+				newSecret.Name,
 			)
-			err = r.client.Create(context.TODO(), secret)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-
-			// Secret created successfully - don't requeue
-			return reconcile.Result{}, nil
-		} else if err != nil {
+			err = r.client.Create(context.TODO(), newSecret)
+			foundSecret = newSecret
+		}
+		if err != nil {
 			return reconcile.Result{}, err
-		} else {
+		}
 
-			// Secret already exists - enforce update
+		if !metav1.IsControlledBy(foundSecret, instance) {
+			return reconcile.Result{}, fmt.Errorf("Secret isn't currently owned by sops-secrets-operator")
+		}
+
+		origSecret := foundSecret
+		foundSecret = foundSecret.DeepCopy()
+
+		foundSecret.Data = newSecret.Data
+		foundSecret.Type = newSecret.Type
+		foundSecret.ObjectMeta.Annotations = newSecret.ObjectMeta.Annotations
+		foundSecret.ObjectMeta.Labels = newSecret.ObjectMeta.Labels
+
+		reqLogger.Info(
+			"todo rm - Secret already exists checking for updates",
+			"Secret.Namespace",
+			foundSecret.Namespace,
+			"Secret.Name",
+			foundSecret.Name,
+		)
+
+		if !apiequality.Semantic.DeepEqual(origSecret, foundSecret) {
 			reqLogger.Info(
-				"Secret already exists: Update",
+				"Secret already exists and needs updated",
 				"Secret.Namespace",
 				foundSecret.Namespace,
 				"Secret.Name",
 				foundSecret.Name,
 			)
-			foundSecret.Labels = secret.Labels
-			foundSecret.Annotations = secret.Annotations
-			foundSecret.StringData = secret.StringData
-
 			if err = r.client.Update(context.TODO(), foundSecret); err != nil {
 				return reconcile.Result{}, err
 			}
 		}
 	}
+
 	return reconcile.Result{}, nil
 }
 
@@ -256,12 +232,7 @@ func newSecretForCR(
 	cr *isindirv1alpha1.SopsSecret,
 	secretTpl *isindirv1alpha1.SopsSecretTemplate,
 ) (*corev1.Secret, error) {
-
-	// Construct labels for the secret
-	// TODO: instead of using label for GC - find the way to query secrets by
-	// parent, than this label is not needed anymore
-	// see: https://kubernetes.io/docs/concepts/workloads/controllers/garbage-collection/
-	labels := labelsForSecret(cr)
+	labels := make(map[string]string)
 	for key, value := range secretTpl.Labels {
 		labels[key] = value
 	}
@@ -313,14 +284,6 @@ func newSecretForCR(
 func sanitizeLabel(str string) string {
 	var replacer = strings.NewReplacer("/", ".")
 	return replacer.Replace(str)
-}
-
-func labelsForSecret(cr *isindirv1alpha1.SopsSecret) map[string]string {
-	return map[string]string{
-		"sopssecret": sanitizeLabel(
-			fmt.Sprintf("%s.%s.%s", cr.Kind, cr.APIVersion, cr.Name),
-		),
-	}
 }
 
 // Data is a helper that takes encrypted data and a format string,
