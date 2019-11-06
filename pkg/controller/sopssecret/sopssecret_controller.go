@@ -148,15 +148,9 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 			foundSecret,
 		)
 		if errors.IsNotFound(err) {
-			reqLogger.Info(
-				"Creating a new Secret",
-				"Secret.Namespace",
-				newSecret.Namespace,
-				"Secret.Name",
-				newSecret.Name,
-			)
+			reqLogger.Info("Creating a new Secret")
 			err = r.client.Create(context.TODO(), newSecret)
-			foundSecret = newSecret
+			foundSecret = newSecret.DeepCopy()
 		}
 		if err != nil {
 			return reconcile.Result{}, err
@@ -169,27 +163,13 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 		origSecret := foundSecret
 		foundSecret = foundSecret.DeepCopy()
 
-		foundSecret.Data = newSecret.Data
+		foundSecret.StringData = newSecret.StringData
 		foundSecret.Type = newSecret.Type
 		foundSecret.ObjectMeta.Annotations = newSecret.ObjectMeta.Annotations
 		foundSecret.ObjectMeta.Labels = newSecret.ObjectMeta.Labels
 
-		reqLogger.Info(
-			"todo rm - Secret already exists checking for updates",
-			"Secret.Namespace",
-			foundSecret.Namespace,
-			"Secret.Name",
-			foundSecret.Name,
-		)
-
 		if !apiequality.Semantic.DeepEqual(origSecret, foundSecret) {
-			reqLogger.Info(
-				"Secret already exists and needs updated",
-				"Secret.Namespace",
-				foundSecret.Namespace,
-				"Secret.Name",
-				foundSecret.Name,
-			)
+			reqLogger.Info("Secret already exists and needs updated")
 			if err = r.client.Update(context.TODO(), foundSecret); err != nil {
 				return reconcile.Result{}, err
 			}
