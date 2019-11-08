@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: isindir/sops-secrets-operator
-  tag: 0.0.7
+  tag: 0.0.8
   pullPolicy: AlwaysPull
 
 imagePullSecrets: []

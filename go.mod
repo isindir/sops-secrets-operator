@@ -2,7 +2,6 @@ module github.com/isindir/sops-secrets-operator
 
 require (
 	github.com/Azure/azure-sdk-for-go v30.0.0+incompatible // indirect
-	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.19.41 // indirect
 	github.com/dimchansky/utfbom v1.1.0 // indirect
 	github.com/fatih/color v1.7.0 // indirect
@@ -48,3 +47,5 @@ replace (
 )
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.10.0
+
+go 1.13
