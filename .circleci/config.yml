@@ -11,7 +11,7 @@ jobs:
       K8S_VERSION: v1.15.2
       KIND_VERSION: v0.4.0
       HELM_VERSION: v2.14.3
-      GOLANG_VERSION: 1.12.9
+      GOLANG_VERSION: 1.13.4
       OPERATOR_SDK_VERSION: 0.10.0
       SOPS_VERSION: 3.3.1
 
@@ -170,6 +170,20 @@ jobs:
               | wc -l )
             if [[ $SECRETS_NUMBER -ne 3 ]]; then
               echo "Expected number of secrets in sops namespace is 3 - Failed"
+              exit 1
+            fi
+            # Delete to check GC works
+            kubectl delete -f 00init.enc.yaml --namespace sops
+            sleep 15
+            kubectl get sops --namespace sops
+            echo
+            kubectl get secrets --namespace sops
+            echo
+            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
+              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+              | wc -l )
+            if [[ $SECRETS_NUMBER -ne 0 ]]; then
+              echo "Expected number of secrets in sops namespace is 0 - Failed"
               exit 1
             fi
             rm -fr $GNUPGHOME
