@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+GO 		:= GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
 
 .PHONY: repo-tag release mod echo clean build push gen fmt check test/unit test/e2e test/operator test local/run
 
@@ -20,7 +21,8 @@ release: build push
 
 mod:
 	@echo "Go Mod Vendor"
-	@go mod vendor
+	$(GO) mod tidy
+	$(GO) mod vendor
 	@echo
 
 echo:
@@ -78,7 +80,7 @@ check:
 
 test/unit:
 	@echo "Running unit tests"
-	@go test -count=1 -short ./pkg/controller/...
+	$(GO) test -count=1 -short ./pkg/controller/...
 	@echo
 
 test/e2e:

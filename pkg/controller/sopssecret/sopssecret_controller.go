@@ -19,16 +19,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"go.mozilla.org/sops"
-	sopsaes "go.mozilla.org/sops/aes"
-	sopsdotenv "go.mozilla.org/sops/stores/dotenv"
-	sopsjson "go.mozilla.org/sops/stores/json"
-	sopsyaml "go.mozilla.org/sops/stores/yaml"
+	"go.mozilla.org/sops/v3"
+	sopsaes "go.mozilla.org/sops/v3/aes"
+	sopsdotenv "go.mozilla.org/sops/v3/stores/dotenv"
+	sopsjson "go.mozilla.org/sops/v3/stores/json"
+	sopsyaml "go.mozilla.org/sops/v3/stores/yaml"
 )
 
 var log = logf.Log.WithName("controller_sopssecret")

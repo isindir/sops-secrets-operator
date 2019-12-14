@@ -9,6 +9,10 @@
 
 ## Requirements
 
+* sops - 3.5.0
+* operator-sdk 0.13.0
+* golang - 1.13.4
+
 ### AWS
 
 * Create KMS key

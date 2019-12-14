@@ -141,7 +141,7 @@ func (in *SopsSecret) DeepCopyObject() runtime.Object {
 func (in *SopsSecretList) DeepCopyInto(out *SopsSecretList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]SopsSecret, len(*in))

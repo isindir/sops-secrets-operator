@@ -1,6 +1,7 @@
-FROM golang:1.12.5-alpine3.9
+FROM golang:1.13.4-alpine3.10
 
 ENV GO111MODULE on
+ENV GO15VENDOREXPERIMENT 1
 
 RUN apk add --no-cache \
         bash \
@@ -12,10 +13,10 @@ RUN apk add --no-cache \
         jq \
         make
 
-ARG HELM_VERSION=v2.14.3
+ARG HELM_VERSION=v2.16.1
 ARG CHART_RELEASER_VERSION=0.1.4
 ARG KUBEVAL_VERSION=0.12.0
-ARG OPERATOR_SDK_VERSION=0.10.0
+ARG OPERATOR_SDK_VERSION=0.13.0
 
 RUN wget -q https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm
