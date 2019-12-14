@@ -12,8 +12,8 @@ jobs:
       KIND_VERSION: v0.6.1
       HELM_VERSION: v2.16.1
       GOLANG_VERSION: 1.13.4
-      OPERATOR_SDK_VERSION: 0.13.0
-      SOPS_VERSION: 3.5.0
+      OPERATOR_SDK_VERSION: v0.13.0
+      SOPS_VERSION: v3.5.0
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -72,7 +72,7 @@ jobs:
       - run:
           name: install operator-sdk
           command: |
-            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk-v${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
+            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
             chmod +x operator-sdk
             sudo mv operator-sdk /usr/local/bin/
       - run:
