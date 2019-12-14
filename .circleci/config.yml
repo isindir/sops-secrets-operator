@@ -8,12 +8,12 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      K8S_VERSION: v1.15.2
-      KIND_VERSION: v0.4.0
-      HELM_VERSION: v2.14.3
+      K8S_VERSION: v1.16.3
+      KIND_VERSION: v0.6.1
+      HELM_VERSION: v2.16.1
       GOLANG_VERSION: 1.13.4
-      OPERATOR_SDK_VERSION: 0.10.0
-      SOPS_VERSION: 3.3.1
+      OPERATOR_SDK_VERSION: v0.13.0
+      SOPS_VERSION: v3.5.0
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -25,6 +25,7 @@ jobs:
       GOPATH: /home/circleci/gogo
       GOROOT: /usr/local/go
       GO111MODULE: "on"
+      GO15VENDOREXPERIMENT: 1
     steps:
       - checkout
       - restore-cache:
@@ -71,7 +72,7 @@ jobs:
       - run:
           name: install operator-sdk
           command: |
-            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v${OPERATOR_SDK_VERSION}/operator-sdk-v${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
+            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
             chmod +x operator-sdk
             sudo mv operator-sdk /usr/local/bin/
       - run:
@@ -84,7 +85,6 @@ jobs:
           name: start kind
           command: |
             kind create cluster
-            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;
@@ -99,7 +99,6 @@ jobs:
       - run:
           name: setup helm and install tiller
           command: |
-            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             # install helm
             curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xzvf - linux-amd64/helm
             chmod +x linux-amd64/helm
@@ -127,7 +126,6 @@ jobs:
       - run:
           name: Run Local Tests
           command: |
-            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             export GNUPGHOME="$(mktemp -d)"
             cat >$GNUPGHOME/foo <<EOF
                 %echo Generating a basic OpenPGP key
@@ -190,6 +188,5 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
             export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
             make test
