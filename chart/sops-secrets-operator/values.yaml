@@ -13,8 +13,16 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-podAnnotations: {}
 watchNamespace: ''
+
+# aws
+podAnnotations: {}
+
+gpg:
+  enabled: false
+  secret1: gpg1
+  secret2: gpg2
+
 gcp:
   enabled: false
   svcAccSecretCustomName: ''

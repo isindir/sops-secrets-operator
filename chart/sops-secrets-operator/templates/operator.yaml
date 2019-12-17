@@ -25,14 +25,37 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       serviceAccountName: {{ include "sops-secrets-operator.fullname" . }}
+      {{- if .Values.gpg.enabled }}
+      initContainers:
+        - name: init-myservice
+          image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+          command: ['/bin/bash', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
+          volumeMounts:
+          - mountPath: /var/secrets/gpg
+            name: sops-gpg
+          - mountPath: /var/secrets/gpg-secrets
+            name: sops-operator-gpg-keys1
+          - mountPath: /var/secrets/gpg-secrets/private-keys-v1.d
+            name: sops-operator-gpg-keys2
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.gcp.enabled }}
+          {{- if or .Values.gcp.enabled .Values.gpg.enabled }}
           volumeMounts:
+          {{- end }}
+          {{- if .Values.gcp.enabled }}
           - mountPath: /var/secrets/google
             name: sops-operator-gke-svc-account
+          {{- end }}
+          {{- if .Values.gpg.enabled }}
+          - mountPath: /var/secrets/gpg
+            name: sops-gpg
+          - mountPath: /var/secrets/gpg-secrets
+            name: sops-operator-gpg-keys1
+          - mountPath: /var/secrets/gpg-secrets/private-keys-v1.d
+            name: sops-operator-gpg-keys2
           {{- end }}
           command:
           - sops-secrets-operator
@@ -50,10 +73,16 @@ spec:
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /var/secrets/google/key.json
             {{- end }}
+            {{- if .Values.gpg.enabled }}
+            - name: GNUPGHOME
+              value: /var/secrets/gpg
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if .Values.gcp.enabled }}
+      {{- if or .Values.gcp.enabled .Values.gpg.enabled }}
       volumes:
+      {{- end }}
+      {{- if .Values.gcp.enabled }}
       - name: sops-operator-gke-svc-account
         secret:
         {{- if .Values.gcp.svcAccSecretCustomName }}
@@ -61,6 +90,16 @@ spec:
         {{- else }}
           secretName: {{ include "sops-secrets-operator.name" . }}-gcp-secret
         {{- end }}
+      {{- end }}
+      {{- if .Values.gpg.enabled }}
+      - name: sops-operator-gpg-keys1
+        secret:
+          secretName: {{ .Values.gpg.secret1 }}
+      - name: sops-operator-gpg-keys2
+        secret:
+          secretName: {{ .Values.gpg.secret2 }}
+      - name: sops-gpg
+        emptyDir: {}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

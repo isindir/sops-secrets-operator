@@ -4,16 +4,15 @@
 [![Docker pulls](https://img.shields.io/docker/pulls/isindir/sops-secrets-operator.svg)](https://hub.docker.com/r/isindir/sops-secrets-operator)
 [![MPL v2.0](http://img.shields.io/github/license/isindir/sops-secrets-operator.svg)](LICENSE)
 
-
-# Operator Installation
-
-## Requirements
+# Requirements for building operator from source code
 
 * sops - 3.5.0
 * operator-sdk 0.13.0
 * golang - 1.13.4
 
-### AWS
+# Operator Installation
+
+## AWS
 
 * Create KMS key
 * Create AWS Role which can be used by operator to decrypt CR data structure,
@@ -33,6 +32,24 @@ kubectl create namespace sops
 
 helm upgrade --install sops chart/sops-secrets-operator/ \
   --namespace sops
+```
+
+## PGP
+
+For instructions on howto configure PGP keys for operator, see [Preparing GPG keys](docs/gpg/README.md)
+
+Then install operator:
+
+```bash
+kubectl create namespace sops
+
+kubectl apply -f docs/gpg/1.yaml --namespace sops
+kubectl apply -f docs/gpg/2.yaml --namespace sops
+
+kubectl apply -f chart/crds/isindir_v1alpha1_sopssecret_crd.yaml
+
+helm upgrade --install sops chart/sops-secrets-operator/ \
+  --namespace sops --set gpg.enabled=true
 ```
 
 ## SopsSecret Custom Resource File creation

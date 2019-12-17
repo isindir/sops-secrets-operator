@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [[ -f keys.tar.gz ]]; then
+  tar -xzvf keys.tar.gz
+  export GNUPGHOME="$( pwd )/keys"
+  export GPG_TTY=$(tty)
+fi
+
+export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
