@@ -10,7 +10,7 @@ Run docker container in the directory of this README file:
 docker run -v $( pwd ):/tmp/scripts -ti ubuntu:16.04 bash
 ```
 
-Then generate PGP keys inside container, these files will remain in the folder
+Then generate PGP keys inside container. PGP key files will remain in the folder
 after closing container session:
 
 ```bash
