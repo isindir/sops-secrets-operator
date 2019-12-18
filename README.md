@@ -4,6 +4,18 @@
 [![Docker pulls](https://img.shields.io/docker/pulls/isindir/sops-secrets-operator.svg)](https://hub.docker.com/r/isindir/sops-secrets-operator)
 [![MPL v2.0](http://img.shields.io/github/license/isindir/sops-secrets-operator.svg)](LICENSE)
 
+# SOPS: Secrets OPerationS - Kubernetes Operator
+
+Operator which manages Kubernetes Secret Resources created from user defined SopsSecrets
+CRs, inspired by [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-secrets) and
+[sops](https://github.com/mozilla/sops). SopsSecret CR defines multiple
+kubernetes Secret resources. It supports managing kubernetes Secrets with
+annotations and labels, that allows using these kubernetes secrets as [Jenkins Credentials](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/).
+The SopsSecret resources can be deployed by [Weaveworks Flux GitOps CD](https://www.weave.works/blog/managing-helm-releases-the-gitops-way) and
+encrypted using [sops](https://github.com/mozilla/sops) for AWS, GCP, Azure or
+on-prem hosted kubernetes clusters. Using `sops` greatly simplifies changing
+encrypted files stored in `git` repository.
+
 # Requirements for building operator from source code
 
 * sops - 3.5.0
