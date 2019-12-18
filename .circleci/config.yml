@@ -1,6 +1,6 @@
 # based on https://github.com/gavinzhou/ci-minikube
 # https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
-version: 2.1
+version: 2
 
 jobs:
   build:
@@ -122,7 +122,7 @@ jobs:
           name: Run Local Tests
           command: |
             export GNUPGHOME="$(mktemp -d)"
-            cat >$GNUPGHOME/foo \<\<EOF
+            cat >$GNUPGHOME/foo <<EOF
                 %echo Generating a basic OpenPGP key
                 Key-Type: DSA
                 Key-Length: 1024
