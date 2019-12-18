@@ -1,6 +1,6 @@
 # based on https://github.com/gavinzhou/ci-minikube
 # https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
-version: 2
+version: 2.1
 
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
     environment:
       K8S_VERSION: v1.16.3
       KIND_VERSION: v0.6.1
-      HELM_VERSION: v2.16.1
+      HELM_VERSION: v3.0.2
       GOLANG_VERSION: 1.13.4
       OPERATOR_SDK_VERSION: v0.13.0
       SOPS_VERSION: v3.5.0
@@ -97,18 +97,13 @@ jobs:
             kubectl cluster-info
             kubectl version
       - run:
-          name: setup helm and install tiller
+          name: setup helm
           command: |
             # install helm
             curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xzvf - linux-amd64/helm
             chmod +x linux-amd64/helm
             sudo mv linux-amd64/helm /usr/local/bin/
             rm -fr linux-amd64
-
-            # configure tiller
-            kubectl -n kube-system create sa tiller
-            kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-            helm init --wait --service-account tiller
             helm version
       # real fun starts here
       - run:
