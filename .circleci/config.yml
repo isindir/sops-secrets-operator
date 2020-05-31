@@ -7,7 +7,7 @@ jobs:
   release:
     working_directory: /home/circleci/gogo/src/github.com/isindir/eks-ebs-node-operator
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     environment:
       GOLANG_VERSION: 1.14.2
       # https://github.com/operator-framework/operator-sdk/releases
@@ -73,7 +73,7 @@ jobs:
   build:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-1604:202004-01
     environment:
       # https://github.com/kubernetes/kubernetes/releases
       K8S_VERSION: v1.18.3
