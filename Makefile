@@ -36,7 +36,7 @@ release:
 
 .PHONY: local/docker/release
 ## release: builds operator docker image and pushes it to docker repository
-release: build push
+local/docker/release: build push
 
 .PHONY: mod
 ## mod: fetches dependencies
