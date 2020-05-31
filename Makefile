@@ -16,6 +16,25 @@ repo-tag:
 	@git tag -a ${VERSION} -m "sops-secrets-operator ${VERSION}"
 
 .PHONY: release
+## release: creates github release and pushes docker image to dockerhub
+release:
+	@{ \
+		set +e ; \
+		git tag "${VERSION}" ; \
+		tagResult=$$? ; \
+		if [[ $$tagResult -ne 0 ]]; then \
+			echo "Release '${VERSION}' exists - skipping" ; \
+		else \
+			set -e ; \
+			git-chglog "${VERSION}" > chglog.tmp ; \
+			hub release create -F chglog.tmp "${VERSION}" ; \
+			echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin ; \
+			docker push "${IMAGE_NAME}:latest" ; \
+			docker push "${IMAGE_NAME}:${VERSION}" ; \
+		fi ; \
+	}
+
+.PHONY: local/docker/release
 ## release: builds operator docker image and pushes it to docker repository
 release: build push
 
