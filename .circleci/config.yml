@@ -1,26 +1,93 @@
-# based on https://github.com/gavinzhou/ci-minikube
-# https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
 version: 2
 
 jobs:
+  ##################################################
+  # release
+  ##################################################
+  release:
+    working_directory: /home/circleci/gogo/src/github.com/isindir/eks-ebs-node-operator
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      GOLANG_VERSION: 1.14.2
+      # https://github.com/operator-framework/operator-sdk/releases
+      OPERATOR_SDK_VERSION: v0.13.0
+      # https://github.com/github/hub/releases
+      HUB_VERSION: 2.14.2
+      # https://github.com/git-chglog/git-chglog/releases
+      GIT_CHGLOG_VERSION: 0.9.1
+    steps:
+      - checkout
+      - run:
+          name: install golang
+          command: |
+            sudo rm -fr /usr/local/go
+            curl -sSLO https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz
+            tar -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz
+            sudo mv go /usr/local
+            rm -fr go${GOLANG_VERSION}.linux-amd64.tar.gz
+            mkdir -p $GOPATH/{src/github.com/isindir,bin,pkg}
+            go get -u golang.org/x/lint/golint
+            go version
+            go env
+      - restore-cache:
+          keys:
+            - v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
+            - v2-modules-{{ .Branch }}-
+            - v2-modules-
+      - run:
+          name: install operator-sdk
+          command: |
+            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
+            chmod +x operator-sdk
+            sudo mv operator-sdk /usr/local/bin/
+      - run:
+          name: install git-chglog
+          command: |
+            curl -sSLo git-chglog https://github.com/git-chglog/git-chglog/releases/download/${GIT_CHGLOG_VERSION}/git-chglog_linux_amd64
+            chmod +x git-chglog
+            sudo mv git-chglog /usr/local/bin/
+      - run:
+          name: install hub
+          command: |
+            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
+            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
+            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
+            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
+      - run:
+          name: Fetch Go dependencies
+          command: |
+            make mod
+      - run:
+          name: Build
+          command: |
+            make build
+      - run:
+          name: release
+          command: |
+            make release
+
+  ##################################################
+  # build
+  ##################################################
   build:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      K8S_VERSION: v1.16.3
-      KIND_VERSION: v0.6.1
-      HELM_VERSION: v3.0.2
-      GOLANG_VERSION: 1.13.4
+      # https://github.com/kubernetes/kubernetes/releases
+      K8S_VERSION: v1.18.3
+      # https://github.com/kubernetes-sigs/kind/releases
+      KIND_VERSION: v0.8.1
+      # https://github.com/helm/helm/releases
+      HELM_VERSION: v3.2.1
+      GOLANG_VERSION: 1.14.2
+      # https://github.com/operator-framework/operator-sdk/releases
       OPERATOR_SDK_VERSION: v0.13.0
+      # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.5.0
 
       KUBECONFIG: /home/circleci/.kube/config
-
-      MINIKUBE_WANTUPDATENOTIFICATION: false
-      MINIKUBE_WANTREPORTERRORPROMPT: false
-      MINIKUBE_HOME: /home/circleci
-      CHANGE_MINIKUBE_NONE_USER: true
 
       GOPATH: /home/circleci/gogo
       GOROOT: /usr/local/go
@@ -45,12 +112,6 @@ jobs:
             go get -u golang.org/x/lint/golint
             go version
             go env
-      - run:
-          name: install bats
-          command: |
-            sudo add-apt-repository ppa:duggan/bats
-            sudo apt-get update
-            sudo apt-get install bats -y
       - run:
           name: install gpg2
           command: |
@@ -90,12 +151,10 @@ jobs:
               sleep 1;
             done
 
-            # make default account cluster-admin
-            kubectl create clusterrolebinding add-on-cluster-admin --clusterrole cluster-admin --serviceaccount=kube-system:default
-
             # Dump cluster info
             kubectl cluster-info
             kubectl version
+            kubectl describe node operator-control-plane
       - run:
           name: setup helm
           command: |
@@ -141,7 +200,7 @@ jobs:
             export SOPS_GPG_EXEC=$( which gpg2 )
             export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
             echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
-            # TODO: replace some of this by bash unit tests
+
             # Run k8s related commands
             kubectl create namespace sops
             kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
@@ -185,3 +244,17 @@ jobs:
           command: |
             export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
             make test
+
+workflows:
+  version: 2
+  build_and_release:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: master
+      - release:
+          filters:
+            branches:
+              only:
+                - master
