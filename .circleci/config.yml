@@ -5,7 +5,7 @@ jobs:
   # release
   ##################################################
   release:
-    working_directory: /home/circleci/gogo/src/github.com/isindir/eks-ebs-node-operator
+    working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     machine:
       image: ubuntu-1604:202004-01
     environment:
@@ -158,7 +158,7 @@ jobs:
             kubectl version
             kubectl describe node operator-control-plane
       - run:
-          name: setup helm
+          name: install helm
           command: |
             # install helm
             curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xzvf - linux-amd64/helm
