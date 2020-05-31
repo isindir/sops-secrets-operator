@@ -115,7 +115,8 @@ jobs:
       - run:
           name: install gpg2
           command: |
-            apt update; apt install -f
+            sudo apt update
+            sudo apt install -f
             sudo apt-get install gnupg2 -y
       - run:
           name: install kubectl
