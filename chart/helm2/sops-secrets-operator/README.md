@@ -17,7 +17,7 @@ $ helm upgrade --install sops chart/sops-secrets-operator/ \
 
 * AWS is supported via `kiam` namespace and pod annotations
 * GCP is supported via service account secret which allows decryption using GCP KMS
-* **TODO:** GPG support
+* GPG is supported via secrets with GPG configuration
 * **TODO:** Azure support
 
 ## Introduction
