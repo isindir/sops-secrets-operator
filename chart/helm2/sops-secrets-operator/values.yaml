@@ -2,33 +2,33 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount: 1  # Deployment replica count  - should not be modified
 
 image:
-  repository: isindir/sops-secrets-operator
-  tag: 0.0.10
-  pullPolicy: AlwaysPull
+  repository: isindir/sops-secrets-operator  # Operator image
+  tag: 0.0.10  # Operator image tag
+  pullPolicy: AlwaysPull  # Operator image pull policy
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+imagePullSecrets: []  # Secrets to pull image from private docker repository
+nameOverride: ""  # Overrides auto-generated short resource name
+fullnameOverride: ""  # Overrides auto-generated long resource name
 
-watchNamespace: ''
+watchNamespace: ''  # Namespace to watch CRs, if not specified all namespaces will be watched
 
 # aws
-podAnnotations: {}
+podAnnotations: {}  # Annotations to be added to operator pod
 
 gpg:
-  enabled: false
-  secret1: gpg1
-  secret2: gpg2
+  enabled: false  # If `true` GCP secret will be created from provided value and mounted as environment variable
+  secret1: gpg1  # Name of the secret to create - will override default secret name if specified
+  secret2: gpg2  # Name of the secret to create - will override default secret name if specified
 
 gcp:
-  enabled: false
-  svcAccSecretCustomName: ''
-  svcAccSecret: ''
+  enabled: false  # Node labels for operator pod assignment
+  svcAccSecretCustomName: ''  # Name of the secret to create - will override default secret name if specified
+  svcAccSecret: ''  # If `gcp.enabled` is `true`, this value must be specified as GCP service account secret json payload
 
-resources: {}
+resources: {}  # Operator container resources
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -40,17 +40,17 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-nodeSelector: {}
+nodeSelector: {}  # Node selector to use for pod configuration
 
 securityContext:
-  enabled: false
-  runAsUser: 1000
-  runAsGroup: 3000
-  fsGroup: 2000
+  enabled: false  # Enable securityContext
+  runAsUser: 1000  # UID to run as
+  runAsGroup: 3000  # GID to run as
+  fsGroup: 2000  # fs group
 
-tolerations: []
+tolerations: []  # Tolerations to be applied to operator pod
 
-affinity: {}
+affinity: {}  # Node affinity for pod assignment
 
 rbac:
-  enabled: true
+  enabled: true  # Create and use RBAC resources
