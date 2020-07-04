@@ -12,6 +12,7 @@ type SopsSecretTemplate struct {
 	Name        string            `json:"name"`
 	Annotations map[string]string `json:"annotations,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
+	Type        string            `json:"type,omitempty"`
 	Data        map[string]string `json:"data"`
 }
 

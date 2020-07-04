@@ -1,0 +1,11 @@
+apiVersion: v2
+version: 0.1.0
+appVersion: 0.0.10
+type: application
+description: sops secrets operator
+name: sops-secrets-operator
+sources:
+- https://github.com/isindir/sops-secrets-operator.git
+maintainers:
+- name: isindir
+  email: isindir@users.sf.net

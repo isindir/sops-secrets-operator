@@ -19,8 +19,9 @@ encrypted files stored in `git` repository.
 # Requirements for building operator from source code
 
 * sops - 3.5.0
-* operator-sdk 0.13.0
-* golang - 1.13.4
+* operator-sdk 0.18.2
+* golang - 1.14.4
+* helm - 3.+
 
 # Operator Installation
 

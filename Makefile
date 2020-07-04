@@ -129,7 +129,7 @@ test/unit:
 ## test/e2e: runs e2e tests
 test/e2e:
 	@echo "Running e2e tests"
-	@operator-sdk test local ./test/e2e --up-local --namespace sops
+	@operator-sdk test local ./test/e2e --up-local --operator-namespace sops
 	@echo
 
 .PHONY: test/operator
@@ -145,7 +145,7 @@ test: test/operator
 .PHONY: run/local
 ## run/local: runs operator in local mode
 run/local:
-	@OPERATOR_NAME=sops-secrets-operator operator-sdk up local --namespace=sops
+	@OPERATOR_NAME=sops-secrets-operator operator-sdk run local --watch-namespace="sops"
 
 .PHONY: run/sdk
 ## run/sdk: runs sdk docker image
