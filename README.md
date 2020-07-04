@@ -88,6 +88,10 @@ spec:
     - name: some-token
       data:
         token: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
+    - name: docker-login
+      type: 'kubernetes.io/dockerconfigjson'
+      data:
+        .dockerconfigjson: '{"auths":{"index.docker.io":{"username":"imyuser","password":"mypass","email":"myuser@abc.com","auth":"aW15dXNlcjpteXBhc3M="}}}'
 EOF
 ```
 
