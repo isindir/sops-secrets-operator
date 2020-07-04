@@ -1,0 +1,18 @@
+{{- if .Values.rbac.enabled }}
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "sops-secrets-operator.fullname" . }}
+  labels:
+{{ include "sops-secrets-operator.labels" . | indent 4 }}
+    app.kubernetes.io/name: {{ include "sops-secrets-operator.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "sops-secrets-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "sops-secrets-operator.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

@@ -9,9 +9,9 @@ jobs:
     machine:
       image: ubuntu-1604:202004-01
     environment:
-      GOLANG_VERSION: 1.14.2
+      GOLANG_VERSION: 1.14.4
       # https://github.com/operator-framework/operator-sdk/releases
-      OPERATOR_SDK_VERSION: v0.13.0
+      OPERATOR_SDK_VERSION: v0.18.2
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
@@ -80,10 +80,10 @@ jobs:
       # https://github.com/kubernetes-sigs/kind/releases
       KIND_VERSION: v0.8.1
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.2.1
-      GOLANG_VERSION: 1.14.2
+      HELM_VERSION: v3.2.4
+      GOLANG_VERSION: 1.14.4
       # https://github.com/operator-framework/operator-sdk/releases
-      OPERATOR_SDK_VERSION: v0.13.0
+      OPERATOR_SDK_VERSION: v0.18.2
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.5.0
 
@@ -147,7 +147,7 @@ jobs:
       - run:
           name: start kind
           command: |
-            kind create cluster --name operator
+            kind create cluster --quiet --name operator
             JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;
@@ -166,7 +166,7 @@ jobs:
             sudo mv linux-amd64/helm /usr/local/bin/
             rm -fr linux-amd64
             helm version
-      # real fun starts here
+      # build starts here
       - run:
           name: Fetch Go dependencies
           command: |
@@ -179,6 +179,7 @@ jobs:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/gogo/pkg"
+      # tests start here
       - run:
           name: Run Local Tests
           command: |
@@ -214,7 +215,7 @@ jobs:
             kubectl apply -f 00init.enc.yaml --namespace sops
             sleep 3
             nohup make run/local &
-            sleep 75
+            sleep 150
             kubectl get sops --namespace sops
             echo
             kubectl get secrets --namespace sops
@@ -222,8 +223,9 @@ jobs:
             export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
               | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
               | wc -l )
-            if [[ $SECRETS_NUMBER -ne 3 ]]; then
-              echo "Expected number of secrets in sops namespace is 3 - Failed"
+            if [[ $SECRETS_NUMBER -ne 4 ]]; then
+              echo "Expected number of secrets in sops namespace is 4 - Failed"
+              tail -40 nohup.out
               exit 1
             fi
             # Delete to check GC works

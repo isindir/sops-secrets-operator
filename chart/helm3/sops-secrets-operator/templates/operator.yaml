@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sops-secrets-operator.fullname" . }}
+  labels:
+{{ include "sops-secrets-operator.labels" . | indent 4 }}
+    app.kubernetes.io/name: {{ template "sops-secrets-operator.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "sops-secrets-operator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+{{- if .Values.podAnnotations }}
+      annotations:
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "sops-secrets-operator.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "sops-secrets-operator.fullname" . }}
+      {{- if .Values.gpg.enabled }}
+      initContainers:
+        - name: init-myservice
+          image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+          command: ['/bin/bash', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
+          volumeMounts:
+          - mountPath: /var/secrets/gpg
+            name: sops-gpg
+          - mountPath: /var/secrets/gpg-secrets
+            name: sops-operator-gpg-keys1
+          - mountPath: /var/secrets/gpg-secrets/private-keys-v1.d
+            name: sops-operator-gpg-keys2
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if or .Values.gcp.enabled .Values.gpg.enabled }}
+          volumeMounts:
+          {{- end }}
+          {{- if .Values.gcp.enabled }}
+          - mountPath: /var/secrets/google
+            name: sops-operator-gke-svc-account
+          {{- end }}
+          {{- if .Values.gpg.enabled }}
+          - mountPath: /var/secrets/gpg
+            name: sops-gpg
+          - mountPath: /var/secrets/gpg-secrets
+            name: sops-operator-gpg-keys1
+          - mountPath: /var/secrets/gpg-secrets/private-keys-v1.d
+            name: sops-operator-gpg-keys2
+          {{- end }}
+          command:
+          - sops-secrets-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              value: "{{ .Values.watchNamespace }}"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "sops-secrets-operator"
+            {{- if .Values.gcp.enabled }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/key.json
+            {{- end }}
+            {{- if .Values.gpg.enabled }}
+            - name: GNUPGHOME
+              value: /var/secrets/gpg
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- if or .Values.gcp.enabled .Values.gpg.enabled }}
+      volumes:
+      {{- end }}
+      {{- if .Values.gcp.enabled }}
+      - name: sops-operator-gke-svc-account
+        secret:
+        {{- if .Values.gcp.svcAccSecretCustomName }}
+          secretName: {{ .Values.gcp.svcAccSecretCustomName }}
+        {{- else }}
+          secretName: {{ include "sops-secrets-operator.name" . }}-gcp-secret
+        {{- end }}
+      {{- end }}
+      {{- if .Values.gpg.enabled }}
+      - name: sops-operator-gpg-keys1
+        secret:
+          secretName: {{ .Values.gpg.secret1 }}
+      - name: sops-operator-gpg-keys2
+        secret:
+          secretName: {{ .Values.gpg.secret2 }}
+      - name: sops-gpg
+        emptyDir: {}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.securityContext.enabled }}
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

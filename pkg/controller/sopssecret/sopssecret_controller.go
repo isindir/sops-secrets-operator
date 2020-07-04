@@ -238,14 +238,18 @@ func newSecretForCR(
 		"Request.Name",
 		cr.Name,
 	)
+
 	reqLogger.Info(fmt.Sprintf(
-		"Processing secret %s.%s.%s %s:%s",
+		"Processing secret %s.%s.%s.%s %s:%s",
 		cr.Kind,
 		cr.APIVersion,
 		cr.Name,
+		secretTpl.Type,
 		cr.Namespace,
 		secretTpl.Name,
 	))
+
+	kubeSecretType := getSecretType(secretTpl.Type)
 
 	// return resulting secret
 	secret := &corev1.Secret{
@@ -255,10 +259,37 @@ func newSecretForCR(
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Type:       corev1.SecretTypeOpaque,
+		Type:       kubeSecretType,
 		StringData: data,
 	}
 	return secret, nil
+}
+
+func getSecretType(paramType string) corev1.SecretType {
+	// by default secret type is Opaque
+	kubeSecretType := corev1.SecretTypeOpaque
+	if paramType == "kubernetes.io/service-account-token" {
+		kubeSecretType = corev1.SecretTypeServiceAccountToken
+	}
+	if paramType == "kubernetes.io/dockercfg" {
+		kubeSecretType = corev1.SecretTypeDockercfg
+	}
+	if paramType == "kubernetes.io/dockerconfigjson" {
+		kubeSecretType = corev1.SecretTypeDockerConfigJson
+	}
+	if paramType == "kubernetes.io/basic-auth" {
+		kubeSecretType = corev1.SecretTypeBasicAuth
+	}
+	if paramType == "kubernetes.io/ssh-auth" {
+		kubeSecretType = corev1.SecretTypeSSHAuth
+	}
+	if paramType == "kubernetes.io/tls" {
+		kubeSecretType = corev1.SecretTypeTLS
+	}
+	if paramType == "bootstrap.kubernetes.io/token" {
+		kubeSecretType = corev1.SecretTypeBootstrapToken
+	}
+	return kubeSecretType
 }
 
 func sanitizeLabel(str string) string {

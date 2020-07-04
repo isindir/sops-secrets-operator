@@ -32,3 +32,7 @@ spec:
       data:
         username: myUsername
         password: 'Pa$$word'
+    - name: docker-login
+      type: 'kubernetes.io/dockerconfigjson'
+      data:
+        .dockerconfigjson: '{"auths":{"index.docker.io":{"username":"myuser","password":"mypass","email":"myuser@abc.com","auth":"aW15dXNlcjpteXBhc3M="}}}'
