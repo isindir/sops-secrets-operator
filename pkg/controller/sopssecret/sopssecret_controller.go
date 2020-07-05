@@ -157,7 +157,7 @@ func (r *ReconcileSopsSecret) Reconcile(request reconcile.Request) (reconcile.Re
 		}
 
 		if !metav1.IsControlledBy(foundSecret, instance) {
-			return reconcile.Result{}, fmt.Errorf("Secret isn't currently owned by sops-secrets-operator")
+			return reconcile.Result{}, fmt.Errorf("secret isn't currently owned by sops-secrets-operator")
 		}
 
 		origSecret := foundSecret
