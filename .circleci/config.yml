@@ -143,6 +143,15 @@ jobs:
             chmod +x kind
             sudo mv kind /usr/local/bin/
       - run:
+          name: install helm
+          command: |
+            # install helm
+            curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xzvf - linux-amd64/helm
+            chmod +x linux-amd64/helm
+            sudo mv linux-amd64/helm /usr/local/bin/
+            rm -fr linux-amd64
+            helm version
+      - run:
           name: start kind
           command: |
             kind create cluster --quiet --name operator
@@ -155,15 +164,6 @@ jobs:
             kubectl cluster-info
             kubectl version
             kubectl describe node operator-control-plane
-      - run:
-          name: install helm
-          command: |
-            # install helm
-            curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar -xzvf - linux-amd64/helm
-            chmod +x linux-amd64/helm
-            sudo mv linux-amd64/helm /usr/local/bin/
-            rm -fr linux-amd64
-            helm version
       # build starts here
       #- run:
       #    name: Fetch Go dependencies
