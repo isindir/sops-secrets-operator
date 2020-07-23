@@ -10,8 +10,8 @@ jobs:
       image: ubuntu-1604:202004-01
     environment:
       GOLANG_VERSION: 1.14.4
-      # https://github.com/operator-framework/operator-sdk/releases
-      OPERATOR_SDK_VERSION: v0.18.2
+      # https://github.com/kubernetes-sigs/kubebuilder/releases
+      KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
@@ -36,16 +36,13 @@ jobs:
             - v2-modules-{{ .Branch }}-
             - v2-modules-
       - run:
-          name: install operator-sdk
+          name: install kubebuilder
           command: |
-            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
-            chmod +x operator-sdk
-            sudo mv operator-sdk /usr/local/bin/
+            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/*
+            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/* /usr/local/bin/
       - run:
-          name: install git-chglog
-          command: |
-            curl -sSLo git-chglog https://github.com/git-chglog/git-chglog/releases/download/${GIT_CHGLOG_VERSION}/git-chglog_linux_amd64
-            chmod +x git-chglog
             sudo mv git-chglog /usr/local/bin/
       - run:
           name: install hub
@@ -82,10 +79,10 @@ jobs:
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.2.4
       GOLANG_VERSION: 1.14.4
-      # https://github.com/operator-framework/operator-sdk/releases
-      OPERATOR_SDK_VERSION: v0.18.2
+      # https://github.com/kubernetes-sigs/kubebuilder/releases
+      KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/mozilla/sops/releases
-      SOPS_VERSION: v3.5.0
+      SOPS_VERSION: v3.6.0
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -133,11 +130,12 @@ jobs:
             chmod +x sops
             sudo mv sops /usr/local/bin/
       - run:
-          name: install operator-sdk
+          name: install kubebuilder
           command: |
-            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
-            chmod +x operator-sdk
-            sudo mv operator-sdk /usr/local/bin/
+            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/*
+            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/* /usr/local/bin/
       - run:
           name: install kind
           command: |
@@ -167,87 +165,91 @@ jobs:
             rm -fr linux-amd64
             helm version
       # build starts here
+      #- run:
+      #    name: Fetch Go dependencies
+      #    command: |
+      #      make mod
+      #- run:
+      #    name: Build
+      #    command: |
+      #      make build
       - run:
-          name: Fetch Go dependencies
+          name: Run Tests
           command: |
-            make mod
-      - run:
-          name: Build
-          command: |
-            make build
+            make test
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/gogo/pkg"
       # tests start here
-      - run:
-          name: Run Local Tests
-          command: |
-            export GNUPGHOME="$(mktemp -d)"
-            cat >$GNUPGHOME/foo <<EOF
-                %echo Generating a basic OpenPGP key
-                Key-Type: DSA
-                Key-Length: 1024
-                Subkey-Type: ELG-E
-                Subkey-Length: 1024
-                Name-Real: Joe Tester
-                Name-Comment: with stupid passphrase
-                Name-Email: joe@foo.bar
-                Expire-Date: 0
-                Passphrase: abc
-                %no-protection
-                %commit
-                %echo done
-            EOF
-            gpg2 --batch --gen-key $GNUPGHOME/foo
-            export SOPS_GPG_EXEC=$( which gpg2 )
-            export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
-            echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
+      #- run:
+      #    name: Run Local Tests
+      #    command: |
+      #      export GNUPGHOME="$(mktemp -d)"
+      #      cat >$GNUPGHOME/foo <<EOF
+      #          %echo Generating a basic OpenPGP key
+      #          Key-Type: DSA
+      #          Key-Length: 1024
+      #          Subkey-Type: ELG-E
+      #          Subkey-Length: 1024
+      #          Name-Real: Joe Tester
+      #          Name-Comment: with stupid passphrase
+      #          Name-Email: joe@foo.bar
+      #          Expire-Date: 0
+      #          Passphrase: abc
+      #          %no-protection
+      #          %commit
+      #          %echo done
+      #      EOF
+      #      gpg2 --batch --gen-key $GNUPGHOME/foo
+      #      export SOPS_GPG_EXEC=$( which gpg2 )
+      #      export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
+      #      echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
 
-            # Run k8s related commands
-            kubectl create namespace sops
-            kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
-            sleep 3
-            sops -e -p $FP                    \
-              --encrypted-suffix='_templates' \
-              deploy/crds/00init.yaml         \
-              > 00init.enc.yaml
-            kubectl apply -f 00init.enc.yaml --namespace sops
-            sleep 3
-            nohup make run/local &
-            sleep 150
-            kubectl get sops --namespace sops
-            echo
-            kubectl get secrets --namespace sops
-            echo
-            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
-              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
-              | wc -l )
-            if [[ $SECRETS_NUMBER -ne 4 ]]; then
-              echo "Expected number of secrets in sops namespace is 4 - Failed"
-              tail -40 nohup.out
-              exit 1
-            fi
-            # Delete to check GC works
-            kubectl delete -f 00init.enc.yaml --namespace sops
-            sleep 15
-            kubectl get sops --namespace sops
-            echo
-            kubectl get secrets --namespace sops
-            echo
-            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
-              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
-              | wc -l )
-            if [[ $SECRETS_NUMBER -ne 0 ]]; then
-              echo "Expected number of secrets in sops namespace is 0 - Failed"
-              exit 1
-            fi
-            rm -fr $GNUPGHOME
-      - run:
-          name: Run Tests
-          command: |
-            export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-            make test
+      #      # Run k8s related commands
+      #      kubectl create namespace sops
+      #      kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
+      #      sleep 3
+      #      sops -e -p $FP                    \
+      #        --encrypted-suffix='_templates' \
+      #        deploy/crds/00init.yaml         \
+      #        > 00init.enc.yaml
+      #      kubectl apply -f 00init.enc.yaml --namespace sops
+      #      sleep 3
+      #      nohup make run/local &
+      #      sleep 150
+      #      kubectl get sops --namespace sops
+      #      echo
+      #      kubectl get secrets --namespace sops
+      #      echo
+      #      export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
+      #        | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+      #        | wc -l )
+      #      if [[ $SECRETS_NUMBER -ne 4 ]]; then
+      #        echo "Expected number of secrets in sops namespace is 4 - Failed"
+      #        tail -40 nohup.out
+      #        exit 1
+      #      fi
+      #      # Delete to check GC works
+      #      kubectl delete -f 00init.enc.yaml --namespace sops
+      #      sleep 15
+      #      kubectl get sops --namespace sops
+      #      echo
+      #      kubectl get secrets --namespace sops
+      #      echo
+      #      export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
+      #        | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+      #        | wc -l )
+      #      if [[ $SECRETS_NUMBER -ne 0 ]]; then
+      #        echo "Expected number of secrets in sops namespace is 0 - Failed"
+      #        exit 1
+      #      fi
+      #      rm -fr $GNUPGHOME
+      #- run:
+      #    name: Run Tests
+      #    command: |
+      #      export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+      #      make test
 
 workflows:
   version: 2

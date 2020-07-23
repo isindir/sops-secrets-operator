@@ -1,0 +1,7 @@
+domain: github.com
+repo: github.com/isindir/sops-secrets-operator
+resources:
+- group: isindir
+  kind: SopsSecret
+  version: v1alpha2
+version: "2"
