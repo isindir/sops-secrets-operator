@@ -41,7 +41,7 @@ jobs:
             curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
             tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
             chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
-            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
+            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
       - run:
             sudo mv git-chglog /usr/local/bin/
       - run:
@@ -135,13 +135,7 @@ jobs:
             curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
             tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
             chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
-            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
-      - run:
-          name: install kind
-          command: |
-            curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
-            chmod +x kind
-            sudo mv kind /usr/local/bin/
+            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
       - run:
           name: install helm
           command: |
@@ -151,6 +145,12 @@ jobs:
             sudo mv linux-amd64/helm /usr/local/bin/
             rm -fr linux-amd64
             helm version
+      - run:
+          name: install kind
+          command: |
+            curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
+            chmod +x kind
+            sudo mv kind /usr/local/bin/
       - run:
           name: start kind
           command: |
