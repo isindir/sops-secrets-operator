@@ -40,8 +40,8 @@ jobs:
           command: |
             curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
             tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/*
-            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/* /usr/local/bin/
+            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
+            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
       - run:
             sudo mv git-chglog /usr/local/bin/
       - run:
@@ -134,8 +134,8 @@ jobs:
           command: |
             curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
             tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/*
-            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/* /usr/local/bin/
+            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
+            sudo mv /kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
       - run:
           name: install kind
           command: |
