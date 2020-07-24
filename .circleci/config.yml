@@ -120,15 +120,6 @@ jobs:
             sudo apt-get install gnupg2 -y
           background: true
       - run:
-          name: install kubectl
-          command: |
-            curl -sSLo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
-            chmod +x kubectl
-            sudo mv kubectl /usr/local/bin/
-            mkdir -p ${HOME}/.kube
-            touch ${HOME}/.kube/config
-          background: true
-      - run:
           name: install sops
           command: |
             curl -sSLo sops https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux
@@ -162,12 +153,19 @@ jobs:
             helm version
           background: true
       - run:
+          name: install kubectl
+          command: |
+            curl -sSLo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            sudo mv kubectl /usr/local/bin/
+            mkdir -p ${HOME}/.kube
+            touch ${HOME}/.kube/config
+      - run:
           name: install kind
           command: |
             curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
             chmod +x kind
             sudo mv kind /usr/local/bin/
-          background: true
       - run:
           name: start kind
           command: |
