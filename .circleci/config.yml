@@ -219,9 +219,9 @@ jobs:
             kubectl create namespace sops
             make install
             sleep 3
-            sops -e -p $FP                                          \
-              --encrypted-suffix='Templates'                        \
-              config/samples/isindir_v1alpha2_sopssecret.yaml       \
+            sops -e -p $FP \
+              --encrypted-suffix='Templates' \
+              config/samples/isindir_v1alpha2_sopssecret.yaml \
               > config/samples/isindir_v1alpha2_sopssecret.enc.yaml
             file config/samples/isindir_v1alpha2_sopssecret.enc.yaml
             echo "====================================="
@@ -231,8 +231,8 @@ jobs:
             sleep 3
       #      nohup make run/local &
       #      sleep 150
-            kubectl get sops --namespace sops
-            echo
+      #      kubectl get sops --namespace sops
+      #      echo
       #      kubectl get secrets --namespace sops
       #      echo
       #      export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
