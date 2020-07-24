@@ -235,20 +235,20 @@ jobs:
             echo "====================================="
             kubectl apply -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
             sleep 3
-            # nohup make run/local &
-            # sleep 150
+            nohup make run &
+            sleep 150
             kubectl get sops --namespace sops
             echo
             kubectl get secrets --namespace sops
             echo
-            # export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
-            #   | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
-            #   | wc -l )
-            # if [[ $SECRETS_NUMBER -ne 4 ]]; then
-            #   echo "Expected number of secrets in sops namespace is 4 - Failed"
-            #   tail -40 nohup.out
-            #   exit 1
-            # fi
+            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
+              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+              | wc -l )
+            if [[ $SECRETS_NUMBER -ne 4 ]]; then
+              echo "Expected number of secrets in sops namespace is 4 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
             # Delete to check GC works
             kubectl delete -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
             sleep 15
@@ -256,13 +256,13 @@ jobs:
             echo
             kubectl get secrets --namespace sops
             echo
-            # export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
-            #   | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
-            #   | wc -l )
-            # if [[ $SECRETS_NUMBER -ne 0 ]]; then
-            #   echo "Expected number of secrets in sops namespace is 0 - Failed"
-            #   exit 1
-            # fi
+            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
+              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+              | wc -l )
+            if [[ $SECRETS_NUMBER -ne 0 ]]; then
+              echo "Expected number of secrets in sops namespace is 0 - Failed"
+              exit 1
+            fi
             rm -fr $GNUPGHOME
       #- run:
       #    name: Run Tests
