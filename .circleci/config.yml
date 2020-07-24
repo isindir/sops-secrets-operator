@@ -111,12 +111,14 @@ jobs:
             go get -u golang.org/x/lint/golint
             go version
             go env
+          background: true
       - run:
           name: install gpg2
           command: |
             sudo apt update
             sudo apt install -f
             sudo apt-get install gnupg2 -y
+          background: true
       - run:
           name: install kubectl
           command: |
@@ -125,12 +127,14 @@ jobs:
             sudo mv kubectl /usr/local/bin/
             mkdir -p ${HOME}/.kube
             touch ${HOME}/.kube/config
+          background: true
       - run:
           name: install sops
           command: |
             curl -sSLo sops https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux
             chmod +x sops
             sudo mv sops /usr/local/bin/
+          background: true
       - run:
           name: install kubebuilder
           command: |
@@ -138,6 +142,7 @@ jobs:
             tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
             chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
             sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
+          background: true
       - run:
           name: install kustomize
           command: |
@@ -145,6 +150,7 @@ jobs:
             tar -xzf kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
             chmod +x kustomize
             sudo mv kustomize /usr/local/bin/
+          background: true
       - run:
           name: install helm
           command: |
@@ -154,12 +160,14 @@ jobs:
             sudo mv linux-amd64/helm /usr/local/bin/
             rm -fr linux-amd64
             helm version
+          background: true
       - run:
           name: install kind
           command: |
             curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
             chmod +x kind
             sudo mv kind /usr/local/bin/
+          background: true
       - run:
           name: start kind
           command: |
@@ -219,9 +227,9 @@ jobs:
             kubectl create namespace sops
             make install
             sleep 3
-            sops -e -p $FP                    \
-              --encrypted-suffix='Templates' \
-              config/samples/isindir_v1alpha2_sopssecret.yaml
+            sops -e -p $FP                                          \
+              --encrypted-suffix='Templates'                        \
+              config/samples/isindir_v1alpha2_sopssecret.yaml       \
               > config/samples/isindir_v1alpha2_sopssecret.enc.yaml
             file config/samples/isindir_v1alpha2_sopssecret.enc.yaml
             echo "====================================="
@@ -231,8 +239,8 @@ jobs:
             sleep 3
       #      nohup make run/local &
       #      sleep 150
-      #      kubectl get sops --namespace sops
-      #      echo
+            kubectl get sops --namespace sops
+            echo
       #      kubectl get secrets --namespace sops
       #      echo
       #      export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
