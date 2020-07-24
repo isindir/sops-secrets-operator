@@ -1,4 +1,6 @@
-OPERATOR_VERSION ?= "0.0.10"
+GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
+OPERATOR_VERSION := "0.0.10"
+
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
 # Image URL to use all building/pushing image targets
@@ -55,6 +57,10 @@ vet:
 
 ## generate: Generate code
 generate: controller-gen
+	$(GO) mod tidy
+	$(GO) mod vendor
+	@echo
+
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 ## docker-build: Build the docker image

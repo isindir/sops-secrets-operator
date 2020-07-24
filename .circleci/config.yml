@@ -223,6 +223,10 @@ jobs:
               --encrypted-suffix='Templates' \
               config/samples/isindir_v1alpha2_sopssecret.yaml
               > config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            file config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            echo "====================================="
+            cat config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            echo "====================================="
             kubectl apply -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
             sleep 3
       #      nohup make run/local &
