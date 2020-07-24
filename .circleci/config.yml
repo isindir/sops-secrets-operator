@@ -83,6 +83,8 @@ jobs:
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.6.0
+      # https://github.com/kubernetes-sigs/kustomize/releases
+      KUSTOMIZE_VERSION: v3.8.1
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -137,6 +139,13 @@ jobs:
             chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
             sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
       - run:
+          name: install kustomize
+          command: |
+            curl -sSLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            tar -xzf kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            chmod +x kustomize
+            sudo mv kustomize /usr/local/bin/
+      - run:
           name: install helm
           command: |
             # install helm
@@ -182,40 +191,40 @@ jobs:
           paths:
             - "/home/circleci/gogo/pkg"
       # tests start here
-      #- run:
-      #    name: Run Local Tests
-      #    command: |
-      #      export GNUPGHOME="$(mktemp -d)"
-      #      cat >$GNUPGHOME/foo <<EOF
-      #          %echo Generating a basic OpenPGP key
-      #          Key-Type: DSA
-      #          Key-Length: 1024
-      #          Subkey-Type: ELG-E
-      #          Subkey-Length: 1024
-      #          Name-Real: Joe Tester
-      #          Name-Comment: with stupid passphrase
-      #          Name-Email: joe@foo.bar
-      #          Expire-Date: 0
-      #          Passphrase: abc
-      #          %no-protection
-      #          %commit
-      #          %echo done
-      #      EOF
-      #      gpg2 --batch --gen-key $GNUPGHOME/foo
-      #      export SOPS_GPG_EXEC=$( which gpg2 )
-      #      export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
-      #      echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
+      - run:
+          name: Run Local Tests
+          command: |
+            export GNUPGHOME="$(mktemp -d)"
+            cat >$GNUPGHOME/foo <<EOF
+                %echo Generating a basic OpenPGP key
+                Key-Type: DSA
+                Key-Length: 1024
+                Subkey-Type: ELG-E
+                Subkey-Length: 1024
+                Name-Real: Joe Tester
+                Name-Comment: with stupid passphrase
+                Name-Email: joe@foo.bar
+                Expire-Date: 0
+                Passphrase: abc
+                %no-protection
+                %commit
+                %echo done
+            EOF
+            gpg2 --batch --gen-key $GNUPGHOME/foo
+            export SOPS_GPG_EXEC=$( which gpg2 )
+            export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
+            echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
 
-      #      # Run k8s related commands
-      #      kubectl create namespace sops
-      #      kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
-      #      sleep 3
-      #      sops -e -p $FP                    \
-      #        --encrypted-suffix='_templates' \
-      #        deploy/crds/00init.yaml         \
-      #        > 00init.enc.yaml
-      #      kubectl apply -f 00init.enc.yaml --namespace sops
-      #      sleep 3
+            # Run k8s related commands
+            kubectl create namespace sops
+            make install
+            sleep 3
+            sops -e -p $FP                    \
+              --encrypted-suffix='Templates' \
+              config/samples/isindir_v1alpha2_sopssecret.yaml
+              > config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            kubectl apply -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
+            sleep 3
       #      nohup make run/local &
       #      sleep 150
       #      kubectl get sops --namespace sops

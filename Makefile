@@ -1,7 +1,9 @@
+OPERATOR_VERSION ?= "0.0.10"
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
 # Image URL to use all building/pushing image targets
-IMG ?= isindir/sops-secrets-operator:latest
+IMG ?= isindir/sops-secrets-operator:${OPERATOR_VERSION}
+IMG_LATEST = isindir/sops-secrets-operator:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -58,10 +60,12 @@ generate: controller-gen
 ## docker-build: Build the docker image
 docker-build: test
 	docker build . -t ${IMG}
+	docker tag ${IMG} ${IMG_LATEST}
 
 ## docker-push: Push the docker image
 docker-push:
 	docker push ${IMG}
+	docker push ${IMG_LATEST}
 
 ## controller-gen: find or download controller-gen - download controller-gen if necessary
 controller-gen:
