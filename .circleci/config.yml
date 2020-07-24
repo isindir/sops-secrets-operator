@@ -100,6 +100,13 @@ jobs:
             - v2-modules-{{ .Branch }}-
             - v2-modules-
       - run:
+          name: install gpg2
+          command: |
+            sudo apt update
+            sudo apt install -f
+            sudo apt-get install gnupg2 -y
+          background: true
+      - run:
           name: install golang
           command: |
             sudo rm -fr ${GOROOT}
@@ -111,13 +118,6 @@ jobs:
             go get -u golang.org/x/lint/golint
             go version
             go env
-          background: true
-      - run:
-          name: install gpg2
-          command: |
-            sudo apt update
-            sudo apt install -f
-            sudo apt-get install gnupg2 -y
           background: true
       - run:
           name: install sops
@@ -237,8 +237,8 @@ jobs:
             sleep 3
       #      nohup make run/local &
       #      sleep 150
-      #      kubectl get sops --namespace sops
-      #      echo
+            kubectl get sops --namespace sops
+            echo
       #      kubectl get secrets --namespace sops
       #      echo
       #      export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
@@ -249,13 +249,13 @@ jobs:
       #        tail -40 nohup.out
       #        exit 1
       #      fi
-      #      # Delete to check GC works
-      #      kubectl delete -f 00init.enc.yaml --namespace sops
-      #      sleep 15
+            # Delete to check GC works
+            kubectl delete -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
+            sleep 15
       #      kubectl get sops --namespace sops
       #      echo
-      #      kubectl get secrets --namespace sops
-      #      echo
+            kubectl get secrets --namespace sops
+            echo
       #      export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
       #        | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
       #        | wc -l )
@@ -263,7 +263,7 @@ jobs:
       #        echo "Expected number of secrets in sops namespace is 0 - Failed"
       #        exit 1
       #      fi
-      #      rm -fr $GNUPGHOME
+            rm -fr $GNUPGHOME
       #- run:
       #    name: Run Tests
       #    command: |
