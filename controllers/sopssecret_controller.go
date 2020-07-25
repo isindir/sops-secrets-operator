@@ -37,7 +37,7 @@ type SopsSecretReconciler struct {
 // +kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=secrets,verbs="*"
 // +kubebuilder:rbac:groups="",resources=secrets/status,verbs=get;update;patch
-
+// Reconcile - main reconcile loop of the controller
 func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
 	_ = r.Log.WithValues("sopssecret", req.NamespacedName)
@@ -127,6 +127,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	return ctrl.Result{}, nil
 }
 
+// SetupWithManager - setup with manager
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha2.SopsSecret{}).

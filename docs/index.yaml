@@ -1,0 +1,62 @@
+apiVersion: v1
+entries:
+  sops-secrets-operator:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2020-07-25T22:34:38.546244+01:00"
+    description: sops secrets operator
+    digest: c55b01c109e7044155ab0aa2419b7f1e18bf4709822138b1a193dc1e77c2bd9f
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    type: application
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/docs/sops-secrets-operator-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v1
+    appVersion: 0.1.0
+    created: "2020-07-25T22:34:38.545476+01:00"
+    description: sops secrets operator
+    digest: 9f9c43d604d1172a50a78a953b057a4c8dae47f284f375499d1cd9ee6f490d15
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/docs/sops-secrets-operator-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 0.0.10
+    created: "2020-07-25T22:34:38.544841+01:00"
+    description: sops secrets operator
+    digest: 504fd74af156d7287e52844c5bcd6acff9b43fc67ad960c13272468de22c7807
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    type: application
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/docs/sops-secrets-operator-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v1
+    appVersion: 0.0.10
+    created: "2020-07-25T22:34:38.544068+01:00"
+    description: sops secrets operator
+    digest: 50b8ebab19008dfc43de1eaee8b0f6287f7a55134585dc6ae88df2520d779f8f
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/docs/sops-secrets-operator-0.1.10.tgz
+    version: 0.1.10
+generated: "2020-07-25T22:34:38.542997+01:00"

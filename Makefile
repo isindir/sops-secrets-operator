@@ -22,8 +22,22 @@ endif
 
 all: manager
 
+## package-helm: repackage helm charts
+package-helm:
+	@{ \
+		( cd docs; \
+			helm package ../chart/helm3/sops-secrets-operator ; \
+			helm package ../chart/helm2/sops-secrets-operator ) ; \
+	}
+
+## reindex-helm: reindex helm chart packages
+reindex-helm: package-helm
+	@{ \
+		( cd docs; helm repo index . --url https://isindir.github.io/sops-secrets-operator/docs ) ; \
+	}
+
 ## test: Run tests
-test: generate fmt vet manifests
+test: package-helm generate fmt vet manifests
 	USE_EXISTING_CLUSTER=${USE_EXISTING_CLUSTER} go test ./... -coverprofile cover.out
 
 ## manager: Build manager binary
