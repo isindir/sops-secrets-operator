@@ -67,11 +67,6 @@ jobs:
             go get -u golang.org/x/lint/golint
             go version
             go env
-      - restore-cache:
-          keys:
-            - v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
-            - v2-modules-{{ .Branch }}-
-            - v2-modules-
       - run:
           name: release
           command: |
