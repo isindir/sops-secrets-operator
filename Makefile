@@ -33,7 +33,7 @@ package-helm:
 ## reindex-helm: reindex helm chart packages
 reindex-helm: package-helm
 	@{ \
-		( cd docs; helm repo index . --url https://isindir.github.io/sops-secrets-operator/docs ) ; \
+		( cd docs; helm repo index . --url https://isindir.github.io/sops-secrets-operator ) ; \
 	}
 
 ## test: Run tests

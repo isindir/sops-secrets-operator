@@ -30,7 +30,7 @@ Following files will be generated:
 Sourcing `key-env` sets up working environment for data encryption:
 
 ```bash
-source key-env
+source ./key-env
 ```
 
 After sourcing sops can be used to encrypt data, for example:
