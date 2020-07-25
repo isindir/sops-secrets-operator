@@ -162,12 +162,6 @@ jobs:
             sudo mv kubectl /usr/local/bin/
             mkdir -p ${HOME}/.kube
             touch ${HOME}/.kube/config
-      #- run:
-      #    name: install kind
-      #    command: |
-      #      curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
-      #      chmod +x kind
-      #      sudo mv kind /usr/local/bin/
       - run:
           name: install k3d
           command: |
@@ -175,11 +169,9 @@ jobs:
             chmod +x k3d
             sudo mv k3d /usr/local/bin/
       - run:
-          #name: start kind
           name: start k3d
           command: |
             k3d cluster create operator --agents 1
-            #kind create cluster --quiet --name operator
             JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;
@@ -188,13 +180,12 @@ jobs:
             # Dump cluster info
             kubectl cluster-info
             kubectl version
-            #kubectl describe node operator-control-plane
             kubectl describe node k3d-operator-server-0
             kubectl describe node k3d-operator-agent-0
       - run:
           name: Run Tests
           command: |
-            make docker-build
+            make tests
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
