@@ -61,6 +61,9 @@ spec:
           {{- end }}
           command:
           - /usr/local/bin/manager
+          args:
+          #- "--metrics-addr=127.0.0.1:8080"
+          - "--enable-leader-election"
           imagePullPolicy: Always
           env:
             - name: POD_NAME
