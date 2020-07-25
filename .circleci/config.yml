@@ -10,14 +10,51 @@ jobs:
       image: ubuntu-1604:202004-01
     environment:
       GOLANG_VERSION: 1.14.4
-      # https://github.com/operator-framework/operator-sdk/releases
-      OPERATOR_SDK_VERSION: v0.18.2
+      # https://github.com/kubernetes-sigs/kubebuilder/releases
+      KUBEBUILDER_VERSION: 2.3.1
+      # https://github.com/kubernetes-sigs/kustomize/releases
+      KUSTOMIZE_VERSION: v3.8.1
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
       GIT_CHGLOG_VERSION: 0.9.1
+
+      GOPATH: /home/circleci/gogo
+      GOROOT: /usr/local/go
+      GO111MODULE: "on"
+      GO15VENDOREXPERIMENT: 1
     steps:
       - checkout
+      - run:
+          name: install kubebuilder
+          command: |
+            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
+            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
+          background: true
+      - run:
+          name: install kustomize
+          command: |
+            curl -sSLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            tar -xzf kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            chmod +x kustomize
+            sudo mv kustomize /usr/local/bin/
+          background: true
+      - run:
+          name: install git-chglog
+          command: |
+            curl -sSLo git-chglog https://github.com/git-chglog/git-chglog/releases/download/${GIT_CHGLOG_VERSION}/git-chglog_linux_amd64
+            chmod +x git-chglog
+            sudo mv git-chglog /usr/local/bin/
+      - run:
+          name: install hub
+          command: |
+            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
+            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
+            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
+            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
+          background: true
       - run:
           name: install golang
           command: |
@@ -36,33 +73,6 @@ jobs:
             - v2-modules-{{ .Branch }}-
             - v2-modules-
       - run:
-          name: install operator-sdk
-          command: |
-            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
-            chmod +x operator-sdk
-            sudo mv operator-sdk /usr/local/bin/
-      - run:
-          name: install git-chglog
-          command: |
-            curl -sSLo git-chglog https://github.com/git-chglog/git-chglog/releases/download/${GIT_CHGLOG_VERSION}/git-chglog_linux_amd64
-            chmod +x git-chglog
-            sudo mv git-chglog /usr/local/bin/
-      - run:
-          name: install hub
-          command: |
-            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
-            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
-            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
-            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
-      - run:
-          name: Fetch Go dependencies
-          command: |
-            make mod
-      - run:
-          name: Build
-          command: |
-            make build
-      - run:
           name: release
           command: |
             make release
@@ -76,16 +86,20 @@ jobs:
       image: ubuntu-1604:202004-01
     environment:
       # https://github.com/kubernetes/kubernetes/releases
-      K8S_VERSION: v1.18.3
+      K8S_VERSION: v1.18.2
       # https://github.com/kubernetes-sigs/kind/releases
       KIND_VERSION: v0.8.1
+      # https://github.com/rancher/k3d/releases
+      K3D_VERSION: v3.0.0
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.2.4
       GOLANG_VERSION: 1.14.4
-      # https://github.com/operator-framework/operator-sdk/releases
-      OPERATOR_SDK_VERSION: v0.18.2
+      # https://github.com/kubernetes-sigs/kubebuilder/releases
+      KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/mozilla/sops/releases
-      SOPS_VERSION: v3.5.0
+      SOPS_VERSION: v3.6.0
+      # https://github.com/kubernetes-sigs/kustomize/releases
+      KUSTOMIZE_VERSION: v3.8.1
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -112,51 +126,37 @@ jobs:
             go get -u golang.org/x/lint/golint
             go version
             go env
+          background: true
       - run:
           name: install gpg2
           command: |
             sudo apt update
             sudo apt install -f
             sudo apt-get install gnupg2 -y
-      - run:
-          name: install kubectl
-          command: |
-            curl -sSLo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
-            chmod +x kubectl
-            sudo mv kubectl /usr/local/bin/
-            mkdir -p ${HOME}/.kube
-            touch ${HOME}/.kube/config
+          background: true
       - run:
           name: install sops
           command: |
             curl -sSLo sops https://github.com/mozilla/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux
             chmod +x sops
             sudo mv sops /usr/local/bin/
+          background: true
       - run:
-          name: install operator-sdk
+          name: install kubebuilder
           command: |
-            curl -sSLo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu
-            chmod +x operator-sdk
-            sudo mv operator-sdk /usr/local/bin/
+            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
+            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
+          background: true
       - run:
-          name: install kind
+          name: install kustomize
           command: |
-            curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
-            chmod +x kind
-            sudo mv kind /usr/local/bin/
-      - run:
-          name: start kind
-          command: |
-            kind create cluster --quiet --name operator
-            JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
-            until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
-              sleep 1;
-            done
-
-            # Dump cluster info
-            kubectl cluster-info
-            kubectl version
-            kubectl describe node operator-control-plane
+            curl -sSLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            tar -xzf kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            chmod +x kustomize
+            sudo mv kustomize /usr/local/bin/
+          background: true
       - run:
           name: install helm
           command: |
@@ -166,15 +166,39 @@ jobs:
             sudo mv linux-amd64/helm /usr/local/bin/
             rm -fr linux-amd64
             helm version
-      # build starts here
+          background: true
       - run:
-          name: Fetch Go dependencies
+          name: install kubectl
           command: |
-            make mod
+            curl -sSLo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            sudo mv kubectl /usr/local/bin/
+            mkdir -p ${HOME}/.kube
+            touch ${HOME}/.kube/config
       - run:
-          name: Build
+          name: install k3d
           command: |
-            make build
+            curl -sSLo k3d https://github.com/rancher/k3d/releases/download/${K3D_VERSION}/k3d-linux-amd64
+            chmod +x k3d
+            sudo mv k3d /usr/local/bin/
+      - run:
+          name: start k3d
+          command: |
+            k3d cluster create operator --agents 1
+            JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
+            until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
+              sleep 1;
+            done
+
+            # Dump cluster info
+            kubectl cluster-info
+            kubectl version
+            kubectl describe node k3d-operator-server-0
+            kubectl describe node k3d-operator-agent-0
+      - run:
+          name: Run Tests
+          command: |
+            make docker-build
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
@@ -206,15 +230,19 @@ jobs:
 
             # Run k8s related commands
             kubectl create namespace sops
-            kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
+            make install
             sleep 3
-            sops -e -p $FP                    \
-              --encrypted-suffix='_templates' \
-              deploy/crds/00init.yaml         \
-              > 00init.enc.yaml
-            kubectl apply -f 00init.enc.yaml --namespace sops
+            sops -e -p $FP \
+              --encrypted-suffix='Templates' \
+              config/samples/isindir_v1alpha2_sopssecret.yaml \
+              > config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            file config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            echo "====================================="
+            cat config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            echo "====================================="
+            kubectl apply -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
             sleep 3
-            nohup make run/local &
+            nohup make run &
             sleep 150
             kubectl get sops --namespace sops
             echo
@@ -229,7 +257,7 @@ jobs:
               exit 1
             fi
             # Delete to check GC works
-            kubectl delete -f 00init.enc.yaml --namespace sops
+            kubectl delete -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
             sleep 15
             kubectl get sops --namespace sops
             echo
@@ -243,11 +271,6 @@ jobs:
               exit 1
             fi
             rm -fr $GNUPGHOME
-      - run:
-          name: Run Tests
-          command: |
-            export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-            make test
 
 workflows:
   version: 2

@@ -75,12 +75,11 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | ------------------------ | ----------------------- | -------------- |
 | `replicaCount` | Deployment replica count  - should not be modified | `1` |
 | `image.repository` | Operator image | `"isindir/sops-secrets-operator"` |
-| `image.tag` | Operator image tag | `"0.0.10"` |
+| `image.tag` | Operator image tag | `"0.1.0"` |
 | `image.pullPolicy` | Operator image pull policy | `"Always"` |
 | `imagePullSecrets` | Secrets to pull image from private docker repository | `[]` |
 | `nameOverride` | Overrides auto-generated short resource name | `""` |
 | `fullnameOverride` | Overrides auto-generated long resource name | `""` |
-| `watchNamespace` | Namespace to watch crs, if not specified all namespaces will be watched | `""` |
 | `podAnnotations` | Annotations to be added to operator pod | `{}` |
 | `gpg.enabled` | If `true` gcp secret will be created from provided value and mounted as environment variable | `false` |
 | `gpg.secret1` | Name of the secret to create - will override default secret name if specified | `"gpg1"` |

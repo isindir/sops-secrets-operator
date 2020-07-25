@@ -18,8 +18,9 @@ encrypted files stored in `git` repository.
 
 # Requirements for building operator from source code
 
-* sops - 3.5.0
-* operator-sdk 0.18.2
+* sops - 3.6.0
+* kubebuilder - 2.3.1
+* kustomize - 3.8.1
 * golang - 1.14.4
 * helm - 3.+
 
@@ -33,17 +34,17 @@ encrypted files stored in `git` repository.
 * Deploy CRD:
 
 ```bash
-kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
+kubectl apply -f config/crd/bases/isindir.github.com_sopssecrets.yaml
 ```
 > **NOTE:** to grant access to aws for `sops-secret-operator` -
-> [kiam](https://github.com/uswitch/kiam) can be used.
+> [kiam](https://github.com/uswitch/kiam) or [kube2iam](https://github.com/jtblin/kube2iam) can be used.
 
 * Deploy helm chart:
 
 ```bash
 kubectl create namespace sops
 
-helm upgrade --install sops chart/sops-secrets-operator/ \
+helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
   --namespace sops
 ```
 
@@ -59,9 +60,9 @@ kubectl create namespace sops
 kubectl apply -f docs/gpg/1.yaml --namespace sops
 kubectl apply -f docs/gpg/2.yaml --namespace sops
 
-kubectl apply -f chart/crds/isindir_v1alpha1_sopssecret_crd.yaml
+kubectl apply -f config/crd/bases/isindir.github.com_sopssecrets.yaml
 
-helm upgrade --install sops chart/sops-secrets-operator/ \
+helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
   --namespace sops --set gpg.enabled=true
 ```
 
@@ -71,12 +72,12 @@ helm upgrade --install sops chart/sops-secrets-operator/ \
 
 ```yaml
 cat >jenkins-secrets.yaml <<EOF
-apiVersion: isindir.github.com/v1alpha1
+apiVersion: isindir.github.com/v1alpha2
 kind: SopsSecret
 metadata:
   name: example-sopssecret
 spec:
-  secret_templates:
+  secretTemplates:
     - name: jenkins-secret
       labels:
         "jenkins.io/credentials-type": "usernamePassword"
@@ -100,7 +101,7 @@ EOF
 ```bash
 sops --encrypt \
   --kms 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
-  --encrypted-suffix='_templates' jenkins-secrets.yaml \
+  --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
 ```
 
@@ -109,7 +110,7 @@ sops --encrypt \
 ```bash
 sops --encrypt \
   --gcp-kms 'projects/<project-name>/locations/<location>/keyRings/<keyring-name>/cryptoKeys/<key-name>' \
-  --encrypted-suffix='_templates' jenkins-secrets.yaml \
+  --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
 ```
 
@@ -118,7 +119,7 @@ sops --encrypt \
 ```bash
 sops --encrypt \
   --azure-kv 'https://<vault-url>/keys/<key-name>/<key-version>' \
-  --encrypted-suffix='_templates' jenkins-secrets.yaml \
+  --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
 ```
 
@@ -127,7 +128,7 @@ sops --encrypt \
 ```bash
 sops --encrypt \
   --pgp '<pgp-finger-print>' \
-  --encrypted-suffix='_templates' jenkins-secrets.yaml \
+  --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
 ```
 
@@ -141,13 +142,11 @@ Mozilla Public License Version 2.0
 
 # Known Issues
 
-* `sops-secrets-operator` is not following
-  [Kubernetes OpenAPI naming conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#naming-conventions),
-  because of that it is not possible to generate OpenAPI definition using
-  `operator-sdk generate openapi` command. This is due to the fact that `sops`
-  generates substructures in encrypted file with incompatible to OpenAPI names
-  (containing underscore symbols, where it should be `camelCase` for OpenAPI
-  compatibility).
+* `sops-secrets-operator` is not strictly following
+  [Kubernetes OpenAPI naming conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#naming-conventions).
+  This is due to the fact that `sops` generates substructures in encrypted file
+  with incompatible to OpenAPI names (containing underscore symbols, where it
+  should be `lowerCamelCase` for OpenAPI compatibility).
 * `sops-secrets-operator` is not using standard `sops` library decryption
   interface function, modified upstream function is used to decrypt data which
   ignores `enc` signature field in `sops` metadata. This is due to the fact that
@@ -164,10 +163,12 @@ Projects and tools inspired development of `sops-secrets-operator`:
   * [Configuring AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
   * [helm secrets plugin](https://github.com/futuresimple/helm-secrets)
 * [kiam](https://github.com/uswitch/kiam)
+* [kube2iam](https://github.com/jtblin/kube2iam)
 * [Weaveworks Flux - GitOps](https://www.weave.works/blog/managing-helm-releases-the-gitops-way)
   * [Flux github repository](https://github.com/weaveworks/flux)
 * [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
   * [Jenkins - Kubernetes Credentials Provider](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/)
   * [Jenkins Kubernetes Plugin](https://github.com/jenkinsci/kubernetes-plugin)
 * [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-secrets)
-* [operator-sdk](https://github.com/operator-framework/operator-sdk)
+* [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
+  * [operator-sdk](https://github.com/operator-framework/operator-sdk)

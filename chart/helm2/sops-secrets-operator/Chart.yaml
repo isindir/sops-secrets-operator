@@ -1,6 +1,6 @@
 apiVersion: v1
-version: 0.1.10
-appVersion: 0.0.10
+version: 0.3.0
+appVersion: 0.1.0
 description: sops secrets operator
 name: sops-secrets-operator
 sources:

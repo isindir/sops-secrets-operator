@@ -6,14 +6,12 @@ replicaCount: 1  # Deployment replica count  - should not be modified
 
 image:
   repository: isindir/sops-secrets-operator  # Operator image
-  tag: 0.0.10  # Operator image tag
+  tag: 0.1.0  # Operator image tag
   pullPolicy: Always  # Operator image pull policy
 
 imagePullSecrets: []  # Secrets to pull image from private docker repository
 nameOverride: ""  # Overrides auto-generated short resource name
 fullnameOverride: ""  # Overrides auto-generated long resource name
-
-watchNamespace: ''  # Namespace to watch CRs, if not specified all namespaces will be watched
 
 # aws
 podAnnotations: {}  # Annotations to be added to operator pod

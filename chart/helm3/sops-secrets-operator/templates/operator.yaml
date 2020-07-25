@@ -30,8 +30,8 @@ spec:
       {{- if .Values.gpg.enabled }}
       initContainers:
         - name: init-myservice
-          image: registry.access.redhat.com/ubi8/ubi-minimal:latest
-          command: ['/bin/bash', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
+          image: debian:buster
+          command: ['/bin/sh', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
           volumeMounts:
           - mountPath: /var/secrets/gpg
             name: sops-gpg
@@ -60,17 +60,16 @@ spec:
             name: sops-operator-gpg-keys2
           {{- end }}
           command:
-          - sops-secrets-operator
+          - /usr/local/bin/manager
+          args:
+          #- "--metrics-addr=127.0.0.1:8080"
+          - "--enable-leader-election"
           imagePullPolicy: Always
           env:
-            - name: WATCH_NAMESPACE
-              value: "{{ .Values.watchNamespace }}"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "sops-secrets-operator"
             {{- if .Values.gcp.enabled }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /var/secrets/google/key.json

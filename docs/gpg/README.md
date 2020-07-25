@@ -36,9 +36,9 @@ source key-env
 After sourcing sops can be used to encrypt data, for example:
 
 ```bash
-sops -e -p $FP --encrypted-suffix='_templates' ../../deploy/crds/00init.yaml > 00init.enc.yaml
+sops -e -p $FP --encrypted-suffix='Templates' ../../config/samples/isindir_v1alpha2_sopssecret.yaml > example-secrets.enc.yaml
 ```
 
-Then `00init.enc.yaml` can be applied to the cluster to create secrets using
+Then `example-secrets.enc.yaml` can be applied to the cluster to create secrets using
 sops CR. Resulting `keys.tar.gz`, `1.yaml` and `2.yaml` files should be kept secret
 itself.
