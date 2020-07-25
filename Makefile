@@ -71,13 +71,18 @@ docker-build: test
 	docker build . -t ${IMG}
 	docker tag ${IMG} ${IMG_LATEST}
 
+## docker-build-dont-test: Build the docker image without running tests
+docker-build-dont-test: generate fmt vet manifests
+	docker build . -t ${IMG}
+	docker tag ${IMG} ${IMG_LATEST}
+
 ## docker-push: Push the docker image
 docker-push:
 	docker push ${IMG}
 	docker push ${IMG_LATEST}
 
 ## release: creates github release and pushes docker image to dockerhub
-release: docker-build
+release: docker-build-dont-test
 	@{ \
 		set +e ; \
 		git tag "${VERSION}" ; \
