@@ -86,14 +86,14 @@ docker-push:
 release: docker-build-dont-test
 	@{ \
 		set +e ; \
-		git tag "${VERSION}" ; \
+		git tag "${SOPS_SEC_OPERATOR_VERSION}" ; \
 		tagResult=$$? ; \
 		if [[ $$tagResult -ne 0 ]]; then \
-			echo "Release '${VERSION}' exists - skipping" ; \
+			echo "Release '${SOPS_SEC_OPERATOR_VERSION}' exists - skipping" ; \
 		else \
 			set -e ; \
-			git-chglog "${VERSION}" > chglog.tmp ; \
-			hub release create -F chglog.tmp "${VERSION}" ; \
+			git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp ; \
+			hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}" ; \
 			echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin ; \
 			docker push ${IMG} ; \
 			docker push ${IMG_LATEST} ; \
