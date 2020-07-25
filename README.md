@@ -19,7 +19,8 @@ encrypted files stored in `git` repository.
 # Requirements for building operator from source code
 
 * sops - 3.6.0
-* kubebuilder 2.3.1
+* kubebuilder - 2.3.1
+* kustomize - 3.8.1
 * golang - 1.14.4
 * helm - 3.+
 
