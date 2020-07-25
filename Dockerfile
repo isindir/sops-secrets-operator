@@ -19,9 +19,17 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager 
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
-WORKDIR /
+FROM debian:buster
+
+RUN apt-get -y update \
+      && apt-get -y upgrade \
+	  && apt-get -y install --no-install-recommends gnupg2 \
+	  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/local/bin
 COPY --from=builder /workspace/manager .
+
+RUN useradd --create-home --user-group nonroot
 USER nonroot:nonroot
 
-ENTRYPOINT ["/manager"]
+ENTRYPOINT ["/usr/local/bin/manager"]

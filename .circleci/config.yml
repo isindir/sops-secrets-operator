@@ -198,7 +198,7 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            make test
+            make docker-build
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
