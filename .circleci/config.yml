@@ -73,9 +73,11 @@ jobs:
       image: ubuntu-1604:202004-01
     environment:
       # https://github.com/kubernetes/kubernetes/releases
-      K8S_VERSION: v1.18.3
+      K8S_VERSION: v1.18.2
       # https://github.com/kubernetes-sigs/kind/releases
       KIND_VERSION: v0.8.1
+      # https://github.com/rancher/k3d/releases
+      K3D_VERSION: v3.0.0
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.2.4
       GOLANG_VERSION: 1.14.4
@@ -160,16 +162,24 @@ jobs:
             sudo mv kubectl /usr/local/bin/
             mkdir -p ${HOME}/.kube
             touch ${HOME}/.kube/config
+      #- run:
+      #    name: install kind
+      #    command: |
+      #      curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
+      #      chmod +x kind
+      #      sudo mv kind /usr/local/bin/
       - run:
-          name: install kind
+          name: install k3d
           command: |
-            curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64
-            chmod +x kind
-            sudo mv kind /usr/local/bin/
+            curl -sSLo k3d https://github.com/rancher/k3d/releases/download/${K3D_VERSION}/k3d-linux-amd64
+            chmod +x k3d
+            sudo mv k3d /usr/local/bin/
       - run:
-          name: start kind
+          #name: start kind
+          name: start k3d
           command: |
-            kind create cluster --quiet --name operator
+            k3d cluster create operator --agents 1
+            #kind create cluster --quiet --name operator
             JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;
@@ -178,20 +188,13 @@ jobs:
             # Dump cluster info
             kubectl cluster-info
             kubectl version
-            kubectl describe node operator-control-plane
-      # build starts here
-      #- run:
-      #    name: Fetch Go dependencies
-      #    command: |
-      #      make mod
-      #- run:
-      #    name: Build
-      #    command: |
-      #      make build
+            #kubectl describe node operator-control-plane
+            kubectl describe node k3d-operator-server-0
+            kubectl describe node k3d-operator-agent-0
       - run:
           name: Run Tests
           command: |
-            make test
+            make docker-build
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
@@ -264,11 +267,6 @@ jobs:
               exit 1
             fi
             rm -fr $GNUPGHOME
-      #- run:
-      #    name: Run Tests
-      #    command: |
-      #      export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-      #      make test
 
 workflows:
   version: 2
