@@ -61,7 +61,7 @@ kubectl apply -f docs/gpg/2.yaml --namespace sops
 
 kubectl apply -f config/crd/bases/isindir.github.com_sopssecrets.yaml
 
-helm upgrade --install sops chart/sops-secrets-operator/ \
+helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
   --namespace sops --set gpg.enabled=true
 ```
 
