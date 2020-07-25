@@ -1,5 +1,5 @@
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-OPERATOR_VERSION := "0.0.10"
+SOPS_SEC_OPERATOR_VERSION := "0.1.0"
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := "v0.2.5"
@@ -7,7 +7,7 @@ CONTROLLER_TOOLS_VERSION := "v0.2.5"
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
 # Image URL to use all building/pushing image targets
-IMG ?= isindir/sops-secrets-operator:${OPERATOR_VERSION}
+IMG ?= isindir/sops-secrets-operator:${SOPS_SEC_OPERATOR_VERSION}
 IMG_LATEST = isindir/sops-secrets-operator:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
