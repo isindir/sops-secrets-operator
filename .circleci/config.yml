@@ -12,12 +12,49 @@ jobs:
       GOLANG_VERSION: 1.14.4
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
+      # https://github.com/kubernetes-sigs/kustomize/releases
+      KUSTOMIZE_VERSION: v3.8.1
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
       GIT_CHGLOG_VERSION: 0.9.1
+
+      GOPATH: /home/circleci/gogo
+      GOROOT: /usr/local/go
+      GO111MODULE: "on"
+      GO15VENDOREXPERIMENT: 1
     steps:
       - checkout
+      - run:
+          name: install kubebuilder
+          command: |
+            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
+            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
+            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
+          background: true
+      - run:
+          name: install kustomize
+          command: |
+            curl -sSLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            tar -xzf kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz
+            chmod +x kustomize
+            sudo mv kustomize /usr/local/bin/
+          background: true
+      - run:
+          name: install git-chglog
+          command: |
+            curl -sSLo git-chglog https://github.com/git-chglog/git-chglog/releases/download/${GIT_CHGLOG_VERSION}/git-chglog_linux_amd64
+            chmod +x git-chglog
+            sudo mv git-chglog /usr/local/bin/
+      - run:
+          name: install hub
+          command: |
+            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
+            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
+            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
+            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
+          background: true
       - run:
           name: install golang
           command: |
@@ -35,30 +72,6 @@ jobs:
             - v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
             - v2-modules-{{ .Branch }}-
             - v2-modules-
-      - run:
-          name: install kubebuilder
-          command: |
-            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
-            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
-      - run:
-            sudo mv git-chglog /usr/local/bin/
-      - run:
-          name: install hub
-          command: |
-            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
-            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
-            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
-            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
-      - run:
-          name: Fetch Go dependencies
-          command: |
-            make mod
-      - run:
-          name: Build
-          command: |
-            make build
       - run:
           name: release
           command: |

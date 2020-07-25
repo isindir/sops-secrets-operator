@@ -76,6 +76,24 @@ docker-push:
 	docker push ${IMG}
 	docker push ${IMG_LATEST}
 
+## release: creates github release and pushes docker image to dockerhub
+release: docker-build
+	@{ \
+		set +e ; \
+		git tag "${VERSION}" ; \
+		tagResult=$$? ; \
+		if [[ $$tagResult -ne 0 ]]; then \
+			echo "Release '${VERSION}' exists - skipping" ; \
+		else \
+			set -e ; \
+			git-chglog "${VERSION}" > chglog.tmp ; \
+			hub release create -F chglog.tmp "${VERSION}" ; \
+			echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin ; \
+			docker push ${IMG} ; \
+			docker push ${IMG_LATEST} ; \
+		fi ; \
+	}
+
 ## controller-gen: find or download controller-gen - download controller-gen if necessary
 controller-gen:
 ifeq (, $(shell which controller-gen))
