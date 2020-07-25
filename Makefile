@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
 SOPS_SEC_OPERATOR_VERSION := 0.1.0
 
