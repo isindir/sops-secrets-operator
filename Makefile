@@ -1,5 +1,5 @@
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := "0.1.0"
+SOPS_SEC_OPERATOR_VERSION := 0.1.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := "v0.2.5"
@@ -93,6 +93,12 @@ release: docker-build
 			docker push ${IMG_LATEST} ; \
 		fi ; \
 	}
+
+## inspect: inspects remote docker 'image tag' - target fails if it does
+inspect:
+	@echo "Inspect remote image"
+	@! DOCKER_CLI_EXPERIMENTAL="enabled" docker manifest inspect ${IMG} >/dev/null \
+		|| { echo "Image already exists"; exit 1; }
 
 ## controller-gen: find or download controller-gen - download controller-gen if necessary
 controller-gen:
