@@ -26,6 +26,14 @@ encrypted files stored in `git` repository.
 
 # Operator Installation
 
+## Helm repository
+
+Add `helm` repository for chart installation:
+
+```bash
+helm repo add sops https://isindir.github.io/sops-secrets-operator/
+```
+
 ## AWS
 
 * Create KMS key
