@@ -44,8 +44,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	_ = context.Background()
 	_ = r.Log.WithValues("sopssecret", req.NamespacedName)
 
-	// my logic here
-	r.Log.Info("Reconciling SopsSecret")
+	r.Log.Info("Reconciling", "sopssecret", req.NamespacedName)
 
 	instanceEncrypted := &isindirv1alpha2.SopsSecret{}
 	err := r.Get(context.TODO(), req.NamespacedName, instanceEncrypted)
@@ -54,23 +53,37 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
-			r.Log.Info("Request object not found, could have been deleted after reconcile request.")
+			r.Log.Info(
+				"Request object not found, could have been deleted after reconcile request",
+				"sopssecret",
+				req.NamespacedName,
+			)
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
-		r.Log.Info("Error reading the object - requeue the request.")
+		r.Log.Info(
+			"Error reading the object - requeue the request",
+			"sopssecret",
+			req.NamespacedName,
+		)
 		return reconcile.Result{}, err
 	}
 
 	instance, err := decryptSopsSecretInstance(instanceEncrypted, r.Log)
 	if err != nil {
-		r.Log.Info("Decryption error.")
+		r.Log.Info(
+			"Decryption error",
+			"sopssecret",
+			req.NamespacedName,
+			"error",
+			err,
+		)
 		return reconcile.Result{}, err
 	}
 
 	// Garbage collection logic - using the fact that owned objects automatically get cleaned up by k8s
 
-	r.Log.Info("Enetring template data loop.")
+	r.Log.Info("Enetring template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
 		// Define a new secret object
 		newSecret, err := newSecretForCR(instance, &secretTemplateValue, r.Log)
@@ -98,7 +111,13 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			foundSecret,
 		)
 		if errors.IsNotFound(err) {
-			r.Log.Info("Creating a new Secret")
+			r.Log.Info(
+				"Creating a new Secret",
+				"sopssecret",
+				req.NamespacedName,
+				"message",
+				err,
+			)
 			err = r.Create(context.TODO(), newSecret)
 			foundSecret = newSecret.DeepCopy()
 		}
@@ -107,7 +126,11 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		}
 
 		if !metav1.IsControlledBy(foundSecret, instance) {
-			return reconcile.Result{}, fmt.Errorf("secret isn't currently owned by sops-secrets-operator")
+			return reconcile.Result{}, fmt.Errorf(
+				"secret/%s in %s isn't currently owned by sops-secrets-operator",
+				foundSecret.Name,
+				foundSecret.Namespace,
+			)
 		}
 
 		origSecret := foundSecret
@@ -119,7 +142,13 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		foundSecret.ObjectMeta.Labels = newSecret.ObjectMeta.Labels
 
 		if !apiequality.Semantic.DeepEqual(origSecret, foundSecret) {
-			r.Log.Info("Secret already exists and needs updated")
+			r.Log.Info(
+				"Secret already exists and needs to be refreshed",
+				"secret",
+				foundSecret.Name,
+				"namespace",
+				foundSecret.Namespace,
+			)
 			if err = r.Update(context.TODO(), foundSecret); err != nil {
 				return reconcile.Result{}, err
 			}
@@ -166,15 +195,19 @@ func newSecretForCR(
 		return nil, fmt.Errorf("newSecretForCR(): secret template name must be specified and not empty string")
 	}
 
-	reqLogger.Info(fmt.Sprintf(
-		"Processing secret %s.%s.%s.%s %s:%s",
-		cr.Kind,
-		cr.APIVersion,
-		cr.Name,
+	reqLogger.Info("Processing", "sopssecret",
+		fmt.Sprintf(
+			"%s.%s.%s",
+			cr.Kind,
+			cr.APIVersion,
+			cr.Name,
+		),
+		"type",
 		secretTpl.Type,
-		cr.Namespace,
-		secretTpl.Name,
-	))
+		"namespace", cr.Namespace,
+		"templateItem",
+		fmt.Sprintf("secret/%s", secretTpl.Name),
+	)
 
 	kubeSecretType := getSecretType(secretTpl.Type)
 
@@ -227,20 +260,32 @@ func decryptSopsSecretInstance(
 	instance := &isindirv1alpha2.SopsSecret{}
 	reqBodyBytes, err := json.Marshal(instanceEncrypted)
 	if err != nil {
-		reqLogger.Info("Failed to convert encrypted sops secret to bytes[].")
+		reqLogger.Info(
+			"Failed to convert encrypted sops secret to bytes[]",
+			"error",
+			err,
+		)
 		return nil, err
 	}
 
 	decryptedInstanceBytes, err := customDecryptData(reqBodyBytes, "json")
 	if err != nil {
-		reqLogger.Info("Failed to Decrypt encrypted sops secret instance.")
+		reqLogger.Info(
+			"Failed to Decrypt encrypted sops secret instance",
+			"error",
+			err,
+		)
 		return nil, err
 	}
 
 	// Decrypted instance is empty structure here
 	err = json.Unmarshal(decryptedInstanceBytes, &instance)
 	if err != nil {
-		reqLogger.Info("Failed to Unmarshal decrypted sops secret instance.")
+		reqLogger.Info(
+			"Failed to Unmarshal decrypted sops secret instance",
+			"error",
+			err,
+		)
 		return nil, err
 	}
 
