@@ -23,7 +23,7 @@ FROM debian:buster
 
 RUN apt-get -y update \
       && apt-get -y upgrade \
-	  && apt-get -y install --no-install-recommends gnupg2 \
+	  && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
 	  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
