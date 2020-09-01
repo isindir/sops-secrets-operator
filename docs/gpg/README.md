@@ -27,10 +27,10 @@ Following files will be generated:
 * `1.yaml` and `2.yaml` - these files should be applied to the namespace where
   `sops-secrets-operator` will be deployed via helm chart.
 
-Sourcing `key-env` sets up working environment for data encryption:
+Sourcing `keys-env` sets up working environment for data encryption:
 
 ```bash
-source ./key-env
+source ./keys-env
 ```
 
 After sourcing sops can be used to encrypt data, for example:
