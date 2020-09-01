@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -21,6 +22,7 @@ import (
 
 	"go.mozilla.org/sops/v3"
 	sopsaes "go.mozilla.org/sops/v3/aes"
+	sopslogging "go.mozilla.org/sops/v3/logging"
 	sopsdotenv "go.mozilla.org/sops/v3/stores/dotenv"
 	sopsjson "go.mozilla.org/sops/v3/stores/json"
 	sopsyaml "go.mozilla.org/sops/v3/stores/yaml"
@@ -129,6 +131,9 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 // SetupWithManager - setup with manager
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
+
+	sopslogging.SetLevel(logrus.InfoLevel)
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha2.SopsSecret{}).
 		Complete(r)
