@@ -16,6 +16,9 @@ fullnameOverride: ""  # Overrides auto-generated long resource name
 # aws
 podAnnotations: {}  # Annotations to be added to operator pod
 
+serviceAccount:
+  annotations: {} # Annotations to be added to the service account
+
 gpg:
   enabled: false  # If `true` GCP secret will be created from provided value and mounted as environment variable
   secret1: gpg1  # Name of the secret to create - will override default secret name if specified
