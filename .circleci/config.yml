@@ -9,11 +9,12 @@ jobs:
     machine:
       image: ubuntu-1604:202004-01
     environment:
-      GOLANG_VERSION: 1.14.4
+      # https://golang.org/dl/
+      GOLANG_VERSION: 1.14.9
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v3.8.2
+      KUSTOMIZE_VERSION: v3.8.3
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
@@ -85,14 +86,15 @@ jobs:
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v3.0.1
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.3.1
-      GOLANG_VERSION: 1.14.4
+      HELM_VERSION: v3.3.3
+      # https://golang.org/dl/
+      GOLANG_VERSION: 1.14.9
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/mozilla/sops/releases
-      SOPS_VERSION: v3.6.0
+      SOPS_VERSION: v3.6.1
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v3.8.2
+      KUSTOMIZE_VERSION: v3.8.3
 
       KUBECONFIG: /home/circleci/.kube/config
 

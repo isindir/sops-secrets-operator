@@ -6,7 +6,7 @@ replicaCount: 1  # Deployment replica count  - should not be modified
 
 image:
   repository: isindir/sops-secrets-operator  # Operator image
-  tag: 0.1.1  # Operator image tag
+  tag: 0.1.2  # Operator image tag
   pullPolicy: Always  # Operator image pull policy
 
 imagePullSecrets: []  # Secrets to pull image from private docker repository
