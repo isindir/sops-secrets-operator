@@ -15,7 +15,7 @@ $ helm upgrade --install sops chart/sops-secrets-operator/ \
 
 > where `custom.values.yaml` must customise deployment and configure access to Cloud KMS
 
-* AWS is supported via `kiam` namespace and pod annotations
+* AWS is supported via `kiam` namespace and pod annotations or via [IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html)
 * GCP is supported via service account secret which allows decryption using GCP KMS
 * GPG is supported via secrets with GPG configuration
 * **TODO:** Azure support

@@ -45,7 +45,7 @@ helm repo add sops https://isindir.github.io/sops-secrets-operator/
 kubectl apply -f config/crd/bases/isindir.github.com_sopssecrets.yaml
 ```
 > **NOTE:** to grant access to aws for `sops-secret-operator` -
-> [kiam](https://github.com/uswitch/kiam) or [kube2iam](https://github.com/jtblin/kube2iam) can be used.
+> [kiam](https://github.com/uswitch/kiam), [kube2iam](https://github.com/jtblin/kube2iam) or [IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html) can be used.
 
 * Deploy helm chart:
 
