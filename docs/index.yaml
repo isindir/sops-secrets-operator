@@ -2,8 +2,23 @@ apiVersion: v1
 entries:
   sops-secrets-operator:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2020-09-19T08:00:24.800673+01:00"
+    description: sops secrets operator
+    digest: 043c4ddcfcae1adbd50e98eaa66a917e59044071efc858bed50fcc716d7df2c0
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    type: application
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.4.2.tgz
+    version: 0.4.2
+  - apiVersion: v2
     appVersion: 0.1.1
-    created: "2020-09-01T14:41:02.393129+01:00"
+    created: "2020-09-19T08:00:24.799873+01:00"
     description: sops secrets operator
     digest: 7067eee2ab76e1274f58031707fc422969b6d3d5f771bd76ad43e532496439e0
     maintainers:
@@ -18,7 +33,7 @@ entries:
     version: 0.4.1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2020-09-01T14:41:02.39228+01:00"
+    created: "2020-09-19T08:00:24.798849+01:00"
     description: sops secrets operator
     digest: f4d9ba94db37d679af817d759bb64aebb7605530b0ba412e264b051440ff3765
     maintainers:
@@ -32,8 +47,22 @@ entries:
     - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.4.0.tgz
     version: 0.4.0
   - apiVersion: v1
+    appVersion: 0.1.2
+    created: "2020-09-19T08:00:24.797738+01:00"
+    description: sops secrets operator
+    digest: 0fc4504f9fa676534df6e047c12b58589aaab89940d366a3afde847f5150f5c4
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.3.2.tgz
+    version: 0.3.2
+  - apiVersion: v1
     appVersion: 0.1.1
-    created: "2020-09-01T14:41:02.391404+01:00"
+    created: "2020-09-19T08:00:24.797146+01:00"
     description: sops secrets operator
     digest: 2e2762b8f9d66aab0caacde225955fec8bfd5a4cc10dc6943a1de3809dda4091
     maintainers:
@@ -47,7 +76,7 @@ entries:
     version: 0.3.1
   - apiVersion: v1
     appVersion: 0.1.0
-    created: "2020-09-01T14:41:02.389999+01:00"
+    created: "2020-09-19T08:00:24.796198+01:00"
     description: sops secrets operator
     digest: ce84f5b64402a582c7689cb842ba03fb10f968c38b57dc9e05f588493128019a
     maintainers:
@@ -61,7 +90,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 0.0.10
-    created: "2020-09-01T14:41:02.389443+01:00"
+    created: "2020-09-19T08:00:24.794565+01:00"
     description: sops secrets operator
     digest: 504fd74af156d7287e52844c5bcd6acff9b43fc67ad960c13272468de22c7807
     maintainers:
@@ -76,7 +105,7 @@ entries:
     version: 0.2.1
   - apiVersion: v1
     appVersion: 0.0.10
-    created: "2020-09-01T14:41:02.388525+01:00"
+    created: "2020-09-19T08:00:24.793494+01:00"
     description: sops secrets operator
     digest: 50b8ebab19008dfc43de1eaee8b0f6287f7a55134585dc6ae88df2520d779f8f
     maintainers:
@@ -88,4 +117,4 @@ entries:
     urls:
     - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.1.10.tgz
     version: 0.1.10
-generated: "2020-09-01T14:41:02.38714+01:00"
+generated: "2020-09-19T08:00:24.792165+01:00"
