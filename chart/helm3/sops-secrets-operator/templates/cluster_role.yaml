@@ -5,8 +5,6 @@ metadata:
   name: {{ include "sops-secrets-operator.fullname" . }}
   labels:
 {{ include "sops-secrets-operator.labels" . | indent 4 }}
-    app.kubernetes.io/name: {{ include "sops-secrets-operator.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
 rules:
 - apiGroups:
   - ""

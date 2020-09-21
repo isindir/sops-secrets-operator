@@ -4,8 +4,6 @@ metadata:
   name: {{ include "sops-secrets-operator.fullname" . }}
   labels:
 {{ include "sops-secrets-operator.labels" . | indent 4 }}
-    app.kubernetes.io/name: {{ template "sops-secrets-operator.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
