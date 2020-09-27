@@ -29,6 +29,7 @@ spec:
       initContainers:
         - name: init-myservice
           image: debian:buster
+          imagePullPolicy: Always
           command: ['/bin/sh', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
           volumeMounts:
           - mountPath: /var/secrets/gpg
@@ -62,7 +63,6 @@ spec:
           args:
           #- "--metrics-addr=127.0.0.1:8080"
           - "--enable-leader-election"
-          imagePullPolicy: Always
           env:
             - name: POD_NAME
               valueFrom:

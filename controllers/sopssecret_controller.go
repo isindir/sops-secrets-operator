@@ -317,6 +317,9 @@ func customDecryptData(data []byte, format string) (cleartext []byte, err error)
 		return nil, err
 	}
 	key, err := tree.Metadata.GetDataKey()
+	if userErr, ok := err.(sops.UserError); ok {
+		err = fmt.Errorf(userErr.UserError())
+	}
 	if err != nil {
 		return nil, err
 	}
