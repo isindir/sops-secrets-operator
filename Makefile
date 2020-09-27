@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.1.2
+SOPS_SEC_OPERATOR_VERSION := 0.1.3
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := "v0.2.5"
@@ -37,7 +37,7 @@ reindex-helm: package-helm
 	}
 
 ## test: Run tests
-test: package-helm generate fmt vet manifests
+test: generate fmt vet manifests
 	USE_EXISTING_CLUSTER=${USE_EXISTING_CLUSTER} go test ./... -coverprofile cover.out
 
 ## manager: Build manager binary
