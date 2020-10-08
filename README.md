@@ -2,6 +2,7 @@
 [![CircleCI](https://circleci.com/gh/isindir/sops-secrets-operator.svg?style=svg)](https://circleci.com/gh/isindir/sops-secrets-operator)
 [![GitHub release](https://img.shields.io/github/tag/isindir/sops-secrets-operator.svg)](https://github.com/isindir/sops-secrets-operator/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/isindir/sops-secrets-operator.svg)](https://hub.docker.com/r/isindir/sops-secrets-operator)
+[![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/sops-secrets-operator)](https://artifacthub.io/packages/search?repo=sops-secrets-operator)
 [![MPL v2.0](http://img.shields.io/github/license/isindir/sops-secrets-operator.svg)](LICENSE)
 
 # SOPS: Secrets OPerationS - Kubernetes Operator
