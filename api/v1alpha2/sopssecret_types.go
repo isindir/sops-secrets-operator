@@ -127,14 +127,15 @@ type SopsSecretStatus struct {
 
 	// Message - SopsSecret status message
 	// +optional
-	Message string `json:"msg,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
 // SopsSecret is the Schema for the sopssecrets API
 // +kubebuilder:resource:shortName=sops,scope=Namespaced
-// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.msg`
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.message`
 type SopsSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

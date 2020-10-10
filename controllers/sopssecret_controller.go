@@ -35,11 +35,11 @@ type SopsSecretReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// Reconcile - main reconcile loop of the controller
 // +kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=secrets,verbs="*"
 // +kubebuilder:rbac:groups="",resources=secrets/status,verbs=get;update;patch
-// Reconcile - main reconcile loop of the controller
 func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
 	_ = r.Log.WithValues("sopssecret", req.NamespacedName)
@@ -78,16 +78,27 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			"error",
 			err,
 		)
+		//instance.Status.SecretsTotal = len(instance.Spec.SecretsTemplate)
+		instanceEncrypted.Status.Message = "Decryption error"
+
+		// will not process instance error as we are already in error mode here
+		r.Status().Update(context.Background(), instanceEncrypted)
+
 		return reconcile.Result{}, err
 	}
 
-	// Garbage collection logic - using the fact that owned objects automatically get cleaned up by k8s
+	// totalSecrets := len(instance.Spec.SecretsTemplate)
+	// reconciledSecrets := instanceEncrypted.Status.SecretsReconciled
 
+	// iterating over secret templates
 	r.Log.Info("Enetring template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
 		// Define a new secret object
 		newSecret, err := newSecretForCR(instance, &secretTemplateValue, r.Log)
 		if err != nil {
+			instanceEncrypted.Status.Message = "New child secret creation error"
+			r.Status().Update(context.Background(), instanceEncrypted)
+
 			return reconcile.Result{}, err
 		}
 
@@ -97,6 +108,9 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			newSecret,
 			r.Scheme,
 		); err != nil {
+			instanceEncrypted.Status.Message = "Setting controller ownership of the child secret error"
+			r.Status().Update(context.Background(), instanceEncrypted)
+
 			return reconcile.Result{}, err
 		}
 
@@ -122,10 +136,16 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			foundSecret = newSecret.DeepCopy()
 		}
 		if err != nil {
+			instanceEncrypted.Status.Message = "Unknown Error"
+			r.Status().Update(context.Background(), instanceEncrypted)
+
 			return reconcile.Result{}, err
 		}
 
 		if !metav1.IsControlledBy(foundSecret, instance) {
+			instanceEncrypted.Status.Message = "Child secret is not owned by controller error"
+			r.Status().Update(context.Background(), instanceEncrypted)
+
 			return reconcile.Result{}, fmt.Errorf(
 				"secret/%s in %s isn't currently owned by sops-secrets-operator",
 				foundSecret.Name,
@@ -150,10 +170,16 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 				foundSecret.Namespace,
 			)
 			if err = r.Update(context.TODO(), foundSecret); err != nil {
+				instanceEncrypted.Status.Message = "Child secret update error"
+				r.Status().Update(context.Background(), instanceEncrypted)
+
 				return reconcile.Result{}, err
 			}
 		}
 	}
+
+	instanceEncrypted.Status.Message = "Healthy"
+	r.Status().Update(context.Background(), instanceEncrypted)
 
 	return ctrl.Result{}, nil
 }
