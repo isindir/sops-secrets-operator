@@ -27,13 +27,8 @@ package-helm:
 	@{ \
 		( cd docs; \
 			helm package ../chart/helm3/sops-secrets-operator ; \
-			helm package ../chart/helm2/sops-secrets-operator ) ; \
-	}
-
-## reindex-helm: reindex helm chart packages
-reindex-helm: package-helm
-	@{ \
-		( cd docs; helm repo index . --url https://isindir.github.io/sops-secrets-operator ) ; \
+			helm package ../chart/helm2/sops-secrets-operator ; \
+			helm repo index . --url https://isindir.github.io/sops-secrets-operator ) ; \
 	}
 
 ## test: Run tests
