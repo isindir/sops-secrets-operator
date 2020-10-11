@@ -38,9 +38,7 @@ reindex-helm: package-helm
 
 ## test-helm: test helm charts
 test-helm:
-	 @{ \
-		 ( cd chart/helm3/sops-secrets-operator; make test ) ; \
-	 }
+	$(MAKE) -C chart/helm3/sops-secrets-operator test
 
 ## test: Run tests
 test: generate fmt vet manifests

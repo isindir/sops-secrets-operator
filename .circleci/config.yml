@@ -207,13 +207,18 @@ jobs:
             kubectl describe node k3d-operator-server-0
             kubectl describe node k3d-operator-agent-0
       - run:
-          name: Run Tests
+          name: Docker build
           command: |
             make docker-build
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
             - "/home/circleci/gogo/pkg"
+      # run helm tests
+      - run:
+          name: Test helm charts
+          command: |
+            make test-helm
       # tests start here
       - run:
           name: Run Local Tests
