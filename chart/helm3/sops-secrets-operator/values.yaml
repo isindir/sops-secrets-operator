@@ -29,6 +29,18 @@ gcp:
   svcAccSecretCustomName: ''  # Name of the secret to create - will override default secret name if specified
   svcAccSecret: ''  # If `gcp.enabled` is `true`, this value must be specified as GCP service account secret json payload
 
+secretsAsEnvVars: []
+#- name: SECRET_GREETING
+#  secretName: my-secret-greeting
+#  secretKey: greeting
+
+secretsAsFiles: []
+# All files within secret will be mounted in "/etc/foo" - same as 1st example in k8s documentation
+# all secrets will be mounted as readonly
+#- name: foo
+#  mountPath: "/etc/foo"
+#  secretName: mysecret
+
 resources: {}  # Operator container resources
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

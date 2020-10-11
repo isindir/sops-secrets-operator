@@ -43,7 +43,7 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if or .Values.gcp.enabled .Values.gpg.enabled }}
+          {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles }}
           volumeMounts:
           {{- end }}
           {{- if .Values.gcp.enabled }}
@@ -57,6 +57,11 @@ spec:
             name: sops-operator-gpg-keys1
           - mountPath: /var/secrets/gpg-secrets/private-keys-v1.d
             name: sops-operator-gpg-keys2
+          {{- end }}
+          {{- range .Values.secretsAsFiles }}
+          - name: {{ .name }}
+            mountPath: {{ .mountPath }}
+            readOnly: true
           {{- end }}
           command:
           - /usr/local/bin/manager
@@ -76,9 +81,16 @@ spec:
             - name: GNUPGHOME
               value: /var/secrets/gpg
             {{- end }}
+            {{- range .Values.secretsAsEnvVars }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: {{ .secretKey }}
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if or .Values.gcp.enabled .Values.gpg.enabled }}
+      {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles }}
       volumes:
       {{- end }}
       {{- if .Values.gcp.enabled }}
@@ -99,6 +111,11 @@ spec:
           secretName: {{ .Values.gpg.secret2 }}
       - name: sops-gpg
         emptyDir: {}
+      {{- end }}
+      {{- range .Values.secretsAsFiles }}
+      - name: {{ .name }}
+        secret:
+          secretName: {{ .secretName }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

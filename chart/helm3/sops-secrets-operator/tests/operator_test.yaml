@@ -1,0 +1,1393 @@
+---
+suite: operator deployment tests
+templates:
+  - operator.yaml
+
+tests:
+
+  # api
+  - it: should set correct kind and apiVersion
+    asserts:
+      - isKind:
+          of: Deployment
+      - isAPIVersion:
+          of: apps/v1
+      - hasDocuments:
+          count: 1
+
+  # deployment metadata and labels
+  - it: should correctly render deployment metadata
+    release:
+      name: sops
+      namespace: sops
+    asserts:
+      - equal:
+          path: metadata.name
+          value: sops-sops-secrets-operator
+      - equal:
+          path: metadata.labels
+          value:
+            app.kubernetes.io/instance: sops
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: sops-secrets-operator
+            app.kubernetes.io/version: 0.1.4
+            helm.sh/chart: sops-secrets-operator-0.4.6
+
+  # template metadata and spec selector
+  - it: should correctly render template metadata and spec selector
+    release:
+      name: sops
+      namespace: sops
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/instance: sops
+            app.kubernetes.io/name: sops-secrets-operator
+      - equal:
+          path: spec.template.metadata.labels
+          value:
+            app.kubernetes.io/instance: sops
+            app.kubernetes.io/name: sops-secrets-operator
+
+  # replicas
+  - it: should correctly set default replicas
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 1
+
+  - it: should correctly set overriden replicas
+    set:
+      replicaCount: 5
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 5
+
+  # pod annotations
+  - it: pod annotations should be empty by default
+    asserts:
+      - isEmpty:
+          path: spec.template.metadata.annotations
+
+  - it: should render pod annotations if set in values
+    set:
+      podAnnotations:
+        abc: qqq
+        cde: zzz
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations
+          value:
+            abc: qqq
+            cde: zzz
+
+  # image pull secrets
+  - it: imagePullSecrets should be empty by default
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.imagePullSecrets
+
+  - it: should correctly render imagePullSecrets
+    set:
+      imagePullSecrets:
+        - name: my-harbor
+        - name: your-harbor
+    asserts:
+      - isNotEmpty:
+          path: spec.template.spec.imagePullSecrets
+      - equal:
+          path: spec.template.spec.imagePullSecrets[0].name
+          value: my-harbor
+      - equal:
+          path: spec.template.spec.imagePullSecrets[1].name
+          value: your-harbor
+
+  # service account name (TODO: full coverage of include sops-secrets-operator.fullname)
+  - it: should correctly render deployment metadata
+    release:
+      name: sops
+      namespace: sops
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: sops-sops-secrets-operator
+
+  # GPG init container
+  - it: should not create GPG init container by default
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.initContainers
+
+  - it: should create GPG init container if enabled
+    set:
+      gpg:
+        enabled: true
+    asserts:
+      - isNotEmpty:
+          path: spec.template.spec.initContainers
+
+  # container name
+  - it: should set default image settings wrong
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: sops-secrets-operator
+
+  # container image
+  - it: should set default image
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: isindir/sops-secrets-operator:0.1.4
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+
+  - it: should render nondefault image pull policy and image name
+    set:
+      image:
+        repository: myharbor.example.net/sops
+        tag: 0.42.0
+        pullPolicy: ifNotPresent
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: ifNotPresent
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: myharbor.example.net/sops:0.42.0
+
+#  # env var MONITORING_MICROSERVICE
+#  - it: should render MONITORING_MICROSERVICE env variable by default to Chart.name
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[0].name
+#          value: MONITORING_MICROSERVICE
+#      - equal:
+#          path: spec.template.spec.containers[0].env[0].value
+#          value: api-onboarding
+#
+#  - it: should render MONITORING_MICROSERVICE envvar to fullnameOverride if that set
+#    set:
+#      fullnameOverride: abc-qqq-cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[0].name
+#          value: MONITORING_MICROSERVICE
+#      - equal:
+#          path: spec.template.spec.containers[0].env[0].value
+#          value: abc-qqq-cde
+#
+#  # env var NODE_TLS_REJECT_UNAUTHORIZED
+#  - it: should not render NODE_TLS_REJECT_UNAUTHORIZED by default
+#    asserts:
+#      - notEqual:
+#          path: spec.template.spec.containers[0].env[1].name
+#          value: NODE_TLS_REJECT_UNAUTHORIZED
+#
+#  - it: should render NODE_TLS_REJECT_UNAUTHORIZED if set nodeTLSRejectUnauthorized
+#    set:
+#      nodeTLSRejectUnauthorized: true
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[1].name
+#          value: NODE_TLS_REJECT_UNAUTHORIZED
+#      - equal:
+#          path: spec.template.spec.containers[0].env[1].value
+#          value: "0"
+#
+#  # env var DB_MONGO_URL
+#  - it: should render DB_MONGO_URL by default via mongodb://
+#    set:
+#      mongo:
+#        host: hello
+#        port: 2222
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[1].name
+#          value: DB_MONGO_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[1].value
+#          value: "mongodb://hello:2222/api-roles"
+#
+#  - it: should render DB_MONGO_URL via mongodb+srv:// if enableKubernetesMongoDB set to false
+#    set:
+#      mongo:
+#        host: hello
+#        enableKubernetesMongoDB: false
+#        db: db-something
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[1].name
+#          value: DB_MONGO_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[1].value
+#          value: "mongodb+srv://hello/db-something"
+#
+#  # env var KEYCLOAK_USER
+#  - it: should render env var KEYCLOAK_USER
+#    release:
+#      name: cde
+#      namespace: abc
+#      revision: 9
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[2].name
+#          value: KEYCLOAK_USER
+#      - equal:
+#          path: spec.template.spec.containers[0].env[2].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[2].valueFrom.secretKeyRef.key
+#          value: keycloackAdmin
+#
+#  # env var KEYCLOAK_PASSWORD
+#  - it: should render env var KEYCLOAK_PASSWORD
+#    release:
+#      name: cde
+#      namespace: abc
+#      revision: 9
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[3].name
+#          value: KEYCLOAK_PASSWORD
+#      - equal:
+#          path: spec.template.spec.containers[0].env[3].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[3].valueFrom.secretKeyRef.key
+#          value: keycloackPassword
+#
+#  # env vars KEYCLOAK_AUTH_URL,KEYCLOAK_REALM_NAME,KEYCLOAK_CLIENT_ID
+#  - it: should render env var KEYCLOAK_AUTH_URL by default
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[4].name
+#          value: KEYCLOAK_AUTH_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[4].value
+#          value: https://this-is-wrong/auth
+#
+#  - it: should render env var KEYCLOAK_REALM_NAME by default
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[5].name
+#          value: KEYCLOAK_REALM_NAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[5].value
+#          value: KOMGO
+#
+#  - it: should render env var KEYCLOAK_CLIENT_ID by default
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[6].name
+#          value: KEYCLOAK_CLIENT_ID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[6].value
+#          value: web-app
+#
+#  - it: should render env var KEYCLOAK_CLIENT_ID by default
+#    set:
+#      keycloak:
+#        realm: KOMGO-NEW
+#        clientID: some-app
+#        authURL: https://keycloak/auth
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[4].value
+#          value: https://keycloak/auth
+#      - equal:
+#          path: spec.template.spec.containers[0].env[5].value
+#          value: KOMGO-NEW
+#      - equal:
+#          path: spec.template.spec.containers[0].env[6].value
+#          value: some-app
+#
+#  # env vars API_USERS_BASE_URL, API_NOTIF_BASE_URL, API_REGISTRY_BASE_URL, API_MIGRATIONS_BASE_URL, API_SIGNER_BASE_URL
+#  - it: should render env vars API URLs
+#    release:
+#      name: cde
+#      namespace: abc
+#      revision: 9
+#    set:
+#      kubeDNS: svc.cluster.komgo
+#      apiUsersURL: users
+#      apiNotifURL: notif
+#      apiRegistryURL: registry
+#      apiMigrationsURL: migrations
+#      apiSignerURL: signer
+#      ports:
+#        api:
+#          port: 8474
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[7].name
+#          value: API_USERS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[7].value
+#          value: "users.cde.svc.cluster.komgo:8474"
+#      - equal:
+#          path: spec.template.spec.containers[0].env[8].name
+#          value: API_NOTIF_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[8].value
+#          value: "notif.cde.svc.cluster.komgo:8474"
+#      - equal:
+#          path: spec.template.spec.containers[0].env[9].name
+#          value: API_REGISTRY_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[9].value
+#          value: "registry.cde.svc.cluster.komgo:8474"
+#      - equal:
+#          path: spec.template.spec.containers[0].env[10].name
+#          value: API_MIGRATIONS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[10].value
+#          value: "migrations.cde.svc.cluster.komgo:8474"
+#      - equal:
+#          path: spec.template.spec.containers[0].env[11].name
+#          value: API_SIGNER_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[11].value
+#          value: "signer.cde.svc.cluster.komgo:8474"
+#
+#  # env var HARBOR_URL
+#  - it: should render env var HARBOR_URL
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[12].name
+#          value: HARBOR_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[12].value
+#          value: this-is-wrong
+#
+#  - it: should render env var HARBOR_URL when values are set
+#    set:
+#      harborDetails:
+#        registry: qqq.abc
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[12].name
+#          value: HARBOR_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[12].value
+#          value: qqq.abc
+#
+#  # env vars HARBOR_ADMIN_USERNAME, HARBOR_ADMIN_PASSWORD
+#  - it: should render env var HARBOR_ADMIN_USERNAME
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[13].name
+#          value: HARBOR_ADMIN_USERNAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[13].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[13].valueFrom.secretKeyRef.key
+#          value: harborUser
+#
+#  - it: should render env var HARBOR_ADMIN_PASSWORD
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[14].name
+#          value: HARBOR_ADMIN_PASSWORD
+#      - equal:
+#          path: spec.template.spec.containers[0].env[14].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[14].valueFrom.secretKeyRef.key
+#          value: harborPassword
+#
+#  # env vars HARBOR_PROJECT_ID, HARBOR_THIRD_PARTY_PROJECT_ID
+#  - it: should render env var HARBOR_PROJECT_ID
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[15].name
+#          value: HARBOR_PROJECT_ID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[15].value
+#          value: this-is-wrong
+#
+#  - it: should render env var HARBOR_PROJECT_ID when values are set
+#    set:
+#      harborDetails:
+#        projectID: qqq.abc
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[15].name
+#          value: HARBOR_PROJECT_ID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[15].value
+#          value: qqq.abc
+#
+#  - it: should render env var HARBOR_THIRD_PARTY_PROJECT_ID
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[16].name
+#          value: HARBOR_THIRD_PARTY_PROJECT_ID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[16].value
+#          value: "8"
+#
+#  - it: should render env var HARBOR_THIRD_PARTY_PROJECT_ID when values are set
+#    set:
+#      harborDetails:
+#        thirdPartyProjectID: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[16].name
+#          value: HARBOR_THIRD_PARTY_PROJECT_ID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[16].value
+#          value: "41"
+#
+#  # env var COMMON_MQ_BASE_URL
+#  - it: should render env var COMMON_MQ_BASE_URL
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[17].name
+#          value: COMMON_MQ_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[17].value
+#          value: https://mq.this-is-wrong.net:443
+#
+#  - it: should render env var COMMON_MQ_BASE_URL when values are set
+#    set:
+#      commonMq:
+#        baseUrl: https://abc.example.net:323
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[17].name
+#          value: COMMON_MQ_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[17].value
+#          value: https://abc.example.net:323
+#
+#  # env vars COMMON_MQ_USERNAME, COMMON_MQ_PASSWORD
+#  - it: should render env var COMMON_MQ_USERNAME
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[18].name
+#          value: COMMON_MQ_USERNAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[18].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[18].valueFrom.secretKeyRef.key
+#          value: rabbitMQCommonUser
+#
+#  - it: should render env var COMMON_MQ_PASSWORD
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[19].name
+#          value: COMMON_MQ_PASSWORD
+#      - equal:
+#          path: spec.template.spec.containers[0].env[19].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[19].valueFrom.secretKeyRef.key
+#          value: rabbitMQCommonPassword
+#
+#  # env var INTERNAL_MQ_HOST
+#  - it: should render env var INTERNAL_MQ_HOST
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[20].name
+#          value: INTERNAL_MQ_HOST
+#      - equal:
+#          path: spec.template.spec.containers[0].env[20].value
+#          value: rabbitmq-internal
+#
+#  - it: should render env var INTERNAL_MQ_HOST when values are set
+#    set:
+#      internalMq:
+#        host: rabbitmq-internal-test
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[20].name
+#          value: INTERNAL_MQ_HOST
+#      - equal:
+#          path: spec.template.spec.containers[0].env[20].value
+#          value: rabbitmq-internal-test
+#
+#  # env vars INTERNAL_MQ_USERNAME, INTERNAL_MQ_PASSWORD
+#  - it: should render env var INTERNAL_MQ_USERNAME
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[21].name
+#          value: INTERNAL_MQ_USERNAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[21].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[21].valueFrom.secretKeyRef.key
+#          value: rabbitMQInternalAdmin
+#
+#  - it: should render env var INTERNAL_MQ_PASSWORD
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[22].name
+#          value: INTERNAL_MQ_PASSWORD
+#      - equal:
+#          path: spec.template.spec.containers[0].env[22].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[22].valueFrom.secretKeyRef.key
+#          value: rabbitMQInternalPassword
+#
+#  # env var CONTAINER_HOSTNAME
+#  - it: should render env var CONTAINER_HOSTNAME
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[23].name
+#          value: CONTAINER_HOSTNAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[23].value
+#          value: api-onboarding
+#
+#  - it: should render env var CONTAINER_HOSTNAME when values are set
+#    set:
+#      containerHostname: ctr-host
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[23].name
+#          value: CONTAINER_HOSTNAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[23].value
+#          value: ctr-host
+#
+#
+#  # env vars BLOCKCHAIN_HOST, BLOCKCHAIN_PORT, KALEIDO_USER, KALEIDO_PASSWORD
+#  - it: should render env var BLOCKCHAIN_HOST
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[24].name
+#          value: BLOCKCHAIN_HOST
+#      - equal:
+#          path: spec.template.spec.containers[0].env[24].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[24].valueFrom.secretKeyRef.key
+#          value: blockchainHost
+#
+#  - it: should render env var BLOCKCHAIN_PORT
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[25].name
+#          value: BLOCKCHAIN_PORT
+#      - equal:
+#          path: spec.template.spec.containers[0].env[25].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[25].valueFrom.secretKeyRef.key
+#          value: blockchainPort
+#
+#  - it: should render env var KALEIDO_USER
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[26].name
+#          value: KALEIDO_USER
+#      - equal:
+#          path: spec.template.spec.containers[0].env[26].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[26].valueFrom.secretKeyRef.key
+#          value: blockchainUser
+#
+#  - it: should render env var KALEIDO_PASSWORD
+#    release:
+#      name: cde
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[27].name
+#          value: KALEIDO_PASSWORD
+#      - equal:
+#          path: spec.template.spec.containers[0].env[27].valueFrom.secretKeyRef.name
+#          value: cde-api-onboarding-es
+#      - equal:
+#          path: spec.template.spec.containers[0].env[27].valueFrom.secretKeyRef.key
+#          value: blockchainPassword
+#
+#  # env var COMPANY_STATIC_ID
+#  - it: should render env var COMPANY_STATIC_ID
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[28].name
+#          value: COMPANY_STATIC_ID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[28].value
+#          value: this-is-wrong
+#
+#  - it: should render env var COMPANY_STATIC_ID when values are set
+#    set:
+#      staticID: black crow on a tombstone
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[28].name
+#          value: COMPANY_STATIC_ID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[28].value
+#          value: black crow on a tombstone
+#
+#  # env var LMS_MNID
+#  - it: should render env var LMS_MNID
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[29].name
+#          value: LMS_MNID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[29].value
+#          value: this-is-wrong
+#
+#  - it: should render env var LMS_MNID when values are set
+#    set:
+#      lms:
+#        lmsMnid: when crows tick on windows
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[29].name
+#          value: LMS_MNID
+#      - equal:
+#          path: spec.template.spec.containers[0].env[29].value
+#          value: when crows tick on windows
+#
+#  # env var LMS_CREATE_DEFAULT_SUPER_USER
+#  - it: should render env var LMS_CREATE_DEFAULT_SUPER_USER
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[30].name
+#          value: LMS_CREATE_DEFAULT_SUPER_USER
+#      - equal:
+#          path: spec.template.spec.containers[0].env[30].value
+#          value: this-is-wrong
+#
+#  - it: should render env var LMS_CREATE_DEFAULT_SUPER_USER when values are set
+#    set:
+#      lmsCreateDefaultSuperuser: true
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[30].name
+#          value: LMS_CREATE_DEFAULT_SUPER_USER
+#      - equal:
+#          path: spec.template.spec.containers[0].env[30].value
+#          value: "true"
+#
+#  # env var LMS_API_USERS_BASE_URL
+#  - it: should render env var LMS_API_USERS_BASE_URL using defaults
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].name
+#          value: LMS_API_USERS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].value
+#          value: this-is-wrong.this-is-wrong-lms.svc.cluster.local:8080
+#
+#  - it: should render env var LMS_API_USERS_BASE_URL using params on PROD
+#    set:
+#      deployment:
+#        environment:
+#          name: prod
+#      apiUsersURL: users-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].name
+#          value: LMS_API_USERS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].value
+#          value: users-api.my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_USERS_BASE_URL using params on UAT
+#    set:
+#      deployment:
+#        environment:
+#          name: uat
+#      apiUsersURL: users-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].name
+#          value: LMS_API_USERS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].value
+#          value: users-api.uat-my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_USERS_BASE_URL using params on Preview
+#    set:
+#      deployment:
+#        environment:
+#          name: preview
+#      apiUsersURL: users-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].name
+#          value: LMS_API_USERS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].value
+#          value: users-api.preview-my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_USERS_BASE_URL using params on Other Envs
+#    set:
+#      deployment:
+#        environment:
+#          name: dev-1
+#      apiUsersURL: users-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].name
+#          value: LMS_API_USERS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[31].value
+#          value: users-api.dev-1-lms.my-kube:41
+#
+#  # env var LMS_API_MIGRATIONS_BASE_URL
+#  - it: should render env var LMS_API_MIGRATIONS_BASE_URL using defaults
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].name
+#          value: LMS_API_MIGRATIONS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].value
+#          value: this-is-wrong.this-is-wrong-lms.svc.cluster.local:8080
+#
+#  - it: should render env var LMS_API_MIGRATIONS_BASE_URL using params on PROD
+#    set:
+#      deployment:
+#        environment:
+#          name: prod
+#      apiMigrationsURL: migrations-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].name
+#          value: LMS_API_MIGRATIONS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].value
+#          value: migrations-api.my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_MIGRATIONS_BASE_URL using params on UAT
+#    set:
+#      deployment:
+#        environment:
+#          name: uat
+#      apiMigrationsURL: migrations-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].name
+#          value: LMS_API_MIGRATIONS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].value
+#          value: migrations-api.uat-my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_MIGRATIONS_BASE_URL using params on Preview
+#    set:
+#      deployment:
+#        environment:
+#          name: preview
+#      apiMigrationsURL: migrations-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].name
+#          value: LMS_API_MIGRATIONS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].value
+#          value: migrations-api.preview-my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_MIGRATIONS_BASE_URL using params on Other Envs
+#    set:
+#      deployment:
+#        environment:
+#          name: dev-1
+#      apiMigrationsURL: migrations-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].name
+#          value: LMS_API_MIGRATIONS_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[32].value
+#          value: migrations-api.dev-1-lms.my-kube:41
+#
+#  # env var LMS_API_SIGNER_BASE_URL
+#  - it: should render env var LMS_API_SIGNER_BASE_URL using defaults
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].name
+#          value: LMS_API_SIGNER_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].value
+#          value: this-is-wrong.this-is-wrong-lms.svc.cluster.local:8080
+#
+#  - it: should render env var LMS_API_SIGNER_BASE_URL using params on PROD
+#    set:
+#      deployment:
+#        environment:
+#          name: prod
+#      apiSignerURL: signer-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].name
+#          value: LMS_API_SIGNER_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].value
+#          value: signer-api.my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_SIGNER_BASE_URL using params on UAT
+#    set:
+#      deployment:
+#        environment:
+#          name: uat
+#      apiSignerURL: signer-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].name
+#          value: LMS_API_SIGNER_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].value
+#          value: signer-api.uat-my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_SIGNER_BASE_URL using params on Preview
+#    set:
+#      deployment:
+#        environment:
+#          name: preview
+#      apiSignerURL: signer-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].name
+#          value: LMS_API_SIGNER_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].value
+#          value: signer-api.preview-my-lms-lms.my-kube:41
+#
+#  - it: should render env var LMS_API_SIGNER_BASE_URL using params on Other Envs
+#    set:
+#      deployment:
+#        environment:
+#          name: dev-1
+#      apiSignerURL: signer-api
+#      lms:
+#        domain: my-lms
+#      kubeDNS: my-kube
+#      ports:
+#        api:
+#          port: 41
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].name
+#          value: LMS_API_SIGNER_BASE_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[33].value
+#          value: signer-api.dev-1-lms.my-kube:41
+#
+#  # env var LMS_PUBLIC_URL
+#  - it: should render env var LMS_PUBLIC_URL
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[34].name
+#          value: LMS_PUBLIC_URL
+#      - isNull:
+#          path: spec.template.spec.containers[0].env[34].value
+#
+#  - it: should render env var LMS_PUBLIC_URL when values are set
+#    set:
+#      lms:
+#        lmsPublicURL: example.org
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[34].name
+#          value: LMS_PUBLIC_URL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[34].value
+#          value: example.org
+#
+#  # env var LMS_READINESS_CHECK_ACTIVE
+#  - it: should render env var LMS_READINESS_CHECK_ACTIVE
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[35].name
+#          value: LMS_READINESS_CHECK_ACTIVE
+#      - equal:
+#          path: spec.template.spec.containers[0].env[35].value
+#          value: "false"
+#
+#  - it: should render env var LMS_READINESS_CHECK_ACTIVE when values are set
+#    set:
+#      lmsReadinessCheckActive: true
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[35].name
+#          value: LMS_READINESS_CHECK_ACTIVE
+#      - equal:
+#          path: spec.template.spec.containers[0].env[35].value
+#          value: "true"
+#
+#  # env var ENV_NAME
+#  - it: should render env var ENV_NAME
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[36].name
+#          value: ENV_NAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[36].value
+#          value: "this-is-wrong"
+#
+#  - it: should render env var ENV_NAME when values are set
+#    set:
+#      env: dev-5
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[36].name
+#          value: ENV_NAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[36].value
+#          value: "dev-5"
+#
+#  # env var AWS_REGION
+#  - it: should render env var AWS_REGION
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[37].name
+#          value: AWS_REGION
+#      - equal:
+#          path: spec.template.spec.containers[0].env[37].value
+#          value: "this-is-wrong"
+#
+#  - it: should render env var AWS_REGION when values are set
+#    set:
+#      aws:
+#        region: us-east-1
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[37].name
+#          value: AWS_REGION
+#      - equal:
+#          path: spec.template.spec.containers[0].env[37].value
+#          value: "us-east-1"
+#
+#  # env vars LOGSTASH_HOST, LOGSTASH_PORT, MONITORING_DEPLOYMENT_ENVIRONMENT, MONITORING_DOMAIN_NAME
+#  - it: should render env vars LOGSTASH_HOST, LOGSTASH_PORT, MONITORING_DEPLOYMENT_ENVIRONMENT, MONITORING_DOMAIN_NAME
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[38].name
+#          value: LOGSTASH_HOST
+#      - isNull:
+#          path: spec.template.spec.containers[0].env[38].value
+#      - equal:
+#          path: spec.template.spec.containers[0].env[39].name
+#          value: LOGSTASH_PORT
+#      - isNull:
+#          path: spec.template.spec.containers[0].env[39].value
+#      - equal:
+#          path: spec.template.spec.containers[0].env[40].name
+#          value: MONITORING_DEPLOYMENT_ENVIRONMENT
+#      - isNull:
+#          path: spec.template.spec.containers[0].env[40].value
+#      - equal:
+#          path: spec.template.spec.containers[0].env[41].name
+#          value: MONITORING_DOMAIN_NAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[41].value
+#          value: "this-is-wrong"
+#
+#  - it: should render env vars LOGSTASH_HOST, LOGSTASH_PORT, MONITORING_DEPLOYMENT_ENVIRONMENT, MONITORING_DOMAIN_NAME when values are set
+#    set:
+#      domainName: example.org
+#      logstash:
+#        host: abc.com
+#        port: 9090
+#        env: dev-5
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[38].name
+#          value: LOGSTASH_HOST
+#      - equal:
+#          path: spec.template.spec.containers[0].env[38].value
+#          value: abc.com
+#      - equal:
+#          path: spec.template.spec.containers[0].env[39].name
+#          value: LOGSTASH_PORT
+#      - equal:
+#          path: spec.template.spec.containers[0].env[39].value
+#          value: "9090"
+#      - equal:
+#          path: spec.template.spec.containers[0].env[40].name
+#          value: MONITORING_DEPLOYMENT_ENVIRONMENT
+#      - equal:
+#          path: spec.template.spec.containers[0].env[40].value
+#          value: "dev-5"
+#      - equal:
+#          path: spec.template.spec.containers[0].env[41].name
+#          value: MONITORING_DOMAIN_NAME
+#      - equal:
+#          path: spec.template.spec.containers[0].env[41].value
+#          value: "example.org"
+#
+#  # env var MONGO_USE_SSL
+#  - it: should render env var MONGO_USE_SSL
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[45].name
+#          value: MONGO_USE_SSL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[45].value
+#          value: "true"
+#
+#  - it: should render env var MONGO_USE_SSL when values are set
+#    set:
+#      mongo:
+#        useSSL: false
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[45].name
+#          value: MONGO_USE_SSL
+#      - equal:
+#          path: spec.template.spec.containers[0].env[45].value
+#          value: "false"
+#
+#  # env var MONGO_CLIENT_PEM_BASE64
+#  - it: should render env var MONGO_CLIENT_PEM_BASE64
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[46].name
+#          value: MONGO_CLIENT_PEM_BASE64
+#      - equal:
+#          path: spec.template.spec.containers[0].env[46].valueFrom.configMapKeyRef.name
+#          value: komgo-mongodb
+#      - equal:
+#          path: spec.template.spec.containers[0].env[46].valueFrom.configMapKeyRef.key
+#          value: mongodb64.pem
+#
+#  - it: should render env var MONGO_CLIENT_PEM_BASE64 when values are set
+#    set:
+#      mongo:
+#        clientPemBase64: qqq
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[46].name
+#          value: MONGO_CLIENT_PEM_BASE64
+#      - equal:
+#          path: spec.template.spec.containers[0].env[46].value
+#          value: "qqq"
+#
+#  # env var MONGO_CA_CERT_BASE64
+#  - it: should render env var MONGO_CA_CERT_BASE64
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[47].name
+#          value: MONGO_CA_CERT_BASE64
+#      - equal:
+#          path: spec.template.spec.containers[0].env[47].valueFrom.configMapKeyRef.name
+#          value: komgo-mongodb
+#      - equal:
+#          path: spec.template.spec.containers[0].env[47].valueFrom.configMapKeyRef.key
+#          value: mongodb64.ca
+#
+#  - it: should render env var MONGO_CA_CERT_BASE64 when values are set
+#    set:
+#      mongo:
+#        caCertBase64: qqq
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[47].name
+#          value: MONGO_CA_CERT_BASE64
+#      - equal:
+#          path: spec.template.spec.containers[0].env[47].value
+#          value: "qqq"
+#
+#  # env var MONGO_CLIENT_KEY_PASSWORD
+#  - it: should render env var MONGO_CLIENT_KEY_PASSWORD
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[48].name
+#          value: MONGO_CLIENT_KEY_PASSWORD
+#      - isNull:
+#          path: spec.template.spec.containers[0].env[48].value
+#
+#  - it: should render env var MONGO_CLIENT_KEY_PASSWORD when values are set
+#    set:
+#      mongo:
+#        clientKeyPassword: abc111222
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].env[48].name
+#          value: MONGO_CLIENT_KEY_PASSWORD
+#      - equal:
+#          path: spec.template.spec.containers[0].env[48].value
+#          value: "abc111222"
+#
+#  # Liveness and Readiness probes and ports
+#  - it: should render defaults for Liveness probe
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+#          value: /v0/healthz
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.httpGet.port
+#          value: 8080
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.initialDelaySeconds
+#          value: 30
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.periodSeconds
+#          value: 10
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.failureThreshold
+#          value: 6
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.timeoutSeconds
+#          value: 5
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+#          value: /v0/ready
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.httpGet.port
+#          value: 8080
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.initialDelaySeconds
+#          value: 10
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.periodSeconds
+#          value: 10
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.failureThreshold
+#          value: 6
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.timeoutSeconds
+#          value: 5
+#
+#  - it: should render custom values for Liveness probe
+#    set:
+#      debug: true
+#      ports:
+#        api:
+#          port: 8989
+#        debug:
+#          port: 3344
+#      livenessProbe:
+#        failureThreshold: 5
+#        initialDelaySeconds: 31
+#        periodSeconds: 11
+#        timeoutSeconds: 6
+#        path: /healthz
+#      readinessProbe:
+#        failureThreshold: 5
+#        initialDelaySeconds: 11
+#        periodSeconds: 11
+#        timeoutSeconds: 6
+#        path: /ready
+#    asserts:
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+#          value: /healthz
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.httpGet.port
+#          value: 8989
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.initialDelaySeconds
+#          value: 31
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.periodSeconds
+#          value: 11
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.failureThreshold
+#          value: 5
+#      - equal:
+#          path: spec.template.spec.containers[0].livenessProbe.timeoutSeconds
+#          value: 6
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+#          value: /ready
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.httpGet.port
+#          value: 8989
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.initialDelaySeconds
+#          value: 11
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.periodSeconds
+#          value: 11
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.failureThreshold
+#          value: 5
+#      - equal:
+#          path: spec.template.spec.containers[0].readinessProbe.timeoutSeconds
+#          value: 6
+#      - equal:
+#          path: spec.template.spec.containers[0].ports[0].containerPort
+#          value: 8989
+#      - equal:
+#          path: spec.template.spec.containers[0].ports[1].containerPort
+#          value: 3344
+#
+#  # test that by default Resources, nodeSelector, tolerations, affinity are empty
+#  - it: should render defaults for Resources, nodeSelector, tolerations, affinity
+#    asserts:
+#      - isEmpty:
+#          path: spec.template.spec.containers[0].resources
+#      - isNull:
+#          path: spec.template.spec.nodeSelector
+#      - isNull:
+#          path: spec.template.spec.affinity
+#      - isNull:
+#          path: spec.template.spec.tolerations
+#
+#
+#  # test that custom Resources, nodeSelector, tolerations, affinity are rendered
+#  - it: should render customs for Resources, nodeSelector, tolerations, affinity
+#    set:
+#      resources:
+#        limits:
+#          cpu: 100m
+#        requests:
+#          cpu: 100m
+#          memory: 100Mi
+#      nodeSelector:
+#        disktype: ssd
+#      tolerations:
+#      - key: "key"
+#        operator: "Exists"
+#        effect: "NoSchedule"
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#            - matchExpressions:
+#              - key: kubernetes.io/e2e-az-name
+#                operator: In
+#                values:
+#                - e2e-az1
+#                - e2e-az2
+#          preferredDuringSchedulingIgnoredDuringExecution:
+#          - weight: 1
+#            preference:
+#              matchExpressions:
+#              - key: another-node-label-key
+#                operator: In
+#                values:
+#                - another-node-label-value
+#    asserts:
+#      - isNotEmpty:
+#          path: spec.template.spec.containers[0].resources
+#      - equal:
+#          path: spec.template.spec.containers[0].resources
+#          value:
+#            limits:
+#              cpu: 100m
+#            requests:
+#              cpu: 100m
+#              memory: 100Mi
+#      - isNotNull:
+#          path: spec.template.spec.nodeSelector
+#      - equal:
+#          path: spec.template.spec.nodeSelector
+#          value:
+#            disktype: ssd
+#      - equal:
+#          path: spec.template.spec.affinity
+#          value:
+#            nodeAffinity:
+#              requiredDuringSchedulingIgnoredDuringExecution:
+#                nodeSelectorTerms:
+#                - matchExpressions:
+#                  - key: kubernetes.io/e2e-az-name
+#                    operator: In
+#                    values:
+#                    - e2e-az1
+#                    - e2e-az2
+#              preferredDuringSchedulingIgnoredDuringExecution:
+#              - weight: 1
+#                preference:
+#                  matchExpressions:
+#                  - key: another-node-label-key
+#                    operator: In
+#                    values:
+#                    - another-node-label-value
+#      - equal:
+#          path: spec.template.spec.tolerations
+#          value:
+#            - key: "key"
+#              operator: "Exists"
+#              effect: "NoSchedule"
