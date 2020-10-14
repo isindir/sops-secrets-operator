@@ -91,7 +91,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	// reconciledSecrets := instanceEncrypted.Status.SecretsReconciled
 
 	// iterating over secret templates
-	r.Log.Info("Enetring template data loop", "sopssecret", req.NamespacedName)
+	r.Log.Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
 		// Define a new secret object
 		newSecret, err := newSecretForCR(instance, &secretTemplateValue, r.Log)
@@ -157,6 +157,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		foundSecret = foundSecret.DeepCopy()
 
 		foundSecret.StringData = newSecret.StringData
+		foundSecret.Data = map[string][]byte{}
 		foundSecret.Type = newSecret.Type
 		foundSecret.ObjectMeta.Annotations = newSecret.ObjectMeta.Annotations
 		foundSecret.ObjectMeta.Labels = newSecret.ObjectMeta.Labels
@@ -175,6 +176,13 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 				return reconcile.Result{}, err
 			}
+			r.Log.Info(
+				"Secret successfully refreshed",
+				"secret",
+				foundSecret.Name,
+				"namespace",
+				foundSecret.Namespace,
+			)
 		}
 	}
 
