@@ -87,6 +87,11 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | `gcp.enabled` | Node labels for operator pod assignment | `false` |
 | `gcp.svcAccSecretCustomName` | Name of the secret to create - will override default secret name if specified | `""` |
 | `gcp.svcAccSecret` | If `gcp.enabled` is `true`, this value must be specified as gcp service account secret json payload | `""` |
+| `azure.enabled` | If `true` azure secret will used/created depending on other values set. | `false` |
+| `azure.tenantId`| Tenant ID of the Azure Service principal to use for Key access | `''` |
+| `azure.clientId`| Client (Application) ID of the Azure Service principal to use for Key access | `''` |
+| `azure.clientSecret`| Client Secret of the Azure Service principal to use for Key access | `''` |
+| `azure.existingSecretName`| If set the named secret will be used to find the Azure SP credentials. | `''` |
 | `resources` | Operator container resources | `{}` |
 | `nodeSelector` | Node selector to use for pod configuration | `{}` |
 | `securityContext.enabled` | Enable securitycontext | `false` |
