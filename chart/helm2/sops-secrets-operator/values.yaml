@@ -31,7 +31,7 @@ gcp:
 
 # Azure KeyVault
 # If you enable this, you must either specify clientId, tenantId and clientSecret in values.yaml or you can reference
-# a secret you have created yourself via another means by specifying a name in svcAccExistingSecretName
+# a secret you have created yourself via another means by specifying a name in existingSecretName
 azure:
   enabled: false # if true Azure KeyVault will be used
   # Specify your credentials here or use existingSecretName below to use a pre-existing secret
