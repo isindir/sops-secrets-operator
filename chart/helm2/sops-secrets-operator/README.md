@@ -57,6 +57,14 @@ gcp:
 * Apply `sops-secrets-operator` CRD
 * Deploy helm chart specifying extra values file
 
+### Azure
+
+* Create a KeyVault if you don't have one already
+* Create a Key in that KeyVault
+* Create Service principal with permissions to use the key for Encryption/Decryption
+  * follow the [SOPS documentation](https://github.com/mozilla/sops#encrypting-using-azure-key-vault)
+* Either put Tenant ID, Client ID and Client Secret for the Service Principal in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable Azure in the Helm Chart by setting `azure.enabled: true` in values.yaml.
+
 ## Uninstalling the Chart
 
 To uninstall/delete the `my-release` deployment:
@@ -87,6 +95,11 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | `gcp.enabled` | Node labels for operator pod assignment | `false` |
 | `gcp.svcAccSecretCustomName` | Name of the secret to create - will override default secret name if specified | `""` |
 | `gcp.svcAccSecret` | If `gcp.enabled` is `true`, this value must be specified as gcp service account secret json payload | `""` |
+| `azure.enabled` | If `true` azure secret will used/created depending on other values set. | `false` |
+| `azure.tenantId`| Tenant ID of the Azure Service principal to use for Key access | `''` |
+| `azure.clientId`| Client (Application) ID of the Azure Service principal to use for Key access | `''` |
+| `azure.clientSecret`| Client Secret of the Azure Service principal to use for Key access | `''` |
+| `azure.existingSecretName`| If set the named secret will be used to find the Azure SP credentials. | `''` |
 | `resources` | Operator container resources | `{}` |
 | `nodeSelector` | Node selector to use for pod configuration | `{}` |
 | `securityContext.enabled` | Enable securitycontext | `false` |
