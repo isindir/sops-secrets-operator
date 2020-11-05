@@ -20,8 +20,10 @@
 .idea/
 *.tmproj
 .vscode/
+# Custom
 qqq.*
 abc.*
 *.qqq
 *.abc
 *.vim
+Makefile

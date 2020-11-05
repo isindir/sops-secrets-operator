@@ -41,6 +41,18 @@ azure:
   # Pre-existing secret must contain the keys tenantId, clientId and clientSecret with the appropriate values
   existingSecretName: '' # Name of a pre-existing secret containing Azure Service Principal Credentials (ClientID, ClientSecret, TenantID)
 
+secretsAsEnvVars: []  # configure custom secrets to be used as environment variables at runtime, see values.yaml
+#- name: SECRET_GREETING
+#  secretName: my-secret-greeting
+#  secretKey: greeting
+
+secretsAsFiles: []  # configure custom secrets to be mounted at runtime, see values.yaml
+# All files within secret will be mounted in "/etc/foo" - same as 1st example in k8s documentation
+# all secrets will be mounted as readonly
+#- name: foo
+#  mountPath: "/etc/foo"
+#  secretName: mysecret
+
 resources: {}  # Operator container resources
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
