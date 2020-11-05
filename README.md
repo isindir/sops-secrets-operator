@@ -75,6 +75,60 @@ helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
   --namespace sops --set gpg.enabled=true
 ```
 
+## Azure
+
+### Outline
+* Create a KeyVault if you don't have one already
+* Create a Key in that KeyVault
+* Create Service principal with permissions to use the key for Encryption/Decryption
+  * follow the [SOPS documentation](https://github.com/mozilla/sops#encrypting-using-azure-key-vault)
+* Either put Tenant ID, Client ID and Client Secret for the Service Principal in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable Azure in the Helm Chart by setting `azure.enabled: true` in values.yaml.
+
+### Login info in values.yaml
+
+```bash
+cat <<EOF > azure_values.yaml
+azure:
+  enabled: true
+  tenantId: 6ec4c881-32ee-4340-a456-d6ca65a42193
+  clientId: 9c325550-b264-4aee-ab6f-719771adda28
+  clientSecret: 'YOUR_CLIENT_SECRET'
+EOF
+
+kubectl create namespace sops
+
+helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
+  --namespace sops -f azure_values.yaml
+```
+
+### Use pre-existing secret for Azure login
+
+```bash
+cat <<EOF > azure_secret.yaml
+kind: Secret
+apiVersion: v1
+metadata:
+  name: azure-sp-credentials
+type: Opaque
+stringData:
+  clientId: 9c325550-b264-4aee-ab6f-719771adda28
+  tenantId: 6ec4c881-32ee-4340-a456-d6ca65a42193
+  clientSecret: 'YOUR_CLIENT_SECRET'
+EOF
+
+cat <<EOF > azure_values.yaml
+azure:
+  enabled: true
+  existingSecret: azure-sp-credentials
+EOF
+
+kubectl create namespace sops
+kubectl apply -n sops -f azure_secret.yaml
+
+helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
+  --namespace sops -f azure_values.yaml
+```
+
 ## SopsSecret Custom Resource File creation
 
 * create SopsSecret file, for example:

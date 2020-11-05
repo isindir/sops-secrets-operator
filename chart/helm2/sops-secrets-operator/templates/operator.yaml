@@ -76,6 +76,27 @@ spec:
             - name: GNUPGHOME
               value: /var/secrets/gpg
             {{- end }}
+            {{- if .Values.azure.enabled }}
+            {{- $secretname := printf "%s-azure-secret" (include "sops-secrets-operator.name" .) -}}
+            {{- if .Values.azure.existingSecretName }}
+            {{- $secretname = .Values.azure.existingSecretName -}}
+            {{- end }}
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretname }}
+                  key: tenantId
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretname }}
+                  key: clientId
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretname }}
+                  key: clientSecret
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- if or .Values.gcp.enabled .Values.gpg.enabled }}
