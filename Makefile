@@ -31,6 +31,13 @@ package-helm:
 			helm repo index . --url https://isindir.github.io/sops-secrets-operator ) ; \
 	}
 
+## test-helm: test helm charts
+test-helm:
+	@{ \
+		$(MAKE) -C chart/helm2/sops-secrets-operator all ; \
+		$(MAKE) -C chart/helm3/sops-secrets-operator all ; \
+	}
+
 ## test: Run tests
 test: generate fmt vet manifests
 	USE_EXISTING_CLUSTER=${USE_EXISTING_CLUSTER} go test ./... -coverprofile cover.out
@@ -130,6 +137,12 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+## pre-commit: update pre-commit
+pre-commit:
+	pre-commit install
+	pre-commit autoupdate
+	pre-commit run -a
 
 .PHONY: help
 ## help: prints this help message

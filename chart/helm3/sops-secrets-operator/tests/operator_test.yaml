@@ -1,0 +1,280 @@
+---
+suite: operator deployment tests
+templates:
+  - operator.yaml
+
+tests:
+
+  # api
+  - it: should set correct kind and apiVersion
+    asserts:
+      - isKind:
+          of: Deployment
+      - isAPIVersion:
+          of: apps/v1
+      - hasDocuments:
+          count: 1
+
+  # deployment metadata and labels
+  - it: should correctly render deployment metadata
+    release:
+      name: sops
+      namespace: sops
+    asserts:
+      - equal:
+          path: metadata.name
+          value: sops-sops-secrets-operator
+      - equal:
+          path: metadata.labels
+          value:
+            app.kubernetes.io/instance: sops
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: sops-secrets-operator
+            app.kubernetes.io/version: 0.1.5
+            helm.sh/chart: sops-secrets-operator-0.4.8
+
+  # template metadata and spec selector
+  - it: should correctly render template metadata and spec selector
+    release:
+      name: sops
+      namespace: sops
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/instance: sops
+            app.kubernetes.io/name: sops-secrets-operator
+      - equal:
+          path: spec.template.metadata.labels
+          value:
+            app.kubernetes.io/instance: sops
+            app.kubernetes.io/name: sops-secrets-operator
+
+  # replicas
+  - it: should correctly set default replicas
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 1
+
+  - it: should correctly set overriden replicas
+    set:
+      replicaCount: 5
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 5
+
+  # pod annotations
+  - it: pod annotations should be empty by default
+    asserts:
+      - isEmpty:
+          path: spec.template.metadata.annotations
+
+  - it: should render pod annotations if set in values
+    set:
+      podAnnotations:
+        abc: qqq
+        cde: zzz
+    asserts:
+      - equal:
+          path: spec.template.metadata.annotations
+          value:
+            abc: qqq
+            cde: zzz
+
+  # image pull secrets
+  - it: imagePullSecrets should be empty by default
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.imagePullSecrets
+
+  - it: should correctly render imagePullSecrets
+    set:
+      imagePullSecrets:
+        - name: my-harbor
+        - name: your-harbor
+    asserts:
+      - isNotEmpty:
+          path: spec.template.spec.imagePullSecrets
+      - equal:
+          path: spec.template.spec.imagePullSecrets[0].name
+          value: my-harbor
+      - equal:
+          path: spec.template.spec.imagePullSecrets[1].name
+          value: your-harbor
+
+  # service account name (TODO: full coverage of include sops-secrets-operator.fullname)
+  - it: should correctly render deployment metadata
+    release:
+      name: sops
+      namespace: sops
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: sops-sops-secrets-operator
+
+  # GPG init container
+  - it: should not create GPG init container by default
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.initContainers
+
+  - it: should create GPG init container if enabled
+    set:
+      gpg:
+        enabled: true
+    asserts:
+      - isNotEmpty:
+          path: spec.template.spec.initContainers
+
+  # container name
+  - it: should set default image settings wrong
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].name
+          value: sops-secrets-operator
+
+  # container image and pull policy
+  - it: should set default image
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: isindir/sops-secrets-operator:0.1.5
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+
+  - it: should render nondefault image pull policy and image name
+    set:
+      image:
+        repository: myharbor.example.net/sops
+        tag: 0.42.0
+        pullPolicy: ifNotPresent
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: ifNotPresent
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: myharbor.example.net/sops:0.42.0
+
+  # container volume mounts
+  - it: should render empty set of volume mounts by default
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.containers[0].volumeMounts
+
+  - it: should render gcp volume mount if enabled
+    set:
+      gcp:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /var/secrets/google
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: sops-operator-gke-svc-account
+
+  - it: should render gpg volume mounts if enabled
+    set:
+      gpg:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /var/secrets/gpg
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: sops-gpg
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[1].mountPath
+          value: /var/secrets/gpg-secrets
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[1].name
+          value: sops-operator-gpg-keys1
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[2].mountPath
+          value: /var/secrets/gpg-secrets/private-keys-v1.d
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[2].name
+          value: sops-operator-gpg-keys2
+
+  - it: should render secret volume mounts if set
+    set:
+      secretsAsFiles:
+      - name: foo
+        mountPath: "/etc/foo"
+        secretName: mysecret
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /etc/foo
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: foo
+
+  # default env vars
+  - it: by default renders only one variable
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+  # env var GOOGLE_APPLICATION_CREDENTIALS
+  - it: if gcp enabled adds GOOGLE_APPLICATION_CREDENTIALS env var
+    set:
+      gcp:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[1]
+          value:
+            name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/google/key.json
+
+  # env var GNUPGHOME
+  - it: if gpg enabled adds GNUPGHOME env var
+    set:
+      gpg:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[1]
+          value:
+            name: GNUPGHOME
+            value: /var/secrets/gpg
+
+  # custom env vars
+  - it: if secretsAsEnvVars adds new env vars
+    set:
+      secretsAsEnvVars:
+      - name: SECRET_GREETING
+        secretName: my-secret-greeting
+        secretKey: greeting
+      - name: ANOTHER_SECRET_GREETING
+        secretName: another-secret-greeting
+        secretKey: greeting
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SECRET_GREETING
+              valueFrom:
+                secretKeyRef:
+                  key: greeting
+                  name: my-secret-greeting
+            - name: ANOTHER_SECRET_GREETING
+              valueFrom:
+                secretKeyRef:
+                  key: greeting
+                  name: another-secret-greeting
