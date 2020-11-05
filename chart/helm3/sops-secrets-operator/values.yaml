@@ -29,6 +29,18 @@ gcp:
   svcAccSecretCustomName: ''  # Name of the secret to create - will override default secret name if specified
   svcAccSecret: ''  # If `gcp.enabled` is `true`, this value must be specified as GCP service account secret json payload
 
+# Azure KeyVault
+# If you enable this, you must either specify clientId, tenantId and clientSecret in values.yaml or you can reference
+# a secret you have created yourself via another means by specifying a name in svcAccExistingSecretName
+azure:
+  enabled: false # if true Azure KeyVault will be used
+  # Specify your credentials here or use svcAccExistingSecretName below to use a pre-existing secret
+  svcAccTenantId: '' # TenantID of Azure Service principal to use
+  svcAccClientId: '' # ClientID (Application ID) of Azure Service Principal to use
+  svcAccClientSecret: '' # Client Secret of Azure Service Principal
+  # Pre-existing secret must contain the keys tenantId, clientId and clientSecret with the appropriate values
+  svcAccExistingSecretName: '' # Name of a pre-existing secret containing Azure Service Principal Credentials (ClientID, ClientSecret, TenantID)
+
 resources: {}  # Operator container resources
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
