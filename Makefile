@@ -1,9 +1,9 @@
 SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.1.5
+SOPS_SEC_OPERATOR_VERSION := 0.1.6
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_TOOLS_VERSION := "v0.2.5"
+CONTROLLER_TOOLS_VERSION := "v0.3.0"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -21,6 +21,11 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 all: manager
+
+## clean: cleans dependency directories
+clean:
+	rm -fr $$( which controller-gen )
+	rm -fr ./vendor
 
 ## package-helm: repackage helm charts
 package-helm:
@@ -43,7 +48,7 @@ test: generate fmt vet manifests
 	USE_EXISTING_CLUSTER=${USE_EXISTING_CLUSTER} go test ./... -coverprofile cover.out
 
 ## manager: Build manager binary
-manager: generate fmt vet
+manager: generate fmt vet manifests
 	go build -o bin/manager main.go
 
 ## run: Run against the configured Kubernetes cluster in ~/.kube/config
