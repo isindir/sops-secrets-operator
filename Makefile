@@ -1,9 +1,9 @@
 SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.1.5
+SOPS_SEC_OPERATOR_VERSION := 0.1.6
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_TOOLS_VERSION := "v0.2.5"
+CONTROLLER_TOOLS_VERSION := "v0.4.0"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true

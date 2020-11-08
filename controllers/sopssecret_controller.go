@@ -147,7 +147,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			r.Status().Update(context.Background(), instanceEncrypted)
 
 			return reconcile.Result{}, fmt.Errorf(
-				"secret/%s in %s isn't currently owned by sops-secrets-operator",
+				"secret/%s in %s has a conflict with reconciling sops secret, potential reasons: target k8s secret already existed or managed secret duplicated in multiple sops secrets",
 				foundSecret.Name,
 				foundSecret.Namespace,
 			)
