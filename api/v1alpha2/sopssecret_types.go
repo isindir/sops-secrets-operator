@@ -78,6 +78,18 @@ type AzureKmsItem struct {
 	CreationDate string `json:"created_at,omitempty"`
 }
 
+// HcVaultItem defines Hashicorp Vault Key specific encryption details
+type HcVaultItem struct {
+	// +optional
+	VaultAddress string `json:"vault_address,omitempty"`
+	// +optional
+	EnginePath string `json:"engine_path,omitempty"`
+	// +optional
+	KeyName string `json:"key_name,omitempty"`
+	// +optional
+	CreationDate string `json:"created_at,omitempty"`
+}
+
 // GcpKmsDataItem defines GCP KMS Key specific encryption details
 type GcpKmsDataItem struct {
 	// +optional
@@ -101,6 +113,10 @@ type SopsMetadata struct {
 	// AzureKms configuration
 	// +optional
 	AzureKms []AzureKmsItem `json:"azure_kv,omitempty"`
+
+	// HashicorpKms configurarion
+	// +optional
+	HcVault []HcVaultItem `json:"hc_vault,omitempty"`
 
 	// GcpKms configuration
 	// +optional

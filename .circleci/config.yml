@@ -203,6 +203,7 @@ jobs:
 
             # Dump cluster info
             kubectl cluster-info
+            which kubectl
             kubectl version
             kubectl describe node k3d-operator-server-0
             kubectl describe node k3d-operator-agent-0
