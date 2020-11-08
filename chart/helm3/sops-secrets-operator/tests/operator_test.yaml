@@ -140,7 +140,7 @@ tests:
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
-          value: isindir/sops-secrets-operator:0.1.5
+          value: isindir/sops-secrets-operator:0.1.6
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always
