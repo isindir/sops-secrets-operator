@@ -31,7 +31,7 @@ tests:
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
             app.kubernetes.io/version: 0.1.6
-            helm.sh/chart: sops-secrets-operator-0.4.9
+            helm.sh/chart: sops-secrets-operator-0.6.0
 
   # template metadata and spec selector
   - it: should correctly render template metadata and spec selector

@@ -48,7 +48,7 @@ test: generate fmt vet manifests
 	USE_EXISTING_CLUSTER=${USE_EXISTING_CLUSTER} go test ./... -coverprofile cover.out
 
 ## manager: Build manager binary
-manager: generate fmt vet
+manager: generate fmt vet manifests
 	go build -o bin/manager main.go
 
 ## run: Run against the configured Kubernetes cluster in ~/.kube/config
