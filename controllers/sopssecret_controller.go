@@ -87,9 +87,6 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	// totalSecrets := len(instance.Spec.SecretsTemplate)
-	// reconciledSecrets := instanceEncrypted.Status.SecretsReconciled
-
 	// iterating over secret templates
 	r.Log.Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
@@ -199,6 +196,7 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha2.SopsSecret{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }
 
@@ -286,7 +284,7 @@ func getSecretType(paramType string) corev1.SecretType {
 	return kubeSecretType
 }
 
-// decryptSopsSecretInstance decrypts data_template
+// decryptSopsSecretInstance decrypts spec.secretTemplates
 func decryptSopsSecretInstance(
 	instanceEncrypted *isindirv1alpha2.SopsSecret,
 	reqLogger logr.Logger,

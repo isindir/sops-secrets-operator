@@ -83,7 +83,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | ------------------------ | ----------------------- | -------------- |
 | `replicaCount` | Deployment replica count  - should not be modified | `1` |
 | `image.repository` | Operator image | `"isindir/sops-secrets-operator"` |
-| `image.tag` | Operator image tag | `"0.1.5"` |
+| `image.tag` | Operator image tag | `"0.1.7"` |
 | `image.pullPolicy` | Operator image pull policy | `"Always"` |
 | `imagePullSecrets` | Secrets to pull image from private docker repository | `[]` |
 | `nameOverride` | Overrides auto-generated short resource name | `""` |
@@ -96,11 +96,11 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | `gcp.enabled` | Node labels for operator pod assignment | `false` |
 | `gcp.svcAccSecretCustomName` | Name of the secret to create - will override default secret name if specified | `""` |
 | `gcp.svcAccSecret` | If `gcp.enabled` is `true`, this value must be specified as gcp service account secret json payload | `""` |
-| `azure.enabled` | If `true` azure secret will used/created depending on other values set. | `false` |
-| `azure.tenantId`| Tenant ID of the Azure Service principal to use for Key access | `''` |
-| `azure.clientId`| Client (Application) ID of the Azure Service principal to use for Key access | `''` |
-| `azure.clientSecret`| Client Secret of the Azure Service principal to use for Key access | `''` |
-| `azure.existingSecretName`| If set the named secret will be used to find the Azure SP credentials. | `''` |
+| `azure.enabled` | If true azure keyvault will be used | `false` |
+| `azure.tenantId` | Tenantid of azure service principal to use | `""` |
+| `azure.clientId` | Clientid (application id) of azure service principal to use | `""` |
+| `azure.clientSecret` | Client secret of azure service principal | `""` |
+| `azure.existingSecretName` | Name of a pre-existing secret containing azure service principal credentials (clientid, clientsecret, tenantid) | `""` |
 | `secretsAsEnvVars` | Configure custom secrets to be used as environment variables at runtime, see values.yaml | `[]` |
 | `secretsAsFiles` | Configure custom secrets to be mounted at runtime, see values.yaml | `[]` |
 | `resources` | Operator container resources | `{}` |
