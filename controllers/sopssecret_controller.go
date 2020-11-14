@@ -228,6 +228,9 @@ func newSecretForCR(
 	}
 
 	reqLogger.Info("Processing", "sopssecret",
+		fmt.Sprintf(
+			"%s.%s.%s",
+			cr.Kind,
 			cr.APIVersion,
 			cr.Name,
 		),
