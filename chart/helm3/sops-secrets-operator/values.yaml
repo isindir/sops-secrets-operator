@@ -80,7 +80,6 @@ affinity: {}  # Node affinity for pod assignment
 rbac:
   enabled: true  # Create and use RBAC resources
 
-## A list of additional environment variables
-extraEnv:
-  #- name: AWS_SDK_LOAD_CONFIG
-  #  value: "1"
+extraEnv: []  # A list of additional environment variables
+#- name: AWS_SDK_LOAD_CONFIG
+#  value: "1"

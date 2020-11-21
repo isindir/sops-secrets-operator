@@ -112,6 +112,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | `tolerations` | Tolerations to be applied to operator pod | `[]` |
 | `affinity` | Node affinity for pod assignment | `{}` |
 | `rbac.enabled` | Create and use rbac resources | `true` |
+| `extraEnv` | A list of additional environment variables | `[]` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 

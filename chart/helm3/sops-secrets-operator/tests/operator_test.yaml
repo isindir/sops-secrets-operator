@@ -31,7 +31,7 @@ tests:
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
             app.kubernetes.io/version: 0.1.7
-            helm.sh/chart: sops-secrets-operator-0.6.1
+            helm.sh/chart: sops-secrets-operator-0.6.2
 
   # template metadata and spec selector
   - it: should correctly render template metadata and spec selector
@@ -278,3 +278,20 @@ tests:
                 secretKeyRef:
                   key: greeting
                   name: another-secret-greeting
+
+  # custom non secret env vars
+  - it: if extraEnv is set adds new env vars
+    set:
+      extraEnv:
+      - name: AWS_SDK_LOAD_CONFIG
+        value: "1"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AWS_SDK_LOAD_CONFIG
+              value: "1"
