@@ -111,7 +111,7 @@ spec:
             {{- end }}
             {{- range $env := .Values.extraEnv }}
             - name: {{ .name }}
-              value: {{ .value }}
+              value: {{ .value | quote }}
             {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
