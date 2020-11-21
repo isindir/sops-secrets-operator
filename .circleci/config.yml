@@ -86,7 +86,7 @@ jobs:
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v3.0.1
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.3.4
+      HELM_VERSION: v3.4.1
       # https://golang.org/dl/
       GOLANG_VERSION: 1.14.9
       # https://github.com/kubernetes-sigs/kubebuilder/releases
@@ -96,7 +96,7 @@ jobs:
       # https://github.com/kubernetes-sigs/kustomize/releases
       KUSTOMIZE_VERSION: v3.8.3
       # https://github.com/quintush/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.2.4
+      HELM_UNITTEST_VERSION: 0.2.5
       # https://github.com/instrumenta/kubeval/releases
       KUBEVAL_VERSION: 0.15.0
 
