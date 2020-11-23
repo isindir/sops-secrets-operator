@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/go-logr/logr"
 	"github.com/sirupsen/logrus"
@@ -71,20 +72,14 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	instance, err := decryptSopsSecretInstance(instanceEncrypted, r.Log)
 	if err != nil {
-		r.Log.Info(
-			"Decryption error",
-			"sopssecret",
-			req.NamespacedName,
-			"error",
-			err,
-		)
 		//instance.Status.SecretsTotal = len(instance.Spec.SecretsTemplate)
 		instanceEncrypted.Status.Message = "Decryption error"
 
 		// will not process instance error as we are already in error mode here
 		r.Status().Update(context.Background(), instanceEncrypted)
 
-		return reconcile.Result{}, err
+		// Error conditon, but don't fail controller as it will not help, the actual error is already logged
+		return reconcile.Result{}, nil
 	}
 
 	// iterating over secret templates
@@ -96,7 +91,14 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			instanceEncrypted.Status.Message = "New child secret creation error"
 			r.Status().Update(context.Background(), instanceEncrypted)
 
-			return reconcile.Result{}, err
+			r.Log.Info(
+				"New child secret creation error",
+				"sopssecret",
+				req.NamespacedName,
+				"error",
+				err,
+			)
+			return reconcile.Result{}, nil
 		}
 
 		// Set SopsSecret instance as the owner and controller
@@ -108,7 +110,14 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			instanceEncrypted.Status.Message = "Setting controller ownership of the child secret error"
 			r.Status().Update(context.Background(), instanceEncrypted)
 
-			return reconcile.Result{}, err
+			r.Log.Info(
+				"Setting controller ownership of the child secret error",
+				"sopssecret",
+				req.NamespacedName,
+				"error",
+				err,
+			)
+			return reconcile.Result{}, nil
 		}
 
 		// Check if this Secret already exists
@@ -136,18 +145,28 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			instanceEncrypted.Status.Message = "Unknown Error"
 			r.Status().Update(context.Background(), instanceEncrypted)
 
-			return reconcile.Result{}, err
+			r.Log.Info(
+				"Unknown Error",
+				"sopssecret",
+				req.NamespacedName,
+				"error",
+				err,
+			)
+			return reconcile.Result{}, nil
 		}
 
 		if !metav1.IsControlledBy(foundSecret, instance) {
 			instanceEncrypted.Status.Message = "Child secret is not owned by controller error"
 			r.Status().Update(context.Background(), instanceEncrypted)
 
-			return reconcile.Result{}, fmt.Errorf(
-				"secret/%s in %s has a conflict with reconciling request sops secret, potential reasons: target k8s secret already existed or managed secret duplicated in multiple sops secrets",
-				foundSecret.Name,
-				foundSecret.Namespace,
+			r.Log.Info(
+				"Child secret is not owned by controller or sopssecret Error",
+				"sopssecret",
+				req.NamespacedName,
+				"error",
+				fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
 			)
+			return reconcile.Result{}, nil
 		}
 
 		origSecret := foundSecret
@@ -171,7 +190,14 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 				instanceEncrypted.Status.Message = "Child secret update error"
 				r.Status().Update(context.Background(), instanceEncrypted)
 
-				return reconcile.Result{}, err
+				r.Log.Info(
+					"Child secret update error",
+					"sopssecret",
+					req.NamespacedName,
+					"error",
+					err,
+				)
+				return reconcile.Result{}, nil
 			}
 			r.Log.Info(
 				"Secret successfully refreshed",
@@ -186,13 +212,24 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	instanceEncrypted.Status.Message = "Healthy"
 	r.Status().Update(context.Background(), instanceEncrypted)
 
+	r.Log.Info(
+		"SopsSecret is Healthy",
+		"sopssecret",
+		req.NamespacedName,
+	)
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager - setup with manager
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
+	// Set logging level
 	sopslogging.SetLevel(logrus.InfoLevel)
+
+	// Set logrus logs to be discarded
+	for k := range sopslogging.Loggers {
+		sopslogging.Loggers[k].Out = ioutil.Discard
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha2.SopsSecret{}).
@@ -294,6 +331,8 @@ func decryptSopsSecretInstance(
 	if err != nil {
 		reqLogger.Info(
 			"Failed to convert encrypted sops secret to bytes[]",
+			"sopssecret",
+			fmt.Sprintf("%s/%s", instanceEncrypted.Namespace, instanceEncrypted.Name),
 			"error",
 			err,
 		)
@@ -304,6 +343,8 @@ func decryptSopsSecretInstance(
 	if err != nil {
 		reqLogger.Info(
 			"Failed to Decrypt encrypted sops secret instance",
+			"sopssecret",
+			fmt.Sprintf("%s/%s", instanceEncrypted.Namespace, instanceEncrypted.Name),
 			"error",
 			err,
 		)
@@ -315,6 +356,8 @@ func decryptSopsSecretInstance(
 	if err != nil {
 		reqLogger.Info(
 			"Failed to Unmarshal decrypted sops secret instance",
+			"sopssecret",
+			fmt.Sprintf("%s/%s", instanceEncrypted.Namespace, instanceEncrypted.Name),
 			"error",
 			err,
 		)
