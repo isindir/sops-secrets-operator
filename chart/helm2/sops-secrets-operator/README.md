@@ -1,3 +1,7 @@
+# !!! Depricated !!!
+
+Development of helm chart for helm v2 is stopped.
+
 # sops-secrets-operator
 
 Installs [sops-secrets-operator](https://github.com/isindir/sops-secrets-operator.git) to provide encrypted secrets in Weaveworks GitOps Flux environment.

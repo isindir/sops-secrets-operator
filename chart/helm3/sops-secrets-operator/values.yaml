@@ -6,7 +6,7 @@ replicaCount: 1  # Deployment replica count  - should not be modified
 
 image:
   repository: isindir/sops-secrets-operator  # Operator image
-  tag: 0.1.8  # Operator image tag
+  tag: 0.1.9  # Operator image tag
   pullPolicy: Always  # Operator image pull policy
 
 imagePullSecrets: []  # Secrets to pull image from private docker repository
@@ -18,6 +18,8 @@ podAnnotations: {}  # Annotations to be added to operator pod
 
 serviceAccount:
   annotations: {} # Annotations to be added to the service account
+
+requeueAfter: 5 # Requeue decryption errors for reconciliation after 5 minutes.
 
 gpg:
   enabled: false  # If `true` GCP secret will be created from provided value and mounted as environment variable

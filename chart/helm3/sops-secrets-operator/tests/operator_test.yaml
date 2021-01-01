@@ -30,8 +30,8 @@ tests:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
-            app.kubernetes.io/version: 0.1.8
-            helm.sh/chart: sops-secrets-operator-0.6.3
+            app.kubernetes.io/version: 0.1.9
+            helm.sh/chart: sops-secrets-operator-0.6.4
 
   # template metadata and spec selector
   - it: should correctly render template metadata and spec selector
@@ -140,7 +140,7 @@ tests:
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
-          value: isindir/sops-secrets-operator:0.1.8
+          value: isindir/sops-secrets-operator:0.1.9
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always
@@ -250,6 +250,57 @@ tests:
             name: GNUPGHOME
             value: /var/secrets/gpg
 
+  # Azure env vars
+  - it: should render Azure env vars if enabled, using existing secret
+    set:
+      azure:
+        enabled: true
+        tenantId: 'one-two-three'
+        clientId: 'three-two-one'
+        existingSecretName: 'existing-azure-secret'
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[1]
+          value:
+            name: AZURE_TENANT_ID
+            valueFrom:
+              secretKeyRef:
+                name: existing-azure-secret
+                key: tenantId
+      - equal:
+          path: spec.template.spec.containers[0].env[2]
+          value:
+            name: AZURE_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: existing-azure-secret
+                key: clientId
+      - equal:
+          path: spec.template.spec.containers[0].env[3]
+          value:
+            name: AZURE_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: existing-azure-secret
+                key: clientSecret
+
+  - it: should render Azure env vars if enabled, using generated secret
+    set:
+      azure:
+        enabled: true
+        tenantId: 'one-two-three'
+        clientId: 'three-two-one'
+        clientSecret: 'my-azure-secret'
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[1]
+          value:
+            name: AZURE_TENANT_ID
+            valueFrom:
+              secretKeyRef:
+                name: sops-secrets-operator-azure-secret
+                key: tenantId
+
   # custom env vars
   - it: if secretsAsEnvVars adds new env vars
     set:
@@ -295,3 +346,113 @@ tests:
                   fieldPath: metadata.name
             - name: AWS_SDK_LOAD_CONFIG
               value: "1"
+
+  # controller container resources
+  - it: should not render container resources by default
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.containers[0].resources
+
+  - it: should render container resources if specified
+    set:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources
+          value:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+  # pod volumes
+  - it: should not render pod volumes by default
+    asserts:
+      - isEmpty:
+          path: spec.template.spec.volumes
+
+  # GCP volumes
+  - it: should render GCP volumes
+    set:
+      gcp:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: sops-operator-gke-svc-account
+              secret:
+                secretName: sops-secrets-operator-gcp-secret
+
+  - it: should render GCP volume with custom name
+    set:
+      gcp:
+        enabled: true
+        svcAccSecretCustomName: my-svc-account-gcp
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: sops-operator-gke-svc-account
+              secret:
+                secretName: my-svc-account-gcp
+
+  # GPG volumes
+  - it: should render GPG volumes
+    set:
+      gpg:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: sops-operator-gpg-keys1
+              secret:
+                secretName: gpg1
+            - name: sops-operator-gpg-keys2
+              secret:
+                secretName: gpg2
+            - name: sops-gpg
+              emptyDir: {}
+
+  - it: should render GPG volumes with custom secret names
+    set:
+      gpg:
+        enabled: true
+        secret1: secret-gpg
+        secret2: secret-gpg
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: sops-operator-gpg-keys1
+              secret:
+                secretName: secret-gpg
+            - name: sops-operator-gpg-keys2
+              secret:
+                secretName: secret-gpg
+            - name: sops-gpg
+              emptyDir: {}
+
+  # secretsAsFiles volumes
+  - it: should render custom secrets as files
+    set:
+      secretsAsFiles:
+      - name: foo
+        mountPath: "/etc/foo"
+        secretName: mysecret
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: foo
+              secret:
+                secretName: mysecret
