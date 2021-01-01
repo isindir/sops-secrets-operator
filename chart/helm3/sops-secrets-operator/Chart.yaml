@@ -1,6 +1,6 @@
 apiVersion: v2
-version: 0.6.3
-appVersion: 0.1.8
+version: 0.6.4
+appVersion: 0.1.9
 type: application
 description: sops secrets operator
 name: sops-secrets-operator
@@ -9,3 +9,21 @@ sources:
 maintainers:
 - name: isindir
   email: isindir@users.sf.net
+metadata:
+  annotations:
+    artifacthub.io/operator: "true"
+    artifacthub.io/links:
+    - name: "SOPS: Secrets OPerationS - Kubernetes Operator github project"
+      url: "https://github.com/isindir/sops-secrets-operator.git"
+    - name: "SOPS: Secrets OPerationS"
+      url: "https://github.com/mozilla/sops"
+    artifacthub.io/maintainers:
+    - name: isindir
+      email: isindir@users.sf.net
+    artifacthub.io/operatorCapabilities: "Full Lifecycle"
+    artifacthub.io/crds:
+    - kind: SopsSecret
+      version: isindir.github.com/v1alpha2
+      name: sopssecret
+      displayName: SopsSecret
+      description: SopsSecret - encapsulates sops encrypted kubernetes secrets definitions

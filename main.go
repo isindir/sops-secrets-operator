@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,10 +31,12 @@ func init() {
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
+	var requeueAfter int64
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.Int64Var(&requeueAfter, "requeue-decrypt-after", 5, "Requeue failed decryption in minutes (min 1).")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
@@ -50,10 +53,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	if requeueAfter < 1 {
+		requeueAfter = 1
+	}
+	setupLog.Info(
+		fmt.Sprintf(
+			"SopsSecret reconciliation will be requeued after %d minutes after decryption failures",
+			requeueAfter,
+		),
+	)
+
 	if err = (&controllers.SopsSecretReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SopsSecret"),
-		Scheme: mgr.GetScheme(),
+		Client:       mgr.GetClient(),
+		Log:          ctrl.Log.WithName("controllers").WithName("SopsSecret"),
+		Scheme:       mgr.GetScheme(),
+		RequeueAfter: requeueAfter,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SopsSecret")
 		os.Exit(1)

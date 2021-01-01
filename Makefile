@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.1.8
+SOPS_SEC_OPERATOR_VERSION := 0.1.9
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := "v0.3.0"
@@ -8,8 +8,9 @@ CONTROLLER_TOOLS_VERSION := "v0.3.0"
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
 # Image URL to use all building/pushing image targets
-IMG ?= isindir/sops-secrets-operator:${SOPS_SEC_OPERATOR_VERSION}
-IMG_LATEST = isindir/sops-secrets-operator:latest
+IMG_NAME ?= isindir/sops-secrets-operator
+IMG ?= ${IMG_NAME}:${SOPS_SEC_OPERATOR_VERSION}
+IMG_LATEST ?= ${IMG_NAME}:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -32,14 +33,12 @@ package-helm:
 	@{ \
 		( cd docs; \
 			helm package ../chart/helm3/sops-secrets-operator ; \
-			helm package ../chart/helm2/sops-secrets-operator ; \
 			helm repo index . --url https://isindir.github.io/sops-secrets-operator ) ; \
 	}
 
 ## test-helm: test helm charts
 test-helm:
 	@{ \
-		$(MAKE) -C chart/helm2/sops-secrets-operator all ; \
 		$(MAKE) -C chart/helm3/sops-secrets-operator all ; \
 	}
 

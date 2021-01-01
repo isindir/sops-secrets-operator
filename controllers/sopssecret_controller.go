@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/sirupsen/logrus"
@@ -32,8 +33,9 @@ import (
 // SopsSecretReconciler reconciles a SopsSecret object
 type SopsSecretReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log          logr.Logger
+	Scheme       *runtime.Scheme
+	RequeueAfter int64
 }
 
 // Reconcile - main reconcile loop of the controller
@@ -78,8 +80,8 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		// will not process instance error as we are already in error mode here
 		r.Status().Update(context.Background(), instanceEncrypted)
 
-		// Error conditon, but don't fail controller as it will not help, the actual error is already logged
-		return reconcile.Result{}, nil
+		// Failed to decrypt, re-schedule reconciliation in 5 minutes
+		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 	}
 
 	// iterating over secret templates
@@ -98,7 +100,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 				"error",
 				err,
 			)
-			return reconcile.Result{}, nil
+			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		// Set SopsSecret instance as the owner and controller
@@ -117,7 +119,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 				"error",
 				err,
 			)
-			return reconcile.Result{}, nil
+			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		// Check if this Secret already exists
