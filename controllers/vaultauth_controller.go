@@ -121,7 +121,7 @@ func (auth *VaultAuth) autoRenewal(stopCh <-chan struct{}) error {
 
 	// TODO: token renewal (use client.NewRenewer())
 
-	sleepDuration := time.Duration(initial.LeaseDuration)*time.Second - 10*time.Second
+	sleepDuration := time.Duration(initial.Auth.LeaseDuration)*time.Second - 10*time.Second
 	if sleepDuration < 60*time.Second {
 		sleepDuration = 60 * time.Second
 	}

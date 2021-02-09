@@ -100,6 +100,8 @@ type AgeItem struct {
 // HcVaultItem defines Hashicorp Vault Key specific encryption details
 type HcVaultItem struct {
 	// +optional
+	EncryptedKey string `json:"enc,omitempty"`
+	// +optional
 	VaultAddress string `json:"vault_address,omitempty"`
 	// +optional
 	EnginePath string `json:"engine_path,omitempty"`
