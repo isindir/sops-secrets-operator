@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/isindir/sops-secrets-operator/internal"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,11 +33,20 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var requeueAfter int64
+	var vaultAuth string
+	var vaultRole string
+	var vaultServer string
+	var vaultTokenPath string
+
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Int64Var(&requeueAfter, "requeue-decrypt-after", 5, "Requeue failed decryption in minutes (min 1).")
+	flag.StringVar(&vaultAuth, "vault-auth", "", "Vault Kubernetes authentication path.")
+	flag.StringVar(&vaultRole, "vault-role", "", "Vault Kubernetes authentication role.")
+	flag.StringVar(&vaultServer, "vault-server", "", "Vault API URL.")
+	flag.StringVar(&vaultTokenPath, "vault-token-path", "/var/run/secrets/kubernetes.io/serviceaccount/token", "Service account token to use for Vault authentication.")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
@@ -74,8 +84,22 @@ func main() {
 	}
 	// +kubebuilder:scaffold:builder
 
+	stopCh := ctrl.SetupSignalHandler()
+
+	if len(vaultRole) > 0 && len(vaultServer) > 0 && len(vaultTokenPath) > 0 && len(vaultAuth) > 0 {
+		setupLog.Info("starting vault authenticator")
+
+		vault, err := internal.CreateVaultAuth(vaultServer, vaultAuth, vaultRole, vaultTokenPath)
+		if err != nil {
+			setupLog.Error(err, "unable to start vault authenticator")
+			os.Exit(1)
+		}
+
+		go vault.StartAutoRenew(stopCh)
+	}
+
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(stopCh); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}

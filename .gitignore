@@ -3,6 +3,7 @@ keys.tar.gz
 keys
 1.yaml
 2.yaml
+.idea
 # Temporary Build Files
 vendor
 build/_output
