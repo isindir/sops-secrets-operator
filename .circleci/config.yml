@@ -10,15 +10,15 @@ jobs:
       image: ubuntu-1604:202004-01
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.14.9
+      GOLANG_VERSION: 1.14.15
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v3.8.3
+      KUSTOMIZE_VERSION: v4.0.1
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.9.1
+      GIT_CHGLOG_VERSION: 0.10.0
 
       GOPATH: /home/circleci/gogo
       GOROOT: /usr/local/go
@@ -82,19 +82,19 @@ jobs:
       image: ubuntu-1604:202004-01
     environment:
       # https://github.com/kubernetes/kubernetes/releases
-      K8S_VERSION: v1.18.2
+      K8S_VERSION: v1.20.2
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v3.0.1
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.4.1
+      HELM_VERSION: v4.2.0
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.14.9
+      GOLANG_VERSION: 1.14.15
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.6.1
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v3.8.3
+      KUSTOMIZE_VERSION: v4.0.1
       # https://github.com/quintush/helm-unittest/releases
       HELM_UNITTEST_VERSION: 0.2.5
       # https://github.com/instrumenta/kubeval/releases
