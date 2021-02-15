@@ -84,9 +84,9 @@ jobs:
       # https://github.com/kubernetes/kubernetes/releases
       K8S_VERSION: v1.20.2
       # https://github.com/rancher/k3d/releases
-      K3D_VERSION: v3.0.1
+      K3D_VERSION: v4.2.0
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v4.2.0
+      HELM_VERSION: v3.5.2
       # https://golang.org/dl/
       GOLANG_VERSION: 1.14.15
       # https://github.com/kubernetes-sigs/kubebuilder/releases
