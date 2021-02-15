@@ -18,7 +18,7 @@ jobs:
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.10.0
+      GIT_CHGLOG_VERSION: 0.9.1
 
       GOPATH: /home/circleci/gogo
       GOROOT: /usr/local/go
