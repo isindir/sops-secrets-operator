@@ -168,6 +168,18 @@ sops --encrypt \
   > jenkins-secrets.enc.yaml
 ```
 
+or
+
+```bash
+sops --encrypt \
+  --kms 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
+  --encrypted-regex='^(data)$' jenkins-secrets.yaml \
+  > jenkins-secrets.enc.yaml
+```
+
+> **NOTE:** after using regex `sops --encrypted-regex` resulting file may be unapplicable to the kubernetes cluster, use
+  this feature with care
+
 * Encrypt file using `sops` and GCP KMS key:
 
 ```bash

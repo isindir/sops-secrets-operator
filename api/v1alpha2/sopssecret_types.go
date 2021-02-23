@@ -125,15 +125,23 @@ type SopsMetadata struct {
 	// Mac - sops setting
 	// +optional
 	Mac string `json:"mac,omitempty"`
+
 	// LastModified - sops setting
 	// +optional
 	LastModified string `json:"lastmodified,omitempty"`
+
 	// Version - sops setting
 	// +optional
 	Version string `json:"version,omitempty"`
+
 	// EncryptedSuffix - sops setting
 	// +optional
 	EncryptedSuffix string `json:"encrypted_suffix,omitempty"`
+
+	// EncryptedRegex - sops setting.
+	// This opstion should be used with more care, as it can make resource unapplicable to the cluster.
+	// +optional
+	EncryptedRegex string `json:"encrypted_regex,omitempty"`
 }
 
 // SopsSecretStatus defines the observed state of SopsSecret
