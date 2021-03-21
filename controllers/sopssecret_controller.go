@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -174,8 +175,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		origSecret := foundSecret
 		foundSecret = foundSecret.DeepCopy()
 
-		foundSecret.StringData = newSecret.StringData
-		foundSecret.Data = map[string][]byte{}
+		foundSecret.Data = newSecret.Data
 		foundSecret.Type = newSecret.Type
 		foundSecret.ObjectMeta.Annotations = newSecret.ObjectMeta.Annotations
 		foundSecret.ObjectMeta.Labels = newSecret.ObjectMeta.Labels
@@ -257,9 +257,16 @@ func newSecretForCR(
 	}
 
 	// Construct Data for the secret
-	data := make(map[string]string)
+	data := make(map[string][]byte)
+	for key, value := range secretTpl.BinaryData {
+		decoded, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return nil, fmt.Errorf("newSecretForCR(): binaryData[%v] is not a valid base64 string", key)
+		}
+		data[key] = decoded
+	}
 	for key, value := range secretTpl.Data {
-		data[key] = value
+		data[key] = []byte(value)
 	}
 
 	if secretTpl.Name == "" {
@@ -290,8 +297,8 @@ func newSecretForCR(
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Type:       kubeSecretType,
-		StringData: data,
+		Type: kubeSecretType,
+		Data: data,
 	}
 	return secret, nil
 }
