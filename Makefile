@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.1.11
+SOPS_SEC_OPERATOR_VERSION := 0.1.12
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := "v0.3.0"
@@ -79,12 +79,14 @@ fmt:
 vet:
 	go vet ./...
 
-## generate: Generate code
-generate: controller-gen
+## tidy: Fetch all needed go packages
+tidy:
 	$(GO) mod tidy
 	$(GO) mod vendor
-	@echo
 
+## generate: Generate code
+generate: controller-gen tidy
+	@echo
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 ## docker-build: Build the docker image

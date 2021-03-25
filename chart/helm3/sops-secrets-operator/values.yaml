@@ -6,7 +6,7 @@ replicaCount: 1  # Deployment replica count  - should not be modified
 
 image:
   repository: isindir/sops-secrets-operator  # Operator image
-  tag: 0.1.11  # Operator image tag
+  tag: 0.1.12  # Operator image tag
   pullPolicy: Always  # Operator image pull policy
 
 imagePullSecrets: []  # Secrets to pull image from private docker repository
@@ -42,6 +42,10 @@ azure:
   clientSecret: '' # Client Secret of Azure Service Principal
   # Pre-existing secret must contain the keys tenantId, clientId and clientSecret with the appropriate values
   existingSecretName: '' # Name of a pre-existing secret containing Azure Service Principal Credentials (ClientID, ClientSecret, TenantID)
+
+extraEnv: []  # A list of additional environment variables
+#- name: AWS_SDK_LOAD_CONFIG
+#  value: "1"
 
 secretsAsEnvVars: []  # configure custom secrets to be used as environment variables at runtime, see values.yaml
 #- name: SECRET_GREETING
@@ -81,7 +85,3 @@ affinity: {}  # Node affinity for pod assignment
 
 rbac:
   enabled: true  # Create and use RBAC resources
-
-extraEnv: []  # A list of additional environment variables
-#- name: AWS_SDK_LOAD_CONFIG
-#  value: "1"

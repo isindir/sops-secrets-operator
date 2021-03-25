@@ -57,6 +57,16 @@ helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
   --namespace sops
 ```
 
+## Age
+
+* Create age reference `keys.txt` file, create kubernetes secret from it.
+* Deploy helm chart using `extraEnv` and `secretsAsFiles` to specify mounted `keys.txt` from secret via `SOPS_AGE_KEY_FILE` environment variable.
+
+References:
+
+* [Age git repository](https://github.com/FiloSottile/age)
+* [SOPS Age documentation](https://github.com/mozilla/sops#22encrypting-using-age)
+
 ## PGP
 
 For instructions on howto configure PGP keys for operator, see [Preparing GPG keys](docs/gpg/README.md)
