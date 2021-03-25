@@ -65,6 +65,17 @@ gcp:
   * follow the [SOPS documentation](https://github.com/mozilla/sops#encrypting-using-azure-key-vault)
 * Either put Tenant ID, Client ID and Client Secret for the Service Principal in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable Azure in the Helm Chart by setting `azure.enabled: true` in values.yaml.
 
+### Age
+
+* Create age `keys.txt` file
+* Create Kubernetes secret using `keys.txt`
+* When deploying helm chart use `extraEnv` value to speicify environment variable `SOPS_AGE_RECIPIENTS` and `secretsAsFiles` value to mount `keys.txt`
+
+For reference see:
+
+* [Age tooling](https://github.com/FiloSottile/age)
+* [sops section on how to encrypt](https://github.com/mozilla/sops#22encrypting-using-age)
+
 ## Uninstalling the Chart
 
 To uninstall/delete the `my-release` deployment:
@@ -83,7 +94,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | ------------------------ | ----------------------- | -------------- |
 | `replicaCount` | Deployment replica count  - should not be modified | `1` |
 | `image.repository` | Operator image | `"isindir/sops-secrets-operator"` |
-| `image.tag` | Operator image tag | `"0.1.11"` |
+| `image.tag` | Operator image tag | `"0.1.12"` |
 | `image.pullPolicy` | Operator image pull policy | `"Always"` |
 | `imagePullSecrets` | Secrets to pull image from private docker repository | `[]` |
 | `nameOverride` | Overrides auto-generated short resource name | `""` |
@@ -102,6 +113,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | `azure.clientId` | Clientid (application id) of azure service principal to use | `""` |
 | `azure.clientSecret` | Client secret of azure service principal | `""` |
 | `azure.existingSecretName` | Name of a pre-existing secret containing azure service principal credentials (clientid, clientsecret, tenantid) | `""` |
+| `extraEnv` | A list of additional environment variables | `[]` |
 | `secretsAsEnvVars` | Configure custom secrets to be used as environment variables at runtime, see values.yaml | `[]` |
 | `secretsAsFiles` | Configure custom secrets to be mounted at runtime, see values.yaml | `[]` |
 | `resources` | Operator container resources | `{}` |
@@ -113,7 +125,6 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | `tolerations` | Tolerations to be applied to operator pod | `[]` |
 | `affinity` | Node affinity for pod assignment | `{}` |
 | `rbac.enabled` | Create and use rbac resources | `true` |
-| `extraEnv` | A list of additional environment variables | `[]` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 

@@ -78,6 +78,13 @@ type AzureKmsItem struct {
 	CreationDate string `json:"created_at,omitempty"`
 }
 
+type AgeItem struct {
+	// +optional
+	Recipient string `json:"recipient,omitempty"`
+	// +optional
+	EncryptedKey string `json:"enc,omitempty"`
+}
+
 // HcVaultItem defines Hashicorp Vault Key specific encryption details
 type HcVaultItem struct {
 	// +optional
@@ -121,6 +128,10 @@ type SopsMetadata struct {
 	// GcpKms configuration
 	// +optional
 	GcpKms []GcpKmsDataItem `json:"gcp_kms,omitempty"`
+
+	// Ageconfiguration
+	// +optional
+	Age []AgeItem `json:"age,omitempty"`
 
 	// Mac - sops setting
 	// +optional
