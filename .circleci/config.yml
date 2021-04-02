@@ -96,7 +96,7 @@ jobs:
       # https://github.com/kubernetes-sigs/kustomize/releases
       KUSTOMIZE_VERSION: v4.0.5
       # https://github.com/quintush/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.2.5
+      HELM_UNITTEST_VERSION: 0.2.6
       # https://github.com/instrumenta/kubeval/releases
       KUBEVAL_VERSION: 0.15.0
 

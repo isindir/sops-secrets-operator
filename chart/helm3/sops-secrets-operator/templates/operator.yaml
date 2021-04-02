@@ -122,13 +122,13 @@ spec:
       {{- if .Values.gcp.enabled }}
       - name: sops-operator-gke-svc-account
         secret:
-        {{- if .Values.gcp.existingSecretName }}
+          {{- if .Values.gcp.existingSecretName }}
           secretName: {{ .Values.gcp.existingSecretName }}
-        {{- else if .Values.gcp.svcAccSecretCustomName }}
+          {{- else if .Values.gcp.svcAccSecretCustomName }}
           secretName: {{ .Values.gcp.svcAccSecretCustomName }}
-        {{- else }}
+          {{- else }}
           secretName: {{ include "sops-secrets-operator.name" . }}-gcp-secret
-        {{- end }}
+          {{- end }}
       {{- end }}
       {{- if .Values.gpg.enabled }}
       - name: sops-operator-gpg-keys1

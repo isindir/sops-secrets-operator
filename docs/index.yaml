@@ -3,7 +3,22 @@ entries:
   sops-secrets-operator:
   - apiVersion: v2
     appVersion: 0.1.12
-    created: "2021-03-25T16:44:18.57767Z"
+    created: "2021-04-02T17:15:09.889143+01:00"
+    description: sops secrets operator
+    digest: 7dfc37318c550923c10a08344e7ab52b74fb5fca7ea186027e28dec863d10832
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    type: application
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.6.8.tgz
+    version: 0.6.8
+  - apiVersion: v2
+    appVersion: 0.1.12
+    created: "2021-04-02T17:15:09.88821+01:00"
     description: sops secrets operator
     digest: 89d9d41d70d4dafcfb957bd48776ad779d0cef7dbb1ab2daf0b745a53dd6e3c6
     maintainers:
@@ -18,7 +33,7 @@ entries:
     version: 0.6.7
   - apiVersion: v2
     appVersion: 0.1.11
-    created: "2021-03-25T16:44:18.576668Z"
+    created: "2021-04-02T17:15:09.886828+01:00"
     description: sops secrets operator
     digest: 7b0a65fd6fa9bafa3fd11bfef1a5f91f1e17d8cb8ad65b6377ffdc4d12495d01
     maintainers:
@@ -33,7 +48,7 @@ entries:
     version: 0.6.6
   - apiVersion: v2
     appVersion: 0.1.10
-    created: "2021-03-25T16:44:18.574932Z"
+    created: "2021-04-02T17:15:09.885208+01:00"
     description: sops secrets operator
     digest: fac31d6cc862cb7b9a81aee52ba1fc4183d70bdcb7424c3dbdd087fb53246b30
     maintainers:
@@ -48,7 +63,7 @@ entries:
     version: 0.6.5
   - apiVersion: v2
     appVersion: 0.1.9
-    created: "2021-03-25T16:44:18.572939Z"
+    created: "2021-04-02T17:15:09.883378+01:00"
     description: sops secrets operator
     digest: 01347c27e37dfff999ebcee12aae6d0aafa092d7c3b221d566cdf0abe71f4d5a
     maintainers:
@@ -63,7 +78,7 @@ entries:
     version: 0.6.4
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2021-03-25T16:44:18.571508Z"
+    created: "2021-04-02T17:15:09.881624+01:00"
     description: sops secrets operator
     digest: 6348b1b1b0e8d3df3926e437b2c0f4ad63268d26e2cb54cbecbb564102e6b19c
     maintainers:
@@ -78,7 +93,7 @@ entries:
     version: 0.6.3
   - apiVersion: v2
     appVersion: 0.1.7
-    created: "2021-03-25T16:44:18.570427Z"
+    created: "2021-04-02T17:15:09.880646+01:00"
     description: sops secrets operator
     digest: 710c1c9fa73a2ebf791fda4a608b5e29072d42c0b68c803c7bbeed54a582fd7f
     maintainers:
@@ -93,7 +108,7 @@ entries:
     version: 0.6.2
   - apiVersion: v2
     appVersion: 0.1.7
-    created: "2021-03-25T16:44:18.569377Z"
+    created: "2021-04-02T17:15:09.879533+01:00"
     description: sops secrets operator
     digest: f2a606c3837843241bb9d59adc02c38e1cca98753c602b9f758cc61d735ca7cd
     maintainers:
@@ -108,7 +123,7 @@ entries:
     version: 0.6.1
   - apiVersion: v2
     appVersion: 0.1.6
-    created: "2021-03-25T16:44:18.568225Z"
+    created: "2021-04-02T17:15:09.878531+01:00"
     description: sops secrets operator
     digest: a2bbf9b39ec5f5b82965037f8f245fb3122adbe31b1c7d336fa1f4cddb228b88
     maintainers:
@@ -123,7 +138,7 @@ entries:
     version: 0.6.0
   - apiVersion: v1
     appVersion: 0.1.8
-    created: "2021-03-25T16:44:18.567264Z"
+    created: "2021-04-02T17:15:09.877435+01:00"
     description: sops secrets operator
     digest: b89986787f33bb6ed9fb0c658431be8646302e9c1a24537c26269c62249fa071
     maintainers:
@@ -137,7 +152,7 @@ entries:
     version: 0.5.3
   - apiVersion: v1
     appVersion: 0.1.7
-    created: "2021-03-25T16:44:18.565546Z"
+    created: "2021-04-02T17:15:09.874363+01:00"
     description: sops secrets operator
     digest: 9467709cf6fbe8d9d779cedf15fe388af172b609f3ca452ef3d8894f39d999df
     maintainers:
@@ -151,7 +166,7 @@ entries:
     version: 0.5.2
   - apiVersion: v1
     appVersion: 0.1.7
-    created: "2021-03-25T16:44:18.562877Z"
+    created: "2021-04-02T17:15:09.87291+01:00"
     description: sops secrets operator
     digest: b54b5d8497564ddc04bd6d8b105eb0a3559e82ae1f6aab2f59ed3e426f119287
     maintainers:
@@ -165,7 +180,7 @@ entries:
     version: 0.5.1
   - apiVersion: v1
     appVersion: 0.1.6
-    created: "2021-03-25T16:44:18.561208Z"
+    created: "2021-04-02T17:15:09.871584+01:00"
     description: sops secrets operator
     digest: 177f1ed214d6e72eda589a6ab155a417c1a4229bfda11e87f24af125a3542ad1
     maintainers:
@@ -179,7 +194,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 0.1.5
-    created: "2021-03-25T16:44:18.560016Z"
+    created: "2021-04-02T17:15:09.870052+01:00"
     description: sops secrets operator
     digest: 1535e130357afa883db0b3d30735c817d3b7d412fe5bdfd71534d0c08defa7d1
     maintainers:
@@ -194,7 +209,7 @@ entries:
     version: 0.4.8
   - apiVersion: v2
     appVersion: 0.1.5
-    created: "2021-03-25T16:44:18.558786Z"
+    created: "2021-04-02T17:15:09.869029+01:00"
     description: sops secrets operator
     digest: 19b11dc2d1945f3c436a7d03763b4391d4a382fc13ea515d25422827d859d6d0
     maintainers:
@@ -209,7 +224,7 @@ entries:
     version: 0.4.7
   - apiVersion: v2
     appVersion: 0.1.5
-    created: "2021-03-25T16:44:18.557881Z"
+    created: "2021-04-02T17:15:09.86817+01:00"
     description: sops secrets operator
     digest: c839e5d3374b948d27ad49643411f4891fdec44d179dea06423bb0d6e29d5e32
     maintainers:
@@ -224,7 +239,7 @@ entries:
     version: 0.4.6
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2021-03-25T16:44:18.556964Z"
+    created: "2021-04-02T17:15:09.867272+01:00"
     description: sops secrets operator
     digest: c71f9f66be32f8b9d3c8d780b09b2455a40fd9755314004efd2bb8d379dafe3c
     maintainers:
@@ -239,7 +254,7 @@ entries:
     version: 0.4.5
   - apiVersion: v2
     appVersion: 0.1.3
-    created: "2021-03-25T16:44:18.556189Z"
+    created: "2021-04-02T17:15:09.866418+01:00"
     description: sops secrets operator
     digest: f3f2f89d4ef6018776df0a12a63dd2f9c9519b9d1ac03a9a405e31d0fd902ba0
     maintainers:
@@ -254,7 +269,7 @@ entries:
     version: 0.4.4
   - apiVersion: v2
     appVersion: 0.1.2
-    created: "2021-03-25T16:44:18.555435Z"
+    created: "2021-04-02T17:15:09.865628+01:00"
     description: sops secrets operator
     digest: 1fd5eed318627f5ed0656f4e8ce4a25729568a1626ae313bcbe21050f5f26240
     maintainers:
@@ -269,7 +284,7 @@ entries:
     version: 0.4.3
   - apiVersion: v2
     appVersion: 0.1.2
-    created: "2021-03-25T16:44:18.554631Z"
+    created: "2021-04-02T17:15:09.864852+01:00"
     description: sops secrets operator
     digest: 1f4f9869c75f0922e83ba5d530e101bd4252d5c1c31365800cc9d1425680cf18
     maintainers:
@@ -284,7 +299,7 @@ entries:
     version: 0.4.2
   - apiVersion: v2
     appVersion: 0.1.1
-    created: "2021-03-25T16:44:18.553741Z"
+    created: "2021-04-02T17:15:09.863985+01:00"
     description: sops secrets operator
     digest: 6b054a4e9f261eea3cb84ee2e70b87b24780f1703e2c218ea5f69b7f82d1876f
     maintainers:
@@ -299,7 +314,7 @@ entries:
     version: 0.4.1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2021-03-25T16:44:18.552963Z"
+    created: "2021-04-02T17:15:09.863131+01:00"
     description: sops secrets operator
     digest: 78b62ab37eac1b45f0a68a9752a3615c5d3f1c960bb4057e665923ce104931cf
     maintainers:
@@ -314,7 +329,7 @@ entries:
     version: 0.4.0
   - apiVersion: v1
     appVersion: 0.1.5
-    created: "2021-03-25T16:44:18.551929Z"
+    created: "2021-04-02T17:15:09.862295+01:00"
     description: sops secrets operator
     digest: 41baa3c580cb9d8951c18513a4f04c4dbbfad99de9c62f53de2450c0c7b76725
     maintainers:
@@ -328,7 +343,7 @@ entries:
     version: 0.3.7
   - apiVersion: v1
     appVersion: 0.1.5
-    created: "2021-03-25T16:44:18.550414Z"
+    created: "2021-04-02T17:15:09.861178+01:00"
     description: sops secrets operator
     digest: 1103b1f7bf7af3f400c172227cd5a3659f3a03e5e8158b19ba0b25f7ed45208b
     maintainers:
@@ -342,7 +357,7 @@ entries:
     version: 0.3.6
   - apiVersion: v1
     appVersion: 0.1.5
-    created: "2021-03-25T16:44:18.549106Z"
+    created: "2021-04-02T17:15:09.860323+01:00"
     description: sops secrets operator
     digest: 15c72ba7fb09d0e980ec32fd94f56893c439c05c435281a9ab9c8bc94bd20063
     maintainers:
@@ -356,7 +371,7 @@ entries:
     version: 0.3.5
   - apiVersion: v1
     appVersion: 0.1.4
-    created: "2021-03-25T16:44:18.547819Z"
+    created: "2021-04-02T17:15:09.85939+01:00"
     description: sops secrets operator
     digest: 025a6a6381b75286756ef55105ace6e911e5a5818b495ede6356cc8ec572aeac
     maintainers:
@@ -370,7 +385,7 @@ entries:
     version: 0.3.4
   - apiVersion: v1
     appVersion: 0.1.3
-    created: "2021-03-25T16:44:18.546864Z"
+    created: "2021-04-02T17:15:09.85844+01:00"
     description: sops secrets operator
     digest: f61b070b640169439cf4ab500047c1e356748a85871f7aeefde46d63d87d453a
     maintainers:
@@ -384,7 +399,7 @@ entries:
     version: 0.3.3
   - apiVersion: v1
     appVersion: 0.1.2
-    created: "2021-03-25T16:44:18.545808Z"
+    created: "2021-04-02T17:15:09.855742+01:00"
     description: sops secrets operator
     digest: 2b37dc4e545e8a9540f6b7693079b98bf161ec5a68899defcfc9420bdcbb33e3
     maintainers:
@@ -398,7 +413,7 @@ entries:
     version: 0.3.2
   - apiVersion: v1
     appVersion: 0.1.1
-    created: "2021-03-25T16:44:18.543069Z"
+    created: "2021-04-02T17:15:09.853676+01:00"
     description: sops secrets operator
     digest: 2e2762b8f9d66aab0caacde225955fec8bfd5a4cc10dc6943a1de3809dda4091
     maintainers:
@@ -412,7 +427,7 @@ entries:
     version: 0.3.1
   - apiVersion: v1
     appVersion: 0.1.0
-    created: "2021-03-25T16:44:18.541885Z"
+    created: "2021-04-02T17:15:09.851523+01:00"
     description: sops secrets operator
     digest: ce84f5b64402a582c7689cb842ba03fb10f968c38b57dc9e05f588493128019a
     maintainers:
@@ -426,7 +441,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 0.0.10
-    created: "2021-03-25T16:44:18.540495Z"
+    created: "2021-04-02T17:15:09.848942+01:00"
     description: sops secrets operator
     digest: 5e4c8bc37ea2c819c55b288c0a5e76ff8c9c02be591bd53776606666af45581c
     maintainers:
@@ -441,7 +456,7 @@ entries:
     version: 0.2.1
   - apiVersion: v1
     appVersion: 0.0.10
-    created: "2021-03-25T16:44:18.539305Z"
+    created: "2021-04-02T17:15:09.847854+01:00"
     description: sops secrets operator
     digest: 50b8ebab19008dfc43de1eaee8b0f6287f7a55134585dc6ae88df2520d779f8f
     maintainers:
@@ -453,4 +468,4 @@ entries:
     urls:
     - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.1.10.tgz
     version: 0.1.10
-generated: "2021-03-25T16:44:18.537647Z"
+generated: "2021-04-02T17:15:09.846116+01:00"

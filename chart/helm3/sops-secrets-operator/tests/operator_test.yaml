@@ -31,7 +31,7 @@ tests:
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
             app.kubernetes.io/version: 0.1.12
-            helm.sh/chart: sops-secrets-operator-0.6.7
+            helm.sh/chart: sops-secrets-operator-0.6.8
 
   # template metadata and spec selector
   - it: should correctly render template metadata and spec selector
@@ -404,6 +404,19 @@ tests:
             - name: sops-operator-gke-svc-account
               secret:
                 secretName: my-svc-account-gcp
+
+  - it: should render custom GCP secret name
+    set:
+      gcp:
+        enabled: true
+        existingSecretName: my-existing-secret
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: sops-operator-gke-svc-account
+              secret:
+                secretName: my-existing-secret
 
   # GPG volumes
   - it: should render GPG volumes
