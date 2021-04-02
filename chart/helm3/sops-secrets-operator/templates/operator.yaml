@@ -122,7 +122,9 @@ spec:
       {{- if .Values.gcp.enabled }}
       - name: sops-operator-gke-svc-account
         secret:
-        {{- if .Values.gcp.svcAccSecretCustomName }}
+        {{- if .Values.gcp.existingSecretName }}
+          secretName: {{ .Values.gcp.existingSecretName }}
+        {{- else if .Values.gcp.svcAccSecretCustomName }}
           secretName: {{ .Values.gcp.svcAccSecretCustomName }}
         {{- else }}
           secretName: {{ include "sops-secrets-operator.name" . }}-gcp-secret

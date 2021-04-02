@@ -30,6 +30,7 @@ gcp:
   enabled: false  # Node labels for operator pod assignment
   svcAccSecretCustomName: ''  # Name of the secret to create - will override default secret name if specified
   svcAccSecret: ''  # If `gcp.enabled` is `true`, this value must be specified as GCP service account secret json payload
+  existingSecretName: '' # Name of a pre-existing secret containing GCP service account secret json payload
 
 # Azure KeyVault
 # If you enable this, you must either specify clientId, tenantId and clientSecret in values.yaml or you can reference

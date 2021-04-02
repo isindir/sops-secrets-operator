@@ -41,6 +41,8 @@ This chart bootstraps a [sops-secrets-operator](https://github.com/isindir/sops-
 ### GCP
 
 * Create GCP Service Account which allows to use KMS to decrypt
+* Either put the GCP Service Account JSON file in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable GCP in the Helm Chart by setting `gcp.enabled: true` in values.yaml.
+
 * Create custom values file in a following format:
 
 ```yaml
@@ -51,6 +53,14 @@ gcp:
       "type": "service_account",
       ...
     }
+```
+
+or 
+
+```yaml
+gcp:
+  enabled: true
+  existingSecretName: gcp-sa-existing-secret-name
 ```
 
 * Create Kubernetes namespace for operator deployment
@@ -108,6 +118,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | `gcp.enabled` | Node labels for operator pod assignment | `false` |
 | `gcp.svcAccSecretCustomName` | Name of the secret to create - will override default secret name if specified | `""` |
 | `gcp.svcAccSecret` | If `gcp.enabled` is `true`, this value must be specified as gcp service account secret json payload | `""` |
+| `gcp.existingSecretName` | Name of a pre-existing secret containing gcp service account secret json payload | `""` |
 | `azure.enabled` | If true azure keyvault will be used | `false` |
 | `azure.tenantId` | Tenantid of azure service principal to use | `""` |
 | `azure.clientId` | Clientid (application id) of azure service principal to use | `""` |
