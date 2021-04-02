@@ -27,3 +27,8 @@ metadata:
       name: sopssecret
       displayName: SopsSecret
       description: SopsSecret - encapsulates sops encrypted kubernetes secrets definitions
+keywords:
+- gitops
+- sops
+- kms
+- encryption
