@@ -8,23 +8,26 @@ import (
 
 // SopsSecretTemplate defines the map of secrets to create
 type SopsSecretTemplate struct {
-	// Name is a name of the Kubernetes secret to create
+	// Name of the Kubernetes secret to create
 	Name string `json:"name"`
 
 	// Annotations to apply to Kubernetes secret
 	// +optional
-
 	Annotations map[string]string `json:"annotations,omitempty"`
 
 	// Labels to apply to Kubernetes secret
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
 
-	// Kubernetes secret type
+	// Kubernetes secret type. Default: Opauqe. Possible values: Opauqe,
+	// kubernetes.io/service-account-token, kubernetes.io/dockercfg,
+	// kubernetes.io/dockerconfigjson, kubernetes.io/basic-auth,
+	// kubernetes.io/ssh-auth, kubernetes.io/tls, bootstrap.kubernetes.io/token
 	// +optional
 	Type string `json:"type,omitempty"`
 
-	// Data is data map to use in Kubernetes secret
+	// Data map to use in Kubernetes secret (equivalent to Kubernetes Secret object stringData, please see for more
+	// information: https://kubernetes.io/docs/concepts/configuration/secret/#overview-of-secrets)
 	Data map[string]string `json:"data"`
 }
 
@@ -33,7 +36,7 @@ type SopsSecretSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// SecretsTemplate is a list of secret templates to create Kubernetes Secrets
+	// Secrets template is a list of definitions to create Kubernetes Secrets
 	// +kubebuilder:validation:MinItems=1
 	SecretsTemplate []SopsSecretTemplate `json:"secretTemplates"`
 }
@@ -46,6 +49,7 @@ type KmsDataItem struct {
 
 	// +optional
 	EncryptedKey string `json:"enc,omitempty"`
+	// Object creation date
 	// +optional
 	CreationDate string `json:"created_at,omitempty"`
 	// +optional
@@ -56,16 +60,18 @@ type KmsDataItem struct {
 type PgpDataItem struct {
 	// +optional
 	EncryptedKey string `json:"enc,omitempty"`
+
+	// Object creation date
 	// +optional
 	CreationDate string `json:"created_at,omitempty"`
-
-	// FingerPrint - PGP FingerPrint to encrypt for
+	// PGP FingerPrint of the key which can be used for decryption
 	// +optional
 	FingerPrint string `json:"fp,omitempty"`
 }
 
 // AzureKmsItem defines Azure Keyvault Key specific encryption details
 type AzureKmsItem struct {
+	// Azure KMS vault URL
 	// +optional
 	VaultURL string `json:"vault_url,omitempty"`
 	// +optional
@@ -74,11 +80,13 @@ type AzureKmsItem struct {
 	Version string `json:"version,omitempty"`
 	// +optional
 	EncryptedKey string `json:"enc,omitempty"`
+	// Object creation date
 	// +optional
 	CreationDate string `json:"created_at,omitempty"`
 }
 
 type AgeItem struct {
+	// Recepient which private key can be used for decription
 	// +optional
 	Recipient string `json:"recipient,omitempty"`
 	// +optional
@@ -103,33 +111,34 @@ type GcpKmsDataItem struct {
 	VaultURL string `json:"resource_id,omitempty"`
 	// +optional
 	EncryptedKey string `json:"enc,omitempty"`
+	// Object creation date
 	// +optional
 	CreationDate string `json:"created_at,omitempty"`
 }
 
 // SopsMetadata defines the encryption details
 type SopsMetadata struct {
-	// AwsKms configuration
+	// Aws KMS configuration
 	// +optional
 	AwsKms []KmsDataItem `json:"kms,omitempty"`
 
-	// Pgp configuration
+	// PGP configuration
 	// +optional
 	Pgp []PgpDataItem `json:"pgp,omitempty"`
 
-	// AzureKms configuration
+	// Azure KMS configuration
 	// +optional
 	AzureKms []AzureKmsItem `json:"azure_kv,omitempty"`
 
-	// HashicorpKms configurarion
+	// Hashicorp Vault KMS configurarion
 	// +optional
 	HcVault []HcVaultItem `json:"hc_vault,omitempty"`
 
-	// GcpKms configuration
+	// Gcp KMS configuration
 	// +optional
 	GcpKms []GcpKmsDataItem `json:"gcp_kms,omitempty"`
 
-	// Ageconfiguration
+	// Age configuration
 	// +optional
 	Age []AgeItem `json:"age,omitempty"`
 
@@ -137,19 +146,19 @@ type SopsMetadata struct {
 	// +optional
 	Mac string `json:"mac,omitempty"`
 
-	// LastModified - sops setting
+	// LastModified date when SopsSecret was last modified
 	// +optional
 	LastModified string `json:"lastmodified,omitempty"`
 
-	// Version - sops setting
+	// Version of the sops tool used to encrypt SopsSecret
 	// +optional
 	Version string `json:"version,omitempty"`
 
-	// EncryptedSuffix - sops setting
+	// Suffix used to encrypt SopsSecret resource
 	// +optional
 	EncryptedSuffix string `json:"encrypted_suffix,omitempty"`
 
-	// EncryptedRegex - sops setting.
+	// Regex used to encrypt SopsSecret resource
 	// This opstion should be used with more care, as it can make resource unapplicable to the cluster.
 	// +optional
 	EncryptedRegex string `json:"encrypted_regex,omitempty"`
@@ -160,7 +169,7 @@ type SopsSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Message - SopsSecret status message
+	// SopsSecret status message
 	// +optional
 	Message string `json:"message,omitempty"`
 }
@@ -175,8 +184,11 @@ type SopsSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	// SopsSecret Spec definition
 	Spec   SopsSecretSpec   `json:"spec,omitempty"`
+	// SopsSecret Status information
 	Status SopsSecretStatus `json:"status,omitempty"`
+	// SopsSecret metadata
 	Sops   SopsMetadata     `json:"sops,omitempty"`
 }
 

@@ -24,9 +24,10 @@ spec:
     spec:
       containers:
       - command:
-        - /manager
+        - /usr/local/bin/manage
         args:
         - --enable-leader-election
+        - "--requeue-decrypt-after=5"
         image: controller:latest
         name: manager
         resources:

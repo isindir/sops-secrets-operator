@@ -78,7 +78,7 @@ securityContext:
   enabled: false  # Enable securityContext
   runAsUser: 1000  # UID to run as
   runAsGroup: 3000  # GID to run as
-  fsGroup: 2000  # fs group
+  fsGroup: 1000  # fs group
 
 tolerations: []  # Tolerations to be applied to operator pod
 
