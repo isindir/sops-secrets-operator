@@ -93,13 +93,13 @@ generate: controller-gen tidy
 ## docker-cross-build: Build multi-arch docker image
 docker-cross-build:
 	docker buildx create --name mybuilder --use
-	docker buildx build --platform ${BUILDX_PLATFORMS} -t ${IMG} .
+	docker buildx build --quiet --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 	docker tag ${IMG} ${IMG_LATEST}
 
 ## docker-cross-build-dont-test: Build the docker image without running tests
 docker-build-dont-test: generate fmt vet manifests
 	docker buildx create --name mybuilder --use
-	docker buildx build --platform ${BUILDX_PLATFORMS} -t ${IMG} .
+	docker buildx build --quiet --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 	docker tag ${IMG} ${IMG_LATEST}
 
 ## docker-build: Build the docker image
