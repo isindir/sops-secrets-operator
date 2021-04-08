@@ -42,7 +42,7 @@ jobs:
             mv docker-buildx ~/.docker/cli-plugins/docker-buildx
             docker buildx install
             # Run binfmt
-            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "${BUILDX_PLATFORMS}"
           background: true
       - run:
           name: install kubebuilder
@@ -122,7 +122,8 @@ jobs:
       BUILDX_BINARY_URL: 0.5.1
 
       DOCKER_BUILDKIT: 1
-      BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
+      #BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -146,7 +147,7 @@ jobs:
             mv docker-buildx ~/.docker/cli-plugins/docker-buildx
             docker buildx install
             # Run binfmt
-            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "${BUILDX_PLATFORMS}"
           background: true
       - run:
           name: install golang
