@@ -46,6 +46,8 @@ type KmsDataItem struct {
 	// Arn - KMS key ARN to use
 	// +optional
 	Arn string `json:"arn,omitempty"`
+	// +optional
+	Role string `json:"role,omitempty"`
 
 	// +optional
 	EncryptedKey string `json:"enc,omitempty"`
