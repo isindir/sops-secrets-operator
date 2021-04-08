@@ -8,7 +8,7 @@ CONTROLLER_TOOLS_VERSION := "v0.3.0"
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
 # Image URL to use all building/pushing image targets
-IMG_NAME ?= isindir/sops-secrets-operator
+IMG_NAME ?= isindir/sops-secrets-operator-exp
 IMG ?= ${IMG_NAME}:${SOPS_SEC_OPERATOR_VERSION}
 BUILDX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v7
 IMG_LATEST ?= ${IMG_NAME}:latest
