@@ -10,7 +10,7 @@ jobs:
       image: ubuntu-1604:202004-01
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.15.10
+      GOLANG_VERSION: 1.15.11
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/kubernetes-sigs/kustomize/releases
@@ -84,11 +84,11 @@ jobs:
       # https://github.com/kubernetes/kubernetes/releases
       K8S_VERSION: v1.20.5
       # https://github.com/rancher/k3d/releases
-      K3D_VERSION: v4.3.0
+      K3D_VERSION: v4.4.1
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.5.3
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.15.10
+      GOLANG_VERSION: 1.15.11
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/mozilla/sops/releases
@@ -98,7 +98,7 @@ jobs:
       # https://github.com/quintush/helm-unittest/releases
       HELM_UNITTEST_VERSION: 0.2.6
       # https://github.com/instrumenta/kubeval/releases
-      KUBEVAL_VERSION: 0.15.0
+      KUBEVAL_VERSION: 0.16.1
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -173,7 +173,7 @@ jobs:
           name: install kubeval
           command: |
             # install kubeval
-            curl -sSL https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz | tar -xzvf - kubeval
+            curl -sSL https://github.com/instrumenta/kubeval/releases/download/v${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz | tar -xzvf - kubeval
             chmod +x kubeval
             sudo mv kubeval /usr/local/bin/
             kubeval --version
