@@ -173,7 +173,7 @@ jobs:
           name: install kubeval
           command: |
             # install kubeval
-            curl -sSL https://github.com/instrumenta/kubeval/releases/download/${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz | tar -xzvf - kubeval
+            curl -sSL https://github.com/instrumenta/kubeval/releases/download/v${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz | tar -xzvf - kubeval
             chmod +x kubeval
             sudo mv kubeval /usr/local/bin/
             kubeval --version
