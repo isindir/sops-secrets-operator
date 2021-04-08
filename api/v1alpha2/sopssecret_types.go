@@ -5,6 +5,7 @@ import (
 )
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// For upstream reference, see https://github.com/mozilla/sops/blob/master/stores/stores.go
 
 // SopsSecretTemplate defines the map of secrets to create
 type SopsSecretTemplate struct {
@@ -46,6 +47,7 @@ type KmsDataItem struct {
 	// Arn - KMS key ARN to use
 	// +optional
 	Arn string `json:"arn,omitempty"`
+	// AWS Iam Role
 	// +optional
 	Role string `json:"role,omitempty"`
 
@@ -105,6 +107,8 @@ type HcVaultItem struct {
 	KeyName string `json:"key_name,omitempty"`
 	// +optional
 	CreationDate string `json:"created_at,omitempty"`
+	// +optional
+	EncryptedKey string `json:"enc,omitempty"`
 }
 
 // GcpKmsDataItem defines GCP KMS Key specific encryption details
@@ -187,11 +191,11 @@ type SopsSecret struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// SopsSecret Spec definition
-	Spec   SopsSecretSpec   `json:"spec,omitempty"`
+	Spec SopsSecretSpec `json:"spec,omitempty"`
 	// SopsSecret Status information
 	Status SopsSecretStatus `json:"status,omitempty"`
 	// SopsSecret metadata
-	Sops   SopsMetadata     `json:"sops,omitempty"`
+	Sops SopsMetadata `json:"sops,omitempty"`
 }
 
 // +kubebuilder:object:root=true
