@@ -10,6 +10,7 @@ USE_EXISTING_CLUSTER ?= true
 # Image URL to use all building/pushing image targets
 IMG_NAME ?= isindir/sops-secrets-operator
 IMG ?= ${IMG_NAME}:${SOPS_SEC_OPERATOR_VERSION}
+BUILDX_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v7
 IMG_LATEST ?= ${IMG_NAME}:latest
 # Produce CRDs that work back to Kubernetes 1.16
 CRD_OPTIONS ?= crd:crdVersions=v1
@@ -88,6 +89,18 @@ tidy:
 generate: controller-gen tidy
 	@echo
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+
+## docker-cross-build: Build multi-arch docker image
+docker-cross-build:
+	docker buildx create --name mybuilder --use
+	docker buildx build --platform ${BUILDX_PLATFORMS} -t ${IMG}
+	docker tag ${IMG} ${IMG_LATEST}
+
+## docker-cross-build-dont-test: Build the docker image without running tests
+docker-build-dont-test: generate fmt vet manifests
+	docker buildx create --name mybuilder --use
+	docker buildx build --platform ${BUILDX_PLATFORMS} -t ${IMG}
+	docker tag ${IMG} ${IMG_LATEST}
 
 ## docker-build: Build the docker image
 docker-build: test
