@@ -115,6 +115,7 @@ docker-push:
 	docker push ${IMG}
 	docker push ${IMG_LATEST}
 
+# TODO: re-tag with crane image to latest
 ## release: creates github release and pushes docker image to dockerhub
 release: controller-gen generate fmt vet manifests
 	@{ \
@@ -128,7 +129,6 @@ release: controller-gen generate fmt vet manifests
 			git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp ; \
 			hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}" ; \
 			docker buildx build --push --quiet --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} . ; \
-			# TODO: re-tag with crane image to latest
 		fi ; \
 	}
 
@@ -138,7 +138,6 @@ inspect:
 	@! DOCKER_CLI_EXPERIMENTAL="enabled" docker manifest inspect ${IMG} >/dev/null \
 		|| { echo "Image already exists"; exit 1; }
 
-# CONTROLLER_GEN=$(GOBIN)/controller-gen
 ## controller-gen: find or download controller-gen - download controller-gen if necessary
 controller-gen:
 ifeq (, $(shell which controller-gen))
