@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.1.13
+SOPS_SEC_OPERATOR_VERSION := 0.1.14
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := "v0.3.0"
@@ -11,7 +11,7 @@ USE_EXISTING_CLUSTER ?= true
 IMG_NAME ?= isindir/sops-secrets-operator
 IMG ?= ${IMG_NAME}:${SOPS_SEC_OPERATOR_VERSION}
 IMG_LATEST ?= ${IMG_NAME}:latest
-IMG_CHACHE ?= ${IMG_NAME}:cache
+IMG_CACHE ?= ${IMG_NAME}:cache
 BUILDX_PLATFORMS ?= linux/amd64,linux/arm64
 # Produce CRDs that work back to Kubernetes 1.16
 CRD_OPTIONS ?= crd:crdVersions=v1
@@ -98,11 +98,7 @@ docker-login:
 
 ## docker-cross-build: Build multi-arch docker image
 docker-cross-build:
-	docker buildx build --quiet --cache-from=${IMG_CHACHE} --cache-to=${IMG_CHACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
-
-## docker-cross-build-dont-test: Build the docker image without running tests
-docker-cross-build-dont-test: controller-gen generate fmt vet manifests
-	docker buildx build --push --quiet --cache-from=${IMG_CHACHE} --cache-to=${IMG_CHACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
+	docker buildx build --quiet --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 
 ## docker-build: Build the docker image
 docker-build: test
@@ -120,7 +116,7 @@ docker-push:
 	docker push ${IMG_LATEST}
 
 ## release: creates github release and pushes docker image to dockerhub
-release: docker-cross-build-dont-test
+release: controller-gen generate fmt vet manifests
 	@{ \
 		set +e ; \
 		git tag "${SOPS_SEC_OPERATOR_VERSION}" ; \
@@ -131,7 +127,7 @@ release: docker-cross-build-dont-test
 			set -e ; \
 			git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp ; \
 			hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}" ; \
-			echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin ; \
+			docker buildx build --push --quiet --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} . ; \
 			# TODO: re-tag with crane image to latest
 		fi ; \
 	}

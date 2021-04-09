@@ -23,7 +23,6 @@ jobs:
       BUILDX_BINARY_URL: 0.5.1
 
       DOCKER_BUILDKIT: 1
-      #BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
 
       GOPATH: /home/circleci/gogo
@@ -88,6 +87,7 @@ jobs:
       - run:
           name: release
           command: |
+            make docker-login
             make release
 
   ##################################################
@@ -120,7 +120,6 @@ jobs:
       BUILDX_BINARY_URL: 0.5.1
 
       DOCKER_BUILDKIT: 1
-      #BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
 
       KUBECONFIG: /home/circleci/.kube/config
