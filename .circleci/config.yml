@@ -7,7 +7,6 @@ jobs:
   release:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     machine:
-      #image: ubuntu-1604:202004-01
       image: ubuntu-2004:202010-01
     environment:
       # https://golang.org/dl/
@@ -97,7 +96,6 @@ jobs:
   build:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     machine:
-      #image: ubuntu-1604:202004-01
       image: ubuntu-2004:202010-01
     environment:
       # https://github.com/kubernetes/kubernetes/releases
