@@ -92,12 +92,14 @@ generate: controller-gen tidy
 
 ## docker-cross-build: Build multi-arch docker image
 docker-cross-build:
+	echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
 	docker buildx create --name mybuilder --use
 	docker buildx build --quiet --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 	docker tag ${IMG} ${IMG_LATEST}
 
 ## docker-cross-build-dont-test: Build the docker image without running tests
 docker-build-dont-test: generate fmt vet manifests
+	echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
 	docker buildx create --name mybuilder --use
 	docker buildx build --quiet --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 	docker tag ${IMG} ${IMG_LATEST}

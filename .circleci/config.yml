@@ -25,7 +25,7 @@ jobs:
 
       DOCKER_BUILDKIT: 1
       #BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
-      BUILDX_PLATFORMS: linux/amd64,linux/arm64
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/386,linux/arm/v7,linux/arm/v6
 
       GOPATH: /home/circleci/gogo
       GOROOT: /usr/local/go
@@ -123,7 +123,7 @@ jobs:
 
       DOCKER_BUILDKIT: 1
       #BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6
-      BUILDX_PLATFORMS: linux/amd64,linux/arm64
+      BUILDX_PLATFORMS: linux/amd64,linux/arm64,linux/386,linux/arm/v7,linux/arm/v6
 
       KUBECONFIG: /home/circleci/.kube/config
 
@@ -243,10 +243,6 @@ jobs:
             kubectl version
             kubectl describe node k3d-operator-server-0
             kubectl describe node k3d-operator-agent-0
-      - run:
-          name: Docker build
-          command: |
-            make docker-cross-build
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
@@ -324,6 +320,10 @@ jobs:
               exit 1
             fi
             rm -fr $GNUPGHOME
+      - run:
+          name: Docker build
+          command: |
+            make docker-cross-build
 
 workflows:
   version: 2
