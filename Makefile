@@ -99,12 +99,10 @@ docker-login:
 ## docker-cross-build: Build multi-arch docker image
 docker-cross-build:
 	docker buildx build --quiet --cache-from=${IMG_CHACHE} --cache-to=${IMG_CHACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
-	#docker tag ${IMG} ${IMG_LATEST}
 
 ## docker-cross-build-dont-test: Build the docker image without running tests
 docker-cross-build-dont-test: generate fmt vet manifests
-	docker buildx build --quiet --platform ${BUILDX_PLATFORMS} -t ${IMG} .
-	docker tag ${IMG} ${IMG_LATEST}
+	docker buildx build --push --quiet --cache-from=${IMG_CHACHE} --cache-to=${IMG_CHACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 
 ## docker-build: Build the docker image
 docker-build: test
@@ -122,7 +120,7 @@ docker-push:
 	docker push ${IMG_LATEST}
 
 ## release: creates github release and pushes docker image to dockerhub
-release: docker-build-dont-test
+release: docker-cross-build-dont-test
 	@{ \
 		set +e ; \
 		git tag "${SOPS_SEC_OPERATOR_VERSION}" ; \
@@ -134,8 +132,7 @@ release: docker-build-dont-test
 			git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp ; \
 			hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}" ; \
 			echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin ; \
-			docker push ${IMG} ; \
-			docker push ${IMG_LATEST} ; \
+			# TODO: re-tag with crane image to latest
 		fi ; \
 	}
 

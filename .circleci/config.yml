@@ -246,6 +246,10 @@ jobs:
           command: |
             make docker-login
             make docker-cross-build
+      - run:
+          name: make test
+          command: |
+            make test
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:
