@@ -1,4 +1,5 @@
 # Build the manager binary
+# https://hub.docker.com/_/golang?tab=tags&page=1&ordering=last_updated
 FROM golang:1.15.11-buster as builder
 
 WORKDIR /workspace
@@ -15,11 +16,9 @@ COPY api/ api/
 COPY controllers/ controllers/
 
 # Build
-#RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
 RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
+# https://hub.docker.com/_/debian?tab=tags&page=1&ordering=last_updated
 FROM debian:buster-20210329
 
 RUN apt-get -y update \
