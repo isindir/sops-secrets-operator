@@ -142,6 +142,7 @@ inspect:
 	@! DOCKER_CLI_EXPERIMENTAL="enabled" docker manifest inspect ${IMG} >/dev/null \
 		|| { echo "Image already exists"; exit 1; }
 
+# CONTROLLER_GEN=$(GOBIN)/controller-gen
 ## controller-gen: find or download controller-gen - download controller-gen if necessary
 controller-gen:
 ifeq (, $(shell which controller-gen))
@@ -153,7 +154,7 @@ ifeq (, $(shell which controller-gen))
 	go get sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_TOOLS_VERSION} ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
-CONTROLLER_GEN=$(GOBIN)/controller-gen
+CONTROLLER_GEN=$(shell which controller-gen)
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
