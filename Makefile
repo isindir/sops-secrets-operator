@@ -45,7 +45,7 @@ test-helm:
 	}
 
 ## test: Run tests
-test: generate fmt vet manifests
+test: controller-gen generate fmt vet manifests
 	USE_EXISTING_CLUSTER=${USE_EXISTING_CLUSTER} go test ./... -coverprofile cover.out
 
 ## manager: Build manager binary
@@ -101,7 +101,7 @@ docker-cross-build:
 	docker buildx build --quiet --cache-from=${IMG_CHACHE} --cache-to=${IMG_CHACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 
 ## docker-cross-build-dont-test: Build the docker image without running tests
-docker-cross-build-dont-test: generate fmt vet manifests
+docker-cross-build-dont-test: controller-gen generate fmt vet manifests
 	docker buildx build --push --quiet --cache-from=${IMG_CHACHE} --cache-to=${IMG_CHACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 
 ## docker-build: Build the docker image
