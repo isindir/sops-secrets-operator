@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.1.13
+SOPS_SEC_OPERATOR_VERSION := 0.1.14
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := "v0.3.0"
@@ -11,6 +11,8 @@ USE_EXISTING_CLUSTER ?= true
 IMG_NAME ?= isindir/sops-secrets-operator
 IMG ?= ${IMG_NAME}:${SOPS_SEC_OPERATOR_VERSION}
 IMG_LATEST ?= ${IMG_NAME}:latest
+IMG_CACHE ?= ${IMG_NAME}:cache
+BUILDX_PLATFORMS ?= linux/amd64,linux/arm64
 # Produce CRDs that work back to Kubernetes 1.16
 CRD_OPTIONS ?= crd:crdVersions=v1
 
@@ -43,7 +45,7 @@ test-helm:
 	}
 
 ## test: Run tests
-test: generate fmt vet manifests
+test: controller-gen generate fmt vet manifests
 	USE_EXISTING_CLUSTER=${USE_EXISTING_CLUSTER} go test ./... -coverprofile cover.out
 
 ## manager: Build manager binary
@@ -89,6 +91,15 @@ generate: controller-gen tidy
 	@echo
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
+## docker-login: performs logging to dockerhub using DOCKERHUB_USERNAME and DOCKERHUB_PASS environment variables
+docker-login:
+	echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+	docker buildx create --name mybuilder --use
+
+## docker-cross-build: Build multi-arch docker image
+docker-cross-build:
+	docker buildx build --quiet --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
+
 ## docker-build: Build the docker image
 docker-build: test
 	docker build . -t ${IMG}
@@ -105,7 +116,7 @@ docker-push:
 	docker push ${IMG_LATEST}
 
 ## release: creates github release and pushes docker image to dockerhub
-release: docker-build-dont-test
+release: controller-gen generate fmt vet manifests
 	@{ \
 		set +e ; \
 		git tag "${SOPS_SEC_OPERATOR_VERSION}" ; \
@@ -116,9 +127,8 @@ release: docker-build-dont-test
 			set -e ; \
 			git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp ; \
 			hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}" ; \
-			echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin ; \
-			docker push ${IMG} ; \
-			docker push ${IMG_LATEST} ; \
+			docker buildx build --push --quiet --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} . ; \
+			# TODO: re-tag with crane image to latest
 		fi ; \
 	}
 
@@ -128,6 +138,7 @@ inspect:
 	@! DOCKER_CLI_EXPERIMENTAL="enabled" docker manifest inspect ${IMG} >/dev/null \
 		|| { echo "Image already exists"; exit 1; }
 
+# CONTROLLER_GEN=$(GOBIN)/controller-gen
 ## controller-gen: find or download controller-gen - download controller-gen if necessary
 controller-gen:
 ifeq (, $(shell which controller-gen))
@@ -139,7 +150,7 @@ ifeq (, $(shell which controller-gen))
 	go get sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_TOOLS_VERSION} ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
-CONTROLLER_GEN=$(GOBIN)/controller-gen
+CONTROLLER_GEN=$(shell which controller-gen)
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
