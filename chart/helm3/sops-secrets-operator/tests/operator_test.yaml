@@ -30,8 +30,8 @@ tests:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
-            app.kubernetes.io/version: 0.1.14
-            helm.sh/chart: sops-secrets-operator-0.7.2
+            app.kubernetes.io/version: 0.1.15
+            helm.sh/chart: sops-secrets-operator-0.7.3
 
   # template metadata and spec selector
   - it: should correctly render template metadata and spec selector
@@ -140,7 +140,7 @@ tests:
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
-          value: isindir/sops-secrets-operator:0.1.14
+          value: isindir/sops-secrets-operator:0.1.15
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always

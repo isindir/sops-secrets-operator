@@ -19,7 +19,7 @@ COPY controllers/ controllers/
 RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
 
 # https://hub.docker.com/_/debian?tab=tags&page=1&ordering=last_updated
-FROM debian:buster-20210329
+FROM debian:buster-20210408
 
 RUN apt-get -y update \
       && apt-get -y upgrade \
