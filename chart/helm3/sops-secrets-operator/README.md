@@ -55,7 +55,7 @@ gcp:
     }
 ```
 
-or 
+or
 
 ```yaml
 gcp:

@@ -109,7 +109,7 @@ jobs:
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 2.3.1
       # https://github.com/mozilla/sops/releases
-      SOPS_VERSION: v3.7.0
+      SOPS_VERSION: v3.7.1
       # https://github.com/kubernetes-sigs/kustomize/releases
       KUSTOMIZE_VERSION: v4.0.5
       # https://github.com/quintush/helm-unittest/releases
