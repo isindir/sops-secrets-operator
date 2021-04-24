@@ -91,15 +91,22 @@ func (auth *VaultAuth) writeToken(secret *api.Secret) error {
 func (auth *VaultAuth) StartAutoRenew(stopCh <-chan struct{}) {
 	for {
 		err := auth.autoRenewal(stopCh)
-		if err == nil {
-			return
-		}
 
-		select {
-		case <-stopCh:
-			return
-		case <-time.After(30 * time.Second):
-			continue
+		// if any error happened, wait for 30s before next attempt
+		if err == nil {
+			select {
+			case <-stopCh:
+				return
+			default:
+				continue
+			}
+		} else {
+			select {
+			case <-stopCh:
+				return
+			case <-time.After(30 * time.Second):
+				continue
+			}
 		}
 	}
 }
@@ -119,17 +126,25 @@ func (auth *VaultAuth) autoRenewal(stopCh <-chan struct{}) error {
 
 	vaultLog.Info("vault token updated")
 
-	// TODO: token renewal (use client.NewRenewer())
-
-	sleepDuration := time.Duration(initial.Auth.LeaseDuration)*time.Second - 10*time.Second
-	if sleepDuration < 60*time.Second {
-		sleepDuration = 60 * time.Second
+	watcher, err := auth.client.NewLifetimeWatcher(&api.LifetimeWatcherInput{Secret: initial})
+	if err != nil {
+		return err
 	}
 
-	select {
-	case <-stopCh:
-		return nil
-	case <-time.After(sleepDuration):
-		return fmt.Errorf("expired")
+	go watcher.Start()
+	defer watcher.Stop()
+
+	for {
+		select {
+		case <-stopCh:
+			return nil
+		case err = <-watcher.DoneCh():
+			if err != nil {
+				vaultLog.Error(err, "could not renew vault token")
+			}
+			return err
+		case <-watcher.RenewCh():
+			vaultLog.Info("vault token renewed")
+		}
 	}
 }
