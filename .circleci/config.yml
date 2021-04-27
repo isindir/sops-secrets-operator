@@ -306,7 +306,7 @@ jobs:
             export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
               | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
               | wc -l )
-            if [[ $SECRETS_NUMBER -ne 4 ]]; then
+            if [[ $SECRETS_NUMBER -ne 6 ]]; then
               echo "Expected number of secrets in sops namespace is 4 - Failed"
               tail -40 nohup.out
               exit 1

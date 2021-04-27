@@ -23,8 +23,8 @@ FROM debian:buster-20210408
 
 RUN apt-get -y update \
       && apt-get -y upgrade \
-	  && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
-	  && apt-get clean && rm -rf /var/lib/apt/lists/*
+      && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
+      && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 COPY --from=builder /workspace/manager .
