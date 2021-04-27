@@ -151,9 +151,11 @@ ifeq (, $(shell which controller-gen))
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
-else
+endif
+ifeq ("$(CIRCLECI)","true")
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
 
 ## pre-commit: update pre-commit
 pre-commit:
