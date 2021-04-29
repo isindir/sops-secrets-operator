@@ -162,15 +162,6 @@ spec:
     - name: some-token
       data:
         token: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
-    - name: secret-with-base64-encoded-binary-data
-      binaryData:
-        datakey: c29tZSBiaW5hcnkgZGF0YQ==
-        example: YW5vdGhlciBleGFtcGxlIG9mIGJpbmFyeSBkYXRh
-    - name: secret-with-mixed-data
-      data:
-        textdata: example data
-      binaryData:
-        bindata: YW5vdGhlciBleGFtcGxlIG9mIGJpbmFyeSBkYXRh
     - name: docker-login
       type: 'kubernetes.io/dockerconfigjson'
       data:
