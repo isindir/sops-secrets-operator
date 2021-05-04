@@ -1,4 +1,26 @@
 repos:
+- repo: https://github.com/norwoodj/helm-docs
+  rev: v1.5.0
+  hooks:
+  - id: helm-docs
+    args:
+      # Make the tool search for charts only under the `example-charts` directory
+      - --chart-search-root=chart/helm3/
+
+      # The `./` makes it relative to the chart-search-root set above
+      #- --template-files=./_templates.gotmpl
+
+      # Repeating the flag adds this to the list, now [./_templates.gotmpl, README.md.gotmpl]
+      # A base filename makes it relative to each chart directory found
+      - --template-files=./README.md.gotmpl
+#  - id: helm-docs
+#    args: []
+#    description: Uses 'helm-docs' to create documentation from the Helm chart's 'values.yaml' file, and inserts the result into a corresponding 'README.md' file.
+#    entry: git-hook/helm-docs
+#    files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$
+#    language: script
+#    name: Helm Docs
+#    require_serial: true
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v3.4.0
   hooks:

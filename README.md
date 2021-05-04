@@ -19,11 +19,7 @@ encrypted files stored in `git` repository.
 
 # Requirements for building operator from source code
 
-* sops - 3.7.1
-* kubebuilder - 2.3.1
-* kustomize - 3.8.5
-* golang - 1.15.10
-* helm - 3.+
+Requirements for building operator from source code can be found in [.tool-versions](.tool-versions), this file can be used with [asdf](https://asdf-vm.com/#/)
 
 # Operator Installation
 
@@ -61,6 +57,7 @@ helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
 
 * Create age reference `keys.txt` file, create kubernetes secret from it.
 * Deploy helm chart using `extraEnv` and `secretsAsFiles` to specify mounted `keys.txt` from secret via `SOPS_AGE_KEY_FILE` environment variable.
+* Also see: [Local testing using age](docs/age/README.md)
 
 References:
 

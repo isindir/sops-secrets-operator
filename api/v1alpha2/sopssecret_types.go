@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package v1alpha2
 
 import (
@@ -38,7 +42,7 @@ type SopsSecretSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Secrets template is a list of definitions to create Kubernetes Secrets
-	// +kubebuilder:validation:MinItems=1
+	//+kubebuilder:validation:MinItems=1
 	SecretsTemplate []SopsSecretTemplate `json:"secretTemplates"`
 }
 
@@ -180,12 +184,13 @@ type SopsSecretStatus struct {
 	Message string `json:"message,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
 
 // SopsSecret is the Schema for the sopssecrets API
-// +kubebuilder:resource:shortName=sops,scope=Namespaced
-// +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.message`
+//+kubebuilder:resource:shortName=sops,scope=Namespaced
+//+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.message`
 type SopsSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -198,7 +203,7 @@ type SopsSecret struct {
 	Sops SopsMetadata `json:"sops,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
 
 // SopsSecretList contains a list of SopsSecret
 type SopsSecretList struct {

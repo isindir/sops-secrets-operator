@@ -10,9 +10,9 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.15.11
+      GOLANG_VERSION: 1.16.3
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 2.3.1
+      KUBEBUILDER_VERSION: 3.0.0
       # https://github.com/kubernetes-sigs/kustomize/releases
       KUSTOMIZE_VERSION: v4.0.5
       # https://github.com/github/hub/releases
@@ -20,7 +20,7 @@ jobs:
       # https://github.com/git-chglog/git-chglog/releases
       GIT_CHGLOG_VERSION: 0.9.1
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_URL: 0.5.1
+      BUILDX_BINARY_VERSION: 0.5.1
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -35,7 +35,7 @@ jobs:
           name: install buildx
           command: |
             mkdir -p ~/.docker/cli-plugins
-            curl -sSLo docker-buildx https://github.com/docker/buildx/releases/download/v${BUILDX_BINARY_URL}/buildx-v${BUILDX_BINARY_URL}.linux-amd64
+            curl -sSLo docker-buildx https://github.com/docker/buildx/releases/download/v${BUILDX_BINARY_VERSION}/buildx-v${BUILDX_BINARY_VERSION}.linux-amd64
             chmod a+x docker-buildx
             mv docker-buildx ~/.docker/cli-plugins/docker-buildx
             docker buildx install
@@ -45,10 +45,9 @@ jobs:
       - run:
           name: install kubebuilder
           command: |
-            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
-            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
+            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_linux_amd64
+            chmod a+x kubebuilder_linux_amd64
+            sudo mv kubebuilder_linux_amd64 /usr/local/bin/kubebuilder
           background: true
       - run:
           name: install kustomize
@@ -99,15 +98,15 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       # https://github.com/kubernetes/kubernetes/releases
-      K8S_VERSION: v1.20.5
+      K8S_VERSION: v1.20.6
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v4.4.1
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.5.3
+      HELM_VERSION: v3.5.4
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.15.11
+      GOLANG_VERSION: 1.16.3
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 2.3.1
+      KUBEBUILDER_VERSION: 3.0.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.1
       # https://github.com/kubernetes-sigs/kustomize/releases
@@ -117,7 +116,7 @@ jobs:
       # https://github.com/instrumenta/kubeval/releases
       KUBEVAL_VERSION: 0.16.1
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_URL: 0.5.1
+      BUILDX_BINARY_VERSION: 0.5.1
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -139,7 +138,7 @@ jobs:
           name: install buildx
           command: |
             mkdir -p ~/.docker/cli-plugins
-            curl -sSLo docker-buildx https://github.com/docker/buildx/releases/download/v${BUILDX_BINARY_URL}/buildx-v${BUILDX_BINARY_URL}.linux-amd64
+            curl -sSLo docker-buildx https://github.com/docker/buildx/releases/download/v${BUILDX_BINARY_VERSION}/buildx-v${BUILDX_BINARY_VERSION}.linux-amd64
             chmod a+x docker-buildx
             mv docker-buildx ~/.docker/cli-plugins/docker-buildx
             docker buildx install
@@ -176,10 +175,9 @@ jobs:
       - run:
           name: install kubebuilder
           command: |
-            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            tar -xzf kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64.tar.gz
-            chmod +x kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl}
-            sudo mv kubebuilder_${KUBEBUILDER_VERSION}_linux_amd64/bin/{etcd,kube-apiserver,kubebuilder,kubectl} /usr/local/bin/
+            curl -sSLO https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_linux_amd64
+            chmod a+x kubebuilder_linux_amd64
+            sudo mv kubebuilder_linux_amd64 /usr/local/bin/kubebuilder
           background: true
       - run:
           name: install kustomize

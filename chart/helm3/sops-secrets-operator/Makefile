@@ -5,41 +5,38 @@ VERSION_TAG?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^version/ { gs
 
 SHELL=/bin/bash
 
-## all: run all test targets
-all: echo lint test validate
+##@ General
 
-## versions: show currently installed tool versions
-versions:
+all: echo lint test validate ## run all test targets
+
+help: ## Display this help.
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+
+versions: ## shows currently installed tool versions
 	helm version ; echo
 	helm plugin list | grep unittest ; echo
-	kubeval --version
+	@echo '--------------------'
+	@asdf current kubebuilder
+	@asdf current golang
+	@asdf current sops
+	@asdf current kustomize
+	@asdf current k3d
+	@asdf current kubectl
+	@asdf current helm
+	@asdf current kubeval
 	@echo '--------------------'
 
-## echo: print chart information
-echo:
+echo: ## prints chart information
 	@echo '-=-=-=-=-=-=-=-=-=-=- "${CHART_NAME}" version: "${VERSION_TAG}" -=-=-=-=-=-=-=-=-=-=-'
 
-## test: run unittests
-test:
+test: ## runs unittests
 	helm unittest --helm3 --color .
 	@echo '--------------------'
 
-## lint: lint helm chart
-lint:
+lint: ## runs helm chart linting
 	helm lint .
 	@echo '--------------------'
 
-## validate: validate rendered chart templates using 'kubeval'
-validate:
+validate: ## validates rendered chart templates using 'kubeval'
 	helm template . | kubeval --ignore-missing-schemas --force-color -
 	@echo '--------------------'
-
-## docs: generate chart documentation to stdout, if firgate is installed
-docs:
-	frigate gen .
-
-.PHONY: help
-## help: prints this help message
-help:
-	@echo "Usage:"
-	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' |  sed -e 's/^/ /'

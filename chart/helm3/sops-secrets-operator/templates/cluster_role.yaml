@@ -7,12 +7,29 @@ metadata:
 {{ include "sops-secrets-operator.labels" . | indent 4 }}
 rules:
 - apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - patch
+  - update
+  - watch
+- apiGroups:
   - ""
   resources:
   - configmaps
   - secrets
   verbs:
   - '*'
+- apiGroups:
+  - ""
+  resources:
+  - secrets/status
+  verbs:
+  - get
+  - patch
+  - update
 - apiGroups:
   - events.k8s.io
   - ""
@@ -30,7 +47,27 @@ rules:
 - apiGroups:
   - isindir.github.com
   resources:
-  - '*'
+  - sopssecrets
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - isindir.github.com
+  resources:
+  - sopssecrets/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - isindir.github.com
+  resources:
+  - sopssecrets/status
+  verbs:
+  - get
+  - patch
+  - update
 {{- end }}

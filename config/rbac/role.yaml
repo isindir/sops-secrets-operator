@@ -35,6 +35,12 @@ rules:
 - apiGroups:
   - isindir.github.com
   resources:
+  - sopssecrets/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - isindir.github.com
+  resources:
   - sopssecrets/status
   verbs:
   - get

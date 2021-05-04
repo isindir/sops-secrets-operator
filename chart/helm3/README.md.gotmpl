@@ -1,0 +1,118 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+## TL;DR;
+
+```console
+$ kubectl create namespace sops
+
+$ kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
+
+$ helm upgrade --install sops chart/sops-secrets-operator/ \
+  --namespace sops -f custom.values.yaml
+```
+
+> where `custom.values.yaml` must customise deployment and configure access to Cloud KMS
+
+* AWS is supported via `kiam` namespace and pod annotations or via [IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html)
+* GCP is supported via service account secret which allows decryption using GCP KMS
+* GPG is supported via secrets with GPG configuration
+* Azure is supported via a Service principal plus a secret
+* Vault is supported via vault agent injections
+* Age is supported via mounting secret and defining environment variable
+
+## Introduction
+
+This chart bootstraps a [sops-secrets-operator](https://github.com/isindir/sops-secrets-operator.git) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+
+## Installing the Chart
+
+### AWS
+
+* Deploy [kiam](https://github.com/uswitch/kiam) using [kiam chart](https://github.com/helm/charts/tree/master/stable/kiam)
+  * Alternatively [kube2iam](https://github.com/jtblin/kube2iam)
+  * Or provide credentials to perform AWS KMS operations
+* Create IAM assume role which allows to use KMS key for decryption
+* Create Kubernetes namespace for operator deployment, with kiam annotation
+* Apply `sops-secrets-operator` CRD
+* Deploy helm chart
+
+### GCP
+
+* Create GCP Service Account which allows to use KMS to decrypt
+* Either put the GCP Service Account JSON file in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable GCP in the Helm Chart by setting `gcp.enabled: true` in values.yaml.
+
+* Create custom values file in a following format:
+
+```yaml
+gcp:
+  enabled: true
+  svcAccSecret: |-
+    {
+      "type": "service_account",
+      ...
+    }
+```
+
+or
+
+```yaml
+gcp:
+  enabled: true
+  existingSecretName: gcp-sa-existing-secret-name
+```
+
+* Create Kubernetes namespace for operator deployment
+* Apply `sops-secrets-operator` CRD
+* Deploy helm chart specifying extra values file
+
+### Azure
+
+* Create a KeyVault if you don't have one already
+* Create a Key in that KeyVault
+* Create Service principal with permissions to use the key for Encryption/Decryption
+  * follow the [SOPS documentation](https://github.com/mozilla/sops#encrypting-using-azure-key-vault)
+* Either put Tenant ID, Client ID and Client Secret for the Service Principal in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable Azure in the Helm Chart by setting `azure.enabled: true` in values.yaml.
+
+### Age
+
+* Create age `keys.txt` file
+* Create Kubernetes secret using `keys.txt`
+* When deploying helm chart use `extraEnv` value to speicify environment variable `SOPS_AGE_RECIPIENTS` and `secretsAsFiles` value to mount `keys.txt`
+
+For reference see:
+
+* [Age encryption tool](https://github.com/FiloSottile/age)
+* [sops section on how to encrypt](https://github.com/mozilla/sops#22encrypting-using-age)
+* Also see: [Local testing using age](docs/age/README.md)
+
+## Uninstalling the Chart
+
+To uninstall/delete the `my-release` deployment:
+
+```console
+$ helm uninstall sops
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Configuration
+
+The following table lists the configurable parameters of the Sops-secrets-operator chart and their default values.
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
+
+Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
+
+> **Tip**: You can use the default [values.yaml](values.yaml)

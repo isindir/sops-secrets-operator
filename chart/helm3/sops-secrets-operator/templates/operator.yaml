@@ -66,9 +66,30 @@ spec:
           command:
           - /usr/local/bin/manager
           args:
-          #- "--metrics-addr=127.0.0.1:8080"
-          - "--enable-leader-election"
+          # The address the metric endpoint binds to. (default ":8080")
+          #- "--metrics-bind-address=127.0.0.1:8080"
+          - "--health-probe-bind-address=:{{ .Values.healthProbes.port }}"
+          # Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.
+          - "--leader-elect"
           - "--requeue-decrypt-after={{ .Values.requeueAfter }}"
+          - "--zap-encoder={{ .Values.logging.encoder }}"
+          - "--zap-log-level={{ .Values.logging.level }}"
+          - "--zap-stacktrace-level={{ .Values.logging.stacktraceLevel }}"
+          {{- if .Values.kubeconfig.enabled }}
+          - "--kubeconfig={{ .Values.kubeconfig.path | quote }}"
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.healthProbes.port }}
+            initialDelaySeconds: {{ .Values.healthProbes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthProbes.liveness.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ .Values.healthProbes.port }}
+            initialDelaySeconds: {{ .Values.healthProbes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthProbes.readiness.periodSeconds }}
           env:
             - name: POD_NAME
               valueFrom:
@@ -154,6 +175,7 @@ spec:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
+        allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
