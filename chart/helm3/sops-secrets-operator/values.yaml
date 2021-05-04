@@ -2,65 +2,123 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1  # Deployment replica count  - should not be modified
+# https://github.com/norwoodj/helm-docs and https://pre-commit.com/
+# are used to generate documentation automaticaly
+
+# -- Deployment replica count - should not be modified
+replicaCount: 1
 
 image:
-  repository: isindir/sops-secrets-operator  # Operator image
-  tag: 0.1.17  # Operator image tag
-  pullPolicy: Always  # Operator image pull policy
+  # -- Operator image name
+  repository: isindir/sops-secrets-operator
+  # -- Operator image tag
+  tag: 0.2.0
+  # -- Operator image pull policy
+  pullPolicy: Always
 
-imagePullSecrets: []  # Secrets to pull image from private docker repository
-nameOverride: ""  # Overrides auto-generated short resource name
-fullnameOverride: ""  # Overrides auto-generated long resource name
+# -- Secrets to pull image from private docker repository
+imagePullSecrets: []
+# -- Overrides auto-generated short resource name
+nameOverride: ""
+# -- Overrides auto-generated long resource name
+fullnameOverride: ""
 
-# aws
-podAnnotations: {}  # Annotations to be added to operator pod
+# -- Annotations to be added to operator pod (can be used with kiam or kube2iam)
+podAnnotations: {}
 
 serviceAccount:
-  annotations: {} # Annotations to be added to the service account
+  # -- Annotations to be added to the service account
+  annotations: {}
 
-requeueAfter: 5 # Requeue decryption errors for reconciliation after 5 minutes.
+# -- Requeue failed reconciliation in minutes (min 1). (default 5)
+requeueAfter: 5
 
+# -- Paths to a kubeconfig. Only required if out-of-cluster.
+kubeconfig:
+  enabled: false
+  path:
+
+# -- Logging configuration section suggested values
+# Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn).
+# Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default)
+logging:
+  # -- Zap log encoding (one of 'json' or 'console')
+  encoder: json
+  # -- Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity
+  level: info
+  # -- Zap Level at and above which stacktraces are captured (one of 'info', 'error').
+  stacktraceLevel: error
+
+healthProbes:
+  # -- The address the probe endpoint binds to. (default ":8081")
+  port: 8081
+  # -- Liveness probe configuration
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 20
+  # -- Readiness probe configuration
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+# -- GPG configuration section
 gpg:
-  enabled: false  # If `true` GCP secret will be created from provided value and mounted as environment variable
-  secret1: gpg1  # Name of the secret to create - will override default secret name if specified
-  secret2: gpg2  # Name of the secret to create - will override default secret name if specified
+  # -- If `true` GCP secret will be created from provided value and mounted as environment variable
+  enabled: false
+  # -- Name of the secret to create - will override default secret name if specified
+  secret1: gpg1
+  # -- Name of the secret to create - will override default secret name if specified
+  secret2: gpg2
 
+# -- GCP KMS configuration section
 gcp:
-  enabled: false  # Node labels for operator pod assignment
-  svcAccSecretCustomName: ''  # Name of the secret to create - will override default secret name if specified
-  svcAccSecret: ''  # If `gcp.enabled` is `true`, this value must be specified as GCP service account secret json payload
-  existingSecretName: '' # Name of a pre-existing secret containing GCP service account secret json payload
+  # -- Node labels for operator pod assignment
+  enabled: false
+  # -- Name of the secret to create - will override default secret name if specified
+  svcAccSecretCustomName: ''
+  # -- If `gcp.enabled` is `true`, this value must be specified as GCP service account secret json payload
+  svcAccSecret: ''
+  # -- Name of a pre-existing secret containing GCP service account secret json payload
+  existingSecretName: ''
 
-# Azure KeyVault
-# If you enable this, you must either specify clientId, tenantId and clientSecret in values.yaml or you can reference
-# a secret you have created yourself via another means by specifying a name in existingSecretName
+
+# -- Azure KeyVault configuration section
 azure:
-  enabled: false # if true Azure KeyVault will be used
-  # Specify your credentials here or use existingSecretName below to use a pre-existing secret
-  tenantId: '' # TenantID of Azure Service principal to use
-  clientId: '' # ClientID (Application ID) of Azure Service Principal to use
-  clientSecret: '' # Client Secret of Azure Service Principal
-  # Pre-existing secret must contain the keys tenantId, clientId and clientSecret with the appropriate values
-  existingSecretName: '' # Name of a pre-existing secret containing Azure Service Principal Credentials (ClientID, ClientSecret, TenantID)
+  # Specify credentials here or use existingSecretName below to use a pre-configred secret
 
-extraEnv: []  # A list of additional environment variables
+  # -- if true Azure KeyVault will be used
+  enabled: false
+  # -- TenantID of Azure Service principal to use
+  tenantId: ''
+  # -- ClientID (Application ID) of Azure Service Principal to use
+  clientId: ''
+  # -- Client Secret of Azure Service Principal
+  clientSecret: ''
+  # Pre-existing secret must contain the keys tenantId, clientId and clientSecret with the appropriate values
+  # -- Name of a pre-existing secret containing Azure Service Principal Credentials (ClientID, ClientSecret, TenantID)
+  existingSecretName: ''
+
+# -- A list of additional environment variables
+extraEnv: []
 #- name: AWS_SDK_LOAD_CONFIG
 #  value: "1"
 
-secretsAsEnvVars: []  # configure custom secrets to be used as environment variables at runtime, see values.yaml
+# -- configure custom secrets to be used as environment variables at runtime, see values.yaml
+secretsAsEnvVars: []
 #- name: SECRET_GREETING
 #  secretName: my-secret-greeting
 #  secretKey: greeting
 
-secretsAsFiles: []  # configure custom secrets to be mounted at runtime, see values.yaml
+# -- configure custom secrets to be mounted at runtime, see values.yaml
+secretsAsFiles: []
 # All files within secret will be mounted in "/etc/foo" - same as 1st example in k8s documentation
 # all secrets will be mounted as readonly
 #- name: foo
 #  mountPath: "/etc/foo"
 #  secretName: mysecret
 
-resources: {}  # Operator container resources
+# -- Operator container resources
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -72,17 +130,27 @@ resources: {}  # Operator container resources
   #   cpu: 100m
   #   memory: 128Mi
 
-nodeSelector: {}  # Node selector to use for pod configuration
+# -- Node selector to use for pod configuration
+nodeSelector: {}
 
 securityContext:
-  enabled: false  # Enable securityContext
-  runAsUser: 1000  # UID to run as
-  runAsGroup: 3000  # GID to run as
-  fsGroup: 1000  # fs group
+  # -- Enable securityContext
+  enabled: false
+  # -- UID to run as
+  runAsUser: 1000
+  # -- GID to run as
+  runAsGroup: 3000
+  # -- fs group
+  fsGroup: 1000
+  # -- allow Privilege escalation
+  allowPrivilegeEscalation: false
 
-tolerations: []  # Tolerations to be applied to operator pod
+# -- Tolerations to be applied to operator pod
+tolerations: []
 
-affinity: {}  # Node affinity for pod assignment
+# -- Node affinity for pod assignment
+affinity: {}
 
 rbac:
-  enabled: true  # Create and use RBAC resources
+  # -- Create and use RBAC resources
+  enabled: true

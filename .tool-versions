@@ -1,0 +1,8 @@
+kubebuilder 3.0.0
+golang 1.16.3
+sops 3.7.1
+kustomize 4.0.5
+k3d 4.4.1
+kubectl 1.20.6
+helm 3.5.4
+kubeval v0.16.1

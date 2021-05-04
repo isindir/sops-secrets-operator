@@ -1,6 +1,6 @@
 # Build the manager binary
 # https://hub.docker.com/_/golang?tab=tags&page=1&ordering=last_updated
-FROM golang:1.15.11-buster as builder
+FROM golang:1.16.3-buster as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -15,7 +15,7 @@ COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
 
-# Build
+# Build (GOARCH=amd64)
 RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
 
 # https://hub.docker.com/_/debian?tab=tags&page=1&ordering=last_updated

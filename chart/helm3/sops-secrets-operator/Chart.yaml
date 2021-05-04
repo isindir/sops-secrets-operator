@@ -1,8 +1,8 @@
 apiVersion: v2
-version: 0.7.6
-appVersion: 0.1.17
+version: 0.8.0
+appVersion: 0.2.0
 type: application
-description: sops secrets operator
+description: Helm chart deploys sops-secrets-operator
 name: sops-secrets-operator
 sources:
 - https://github.com/isindir/sops-secrets-operator.git

@@ -1,6 +1,10 @@
 # sops-secrets-operator
 
-Installs [sops-secrets-operator](https://github.com/isindir/sops-secrets-operator.git) to provide encrypted secrets in Weaveworks GitOps Flux environment.
+Helm chart deploys sops-secrets-operator
+
+## Source Code
+
+* <https://github.com/isindir/sops-secrets-operator.git>
 
 ## TL;DR;
 
@@ -19,20 +23,20 @@ $ helm upgrade --install sops chart/sops-secrets-operator/ \
 * GCP is supported via service account secret which allows decryption using GCP KMS
 * GPG is supported via secrets with GPG configuration
 * Azure is supported via a Service principal plus a secret
+* Vault is supported via vault agent injections
+* Age is supported via mounting secret and defining environment variable
 
 ## Introduction
 
 This chart bootstraps a [sops-secrets-operator](https://github.com/isindir/sops-secrets-operator.git) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
-
-## Prerequisites
-  - Kubernetes 1.12+
-  - helm 3.+
 
 ## Installing the Chart
 
 ### AWS
 
 * Deploy [kiam](https://github.com/uswitch/kiam) using [kiam chart](https://github.com/helm/charts/tree/master/stable/kiam)
+  * Alternatively [kube2iam](https://github.com/jtblin/kube2iam)
+  * Or provide credentials to perform AWS KMS operations
 * Create IAM assume role which allows to use KMS key for decryption
 * Create Kubernetes namespace for operator deployment, with kiam annotation
 * Apply `sops-secrets-operator` CRD
@@ -83,8 +87,9 @@ gcp:
 
 For reference see:
 
-* [Age tooling](https://github.com/FiloSottile/age)
+* [Age encryption tool](https://github.com/FiloSottile/age)
 * [sops section on how to encrypt](https://github.com/mozilla/sops#22encrypting-using-age)
+* Also see: [Local testing using age](docs/age/README.md)
 
 ## Uninstalling the Chart
 
@@ -100,48 +105,58 @@ The command removes all the Kubernetes components associated with the chart and 
 
 The following table lists the configurable parameters of the Sops-secrets-operator chart and their default values.
 
-| Parameter                | Description             | Default        |
-| ------------------------ | ----------------------- | -------------- |
-| `replicaCount` | Deployment replica count  - should not be modified | `1` |
-| `image.repository` | Operator image | `"isindir/sops-secrets-operator"` |
-| `image.tag` | Operator image tag | `"0.1.12"` |
-| `image.pullPolicy` | Operator image pull policy | `"Always"` |
-| `imagePullSecrets` | Secrets to pull image from private docker repository | `[]` |
-| `nameOverride` | Overrides auto-generated short resource name | `""` |
-| `fullnameOverride` | Overrides auto-generated long resource name | `""` |
-| `podAnnotations` | Annotations to be added to operator pod | `{}` |
-| `serviceAccount.annotations` | Annotations to be added to the service account | `{}` |
-| `requeueAfter` | Requeue decryption errors for reconciliation after 5 minutes. | `5` |
-| `gpg.enabled` | If `true` gcp secret will be created from provided value and mounted as environment variable | `false` |
-| `gpg.secret1` | Name of the secret to create - will override default secret name if specified | `"gpg1"` |
-| `gpg.secret2` | Name of the secret to create - will override default secret name if specified | `"gpg2"` |
-| `gcp.enabled` | Node labels for operator pod assignment | `false` |
-| `gcp.svcAccSecretCustomName` | Name of the secret to create - will override default secret name if specified | `""` |
-| `gcp.svcAccSecret` | If `gcp.enabled` is `true`, this value must be specified as gcp service account secret json payload | `""` |
-| `gcp.existingSecretName` | Name of a pre-existing secret containing gcp service account secret json payload | `""` |
-| `azure.enabled` | If true azure keyvault will be used | `false` |
-| `azure.tenantId` | Tenantid of azure service principal to use | `""` |
-| `azure.clientId` | Clientid (application id) of azure service principal to use | `""` |
-| `azure.clientSecret` | Client secret of azure service principal | `""` |
-| `azure.existingSecretName` | Name of a pre-existing secret containing azure service principal credentials (clientid, clientsecret, tenantid) | `""` |
-| `extraEnv` | A list of additional environment variables | `[]` |
-| `secretsAsEnvVars` | Configure custom secrets to be used as environment variables at runtime, see values.yaml | `[]` |
-| `secretsAsFiles` | Configure custom secrets to be mounted at runtime, see values.yaml | `[]` |
-| `resources` | Operator container resources | `{}` |
-| `nodeSelector` | Node selector to use for pod configuration | `{}` |
-| `securityContext.enabled` | Enable securitycontext | `false` |
-| `securityContext.runAsUser` | Uid to run as | `1000` |
-| `securityContext.runAsGroup` | Gid to run as | `3000` |
-| `securityContext.fsGroup` | Fs group | `2000` |
-| `tolerations` | Tolerations to be applied to operator pod | `[]` |
-| `affinity` | Node affinity for pod assignment | `{}` |
-| `rbac.enabled` | Create and use rbac resources | `true` |
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| affinity | object | `{}` | Node affinity for pod assignment |
+| azure | object | `{"clientId":"","clientSecret":"","enabled":false,"existingSecretName":"","tenantId":""}` | Azure KeyVault configuration section |
+| azure.clientId | string | `""` | ClientID (Application ID) of Azure Service Principal to use |
+| azure.clientSecret | string | `""` | Client Secret of Azure Service Principal |
+| azure.enabled | bool | `false` | if true Azure KeyVault will be used |
+| azure.tenantId | string | `""` | TenantID of Azure Service principal to use |
+| extraEnv | list | `[]` | A list of additional environment variables |
+| fullnameOverride | string | `""` | Overrides auto-generated long resource name |
+| gcp | object | `{"enabled":false,"existingSecretName":"","svcAccSecret":"","svcAccSecretCustomName":""}` | GCP KMS configuration section |
+| gcp.enabled | bool | `false` | Node labels for operator pod assignment |
+| gcp.existingSecretName | string | `""` | Name of a pre-existing secret containing GCP service account secret json payload |
+| gcp.svcAccSecret | string | `""` | If `gcp.enabled` is `true`, this value must be specified as GCP service account secret json payload |
+| gcp.svcAccSecretCustomName | string | `""` | Name of the secret to create - will override default secret name if specified |
+| gpg | object | `{"enabled":false,"secret1":"gpg1","secret2":"gpg2"}` | GPG configuration section |
+| gpg.enabled | bool | `false` | If `true` GCP secret will be created from provided value and mounted as environment variable |
+| gpg.secret1 | string | `"gpg1"` | Name of the secret to create - will override default secret name if specified |
+| gpg.secret2 | string | `"gpg2"` | Name of the secret to create - will override default secret name if specified |
+| healthProbes.liveness | object | `{"initialDelaySeconds":15,"periodSeconds":20}` | Liveness probe configuration |
+| healthProbes.port | int | `8081` | The address the probe endpoint binds to. (default ":8081") |
+| healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
+| image.pullPolicy | string | `"Always"` | Operator image pull policy |
+| image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
+| image.tag | string | `"0.2.0"` | Operator image tag |
+| imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
+| kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
+| logging | object | `{"encoder":"json","level":"info","stacktraceLevel":"error"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
+| logging.encoder | string | `"json"` | Zap log encoding (one of 'json' or 'console') |
+| logging.level | string | `"info"` | Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity |
+| logging.stacktraceLevel | string | `"error"` | Zap Level at and above which stacktraces are captured (one of 'info', 'error'). |
+| nameOverride | string | `""` | Overrides auto-generated short resource name |
+| nodeSelector | object | `{}` | Node selector to use for pod configuration |
+| podAnnotations | object | `{}` | Annotations to be added to operator pod (can be used with kiam or kube2iam) |
+| rbac.enabled | bool | `true` | Create and use RBAC resources |
+| replicaCount | int | `1` | Deployment replica count - should not be modified |
+| requeueAfter | int | `5` | Requeue failed reconciliation in minutes (min 1). (default 5) |
+| resources | object | `{}` | Operator container resources |
+| secretsAsEnvVars | list | `[]` | configure custom secrets to be used as environment variables at runtime, see values.yaml |
+| secretsAsFiles | list | `[]` | configure custom secrets to be mounted at runtime, see values.yaml |
+| securityContext.allowPrivilegeEscalation | bool | `false` | allow Privilege escalation |
+| securityContext.enabled | bool | `false` | Enable securityContext |
+| securityContext.fsGroup | int | `1000` | fs group |
+| securityContext.runAsGroup | int | `3000` | GID to run as |
+| securityContext.runAsUser | int | `1000` | UID to run as |
+| serviceAccount.annotations | object | `{}` | Annotations to be added to the service account |
+| tolerations | list | `[]` | Tolerations to be applied to operator pod |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
 Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
 
 > **Tip**: You can use the default [values.yaml](values.yaml)
-
----
-_Documentation generated by [Frigate](https://frigate.readthedocs.io)._

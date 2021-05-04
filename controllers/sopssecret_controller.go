@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package controllers
 
 import (
@@ -38,13 +42,17 @@ type SopsSecretReconciler struct {
 	RequeueAfter int64
 }
 
-// Reconcile - main reconcile loop of the controller
-// +kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups="",resources=secrets,verbs="*"
-// +kubebuilder:rbac:groups="",resources=secrets/status,verbs=get;update;patch
-func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
+//+kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=secrets,verbs="*"
+//+kubebuilder:rbac:groups="",resources=secrets/status,verbs=get;update;patch
+
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
+// For more details, check Reconcile and its Result here:
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.2/pkg/reconcile
+func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = r.Log.WithValues("sopssecret", req.NamespacedName)
 
 	r.Log.Info("Reconciling", "sopssecret", req.NamespacedName)
@@ -222,7 +230,7 @@ func (r *SopsSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager - setup with manager
+// SetupWithManager sets up the controller with the Manager.
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	// Set logging level

@@ -1,7 +1,16 @@
 domain: github.com
+layout:
+- go.kubebuilder.io/v3
+projectName: sops-secrets-operator
 repo: github.com/isindir/sops-secrets-operator
 resources:
-- group: isindir
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: github.com
+  group: isindir
   kind: SopsSecret
+  path: github.com/isindir/sops-secrets-operator/api/v1alpha2
   version: v1alpha2
-version: "2"
+version: "3"
