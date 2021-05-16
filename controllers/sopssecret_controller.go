@@ -162,7 +162,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				"error",
 				err,
 			)
-			return reconcile.Result{}, nil
+			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		if !metav1.IsControlledBy(foundSecret, instance) {
@@ -176,7 +176,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				"error",
 				fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
 			)
-			return reconcile.Result{}, nil
+			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		origSecret := foundSecret
@@ -207,7 +207,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 					"error",
 					err,
 				)
-				return reconcile.Result{}, nil
+				return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 			}
 			r.Log.Info(
 				"Secret successfully refreshed",

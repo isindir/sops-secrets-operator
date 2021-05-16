@@ -9,7 +9,7 @@ repos:
       # The `./` makes it relative to the chart-search-root set above
       - --template-files=./README.md.gotmpl
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.4.0
+  rev: v4.0.0
   hooks:
   - id: check-symlinks
   - id: check-merge-conflict
