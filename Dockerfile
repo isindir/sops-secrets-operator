@@ -1,6 +1,6 @@
 # Build the manager binary
 # https://hub.docker.com/_/golang?tab=tags&page=1&ordering=last_updated
-FROM golang:1.16.3-buster as builder
+FROM golang:1.16.4-buster as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -19,7 +19,7 @@ COPY controllers/ controllers/
 RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
 
 # https://hub.docker.com/_/debian?tab=tags&page=1&ordering=last_updated
-FROM debian:buster-20210408
+FROM debian:buster-20210511
 
 RUN apt-get -y update \
       && apt-get -y upgrade \

@@ -11,10 +11,7 @@ rules:
   resources:
   - leases
   verbs:
-  - get
-  - patch
-  - update
-  - watch
+  - '*'
 - apiGroups:
   - ""
   resources:

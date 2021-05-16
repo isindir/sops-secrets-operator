@@ -1,9 +1,9 @@
-GO := GO15VENDOREXPERIMENT=1 GO111MODULE=on GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.2.0
+GO := GOPROXY=https://proxy.golang.org go
+SOPS_SEC_OPERATOR_VERSION := 0.2.1
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.4.1"
-KUSTOMIZE_VERSION := "v4.0.5"
+KUSTOMIZE_VERSION := "v4.1.2"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -76,7 +76,7 @@ test-helm: ## Tests helm chart.
 
 ##@ Development
 
-manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+manifests: tidy controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 generate: controller-gen tidy ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.

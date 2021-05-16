@@ -10,11 +10,11 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.16.3
+      GOLANG_VERSION: 1.16.4
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.0.0
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v4.0.5
+      KUSTOMIZE_VERSION: v4.1.2
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
@@ -98,19 +98,19 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       # https://github.com/kubernetes/kubernetes/releases
-      K8S_VERSION: v1.20.6
+      K8S_VERSION: v1.20.7
       # https://github.com/rancher/k3d/releases
-      K3D_VERSION: v4.4.1
+      K3D_VERSION: v4.4.3
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.5.4
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.16.3
+      GOLANG_VERSION: 1.16.4
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.0.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.1
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v4.0.5
+      KUSTOMIZE_VERSION: v4.1.2
       # https://github.com/quintush/helm-unittest/releases
       HELM_UNITTEST_VERSION: 0.2.6
       # https://github.com/instrumenta/kubeval/releases
@@ -239,23 +239,23 @@ jobs:
             kubectl describe node k3d-operator-server-0
             kubectl describe node k3d-operator-agent-0
       - run:
-          name: Docker build
-          command: |
-            make docker-login
-            make docker-cross-build
-      - run:
           name: make test
           command: |
             make test
-      - save_cache:
-          key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
-          paths:
-            - "/home/circleci/gogo/pkg"
       # run helm tests
       - run:
           name: Test helm charts
           command: |
             make test-helm
+      - run:
+          name: Docker build
+          command: |
+            make docker-login
+            make docker-cross-build
+      - save_cache:
+          key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
+          paths:
+            - "/home/circleci/gogo/pkg"
       # tests start here
       - run:
           name: Run Local Tests
