@@ -137,13 +137,11 @@ securityContext:
   # -- Enable securityContext
   enabled: false
   # -- UID to run as
-  runAsUser: 1000
+  runAsUser: 13001
   # -- GID to run as
-  runAsGroup: 3000
+  runAsGroup: 13001
   # -- fs group
-  fsGroup: 1000
-  # -- allow Privilege escalation
-  allowPrivilegeEscalation: false
+  fsGroup: 13001
 
 # -- Tolerations to be applied to operator pod
 tolerations: []
