@@ -175,7 +175,6 @@ spec:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
-        allowPrivilegeEscalation: {{ .Values.securityContext.allowPrivilegeEscalation }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:

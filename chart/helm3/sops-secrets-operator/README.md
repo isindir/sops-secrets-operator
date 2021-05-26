@@ -147,11 +147,10 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | resources | object | `{}` | Operator container resources |
 | secretsAsEnvVars | list | `[]` | configure custom secrets to be used as environment variables at runtime, see values.yaml |
 | secretsAsFiles | list | `[]` | configure custom secrets to be mounted at runtime, see values.yaml |
-| securityContext.allowPrivilegeEscalation | bool | `false` | allow Privilege escalation |
 | securityContext.enabled | bool | `false` | Enable securityContext |
-| securityContext.fsGroup | int | `1000` | fs group |
-| securityContext.runAsGroup | int | `3000` | GID to run as |
-| securityContext.runAsUser | int | `1000` | UID to run as |
+| securityContext.fsGroup | int | `13001` | fs group |
+| securityContext.runAsGroup | int | `13001` | GID to run as |
+| securityContext.runAsUser | int | `13001` | UID to run as |
 | serviceAccount.annotations | object | `{}` | Annotations to be added to the service account |
 | tolerations | list | `[]` | Tolerations to be applied to operator pod |
 

@@ -38,5 +38,5 @@ lint: ## runs helm chart linting
 	@echo '--------------------'
 
 validate: ## validates rendered chart templates using 'kubeval'
-	helm template . | kubeval --ignore-missing-schemas --force-color -
+	helm template . --set securityContextenabled=true | kubeval --ignore-missing-schemas --force-color -
 	@echo '--------------------'
