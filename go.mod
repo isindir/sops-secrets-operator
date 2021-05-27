@@ -8,8 +8,8 @@ require (
 	github.com/onsi/gomega v1.11.0
 	github.com/sirupsen/logrus v1.8.1
 	go.mozilla.org/sops/v3 v3.7.1
-	k8s.io/api v0.19.2
-	k8s.io/apimachinery v0.19.2
-	k8s.io/client-go v0.19.2
+	k8s.io/api v0.20.7
+	k8s.io/apimachinery v0.20.7
+	k8s.io/client-go v0.20.7
 	sigs.k8s.io/controller-runtime v0.7.2
 )

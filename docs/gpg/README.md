@@ -7,7 +7,7 @@ This procedure describes basic setup to use PGP keys with sops-secrets-operator.
 Run docker container in the directory of this README file:
 
 ```bash
-docker run -v $( pwd ):/tmp/scripts -ti ubuntu:16.04 bash
+docker run --rm -v $( pwd ):/tmp/scripts -ti ubuntu:20.04 bash
 ```
 
 Then generate PGP keys inside container. PGP key files will remain in the folder
