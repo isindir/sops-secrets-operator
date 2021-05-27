@@ -19,11 +19,13 @@ COPY controllers/ controllers/
 RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
 
 # https://hub.docker.com/_/debian?tab=tags&page=1&ordering=last_updated
-FROM debian:buster-20210511
+#FROM debian:buster-20210511
+# https://hub.docker.com/_/ubuntu
+FROM ubuntu:focal-20210416
 
 RUN apt-get -y update \
       && apt-get -y upgrade \
-      && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
+      && apt-get -y install --no-install-recommends ca-certificates \
       && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
