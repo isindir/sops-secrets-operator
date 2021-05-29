@@ -6,6 +6,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	isindirv1alpha2 "github.com/isindir/sops-secrets-operator/api/v1alpha2"
+	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
 
 	"go.mozilla.org/sops/v3"
 	sopsaes "go.mozilla.org/sops/v3/aes"
@@ -57,8 +58,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	r.Log.Info("Reconciling", "sopssecret", req.NamespacedName)
 
-	instanceEncrypted := &isindirv1alpha2.SopsSecret{}
-	err := r.Get(context.TODO(), req.NamespacedName, instanceEncrypted)
+	instanceEncrypted := &isindirv1alpha3.SopsSecret{}
+	err := r.Get(ctx, req.NamespacedName, instanceEncrypted)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -71,13 +72,28 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			)
 			return reconcile.Result{}, nil
 		}
+
 		// Error reading the object - requeue the request.
 		r.Log.Info(
-			"Error reading the object - requeue the request",
+			"Error reading the object",
 			"sopssecret",
 			req.NamespacedName,
 		)
 		return reconcile.Result{}, err
+	}
+
+	// Return early if the object is suspended.
+	if instanceEncrypted.Spec.Suspend {
+		r.Log.Info(
+			"Reconciliation is suspended for this object",
+			"sopssecret",
+			req.NamespacedName,
+		)
+
+		instanceEncrypted.Status.Message = "Reconciliation is suspended"
+		r.Status().Update(context.Background(), instanceEncrypted)
+
+		return reconcile.Result{}, nil
 	}
 
 	instance, err := decryptSopsSecretInstance(instanceEncrypted, r.Log)
@@ -133,7 +149,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		// Check if this Secret already exists
 		foundSecret := &corev1.Secret{}
 		err = r.Get(
-			context.TODO(),
+			ctx,
 			types.NamespacedName{
 				Name:      newSecret.Name,
 				Namespace: newSecret.Namespace,
@@ -148,7 +164,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				"message",
 				err,
 			)
-			err = r.Create(context.TODO(), newSecret)
+			err = r.Create(ctx, newSecret)
 			foundSecret = newSecret.DeepCopy()
 		}
 		if err != nil {
@@ -196,7 +212,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				"namespace",
 				foundSecret.Namespace,
 			)
-			if err = r.Update(context.TODO(), foundSecret); err != nil {
+			if err = r.Update(ctx, foundSecret); err != nil {
 				instanceEncrypted.Status.Message = "Child secret update error"
 				r.Status().Update(context.Background(), instanceEncrypted)
 
@@ -242,15 +258,15 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&isindirv1alpha2.SopsSecret{}).
+		For(&isindirv1alpha3.SopsSecret{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }
 
 // newSecretForCR returns a secret with the same namespace as the cr
 func newSecretForCR(
-	cr *isindirv1alpha2.SopsSecret,
-	secretTpl *isindirv1alpha2.SopsSecretTemplate,
+	cr *isindirv1alpha3.SopsSecret,
+	secretTpl *isindirv1alpha3.SopsSecretTemplate,
 	reqLogger logr.Logger,
 ) (*corev1.Secret, error) {
 	labels := make(map[string]string)
@@ -264,10 +280,18 @@ func newSecretForCR(
 		annotations[key] = value
 	}
 
-	// Construct Data for the secret
-	data := make(map[string]string)
+	// Construct stringData for the secret
+	strData := make(map[string]string)
+	for key, value := range secretTpl.StringData {
+		strData[key] = value
+	}
+	// add data to stringData
 	for key, value := range secretTpl.Data {
-		data[key] = value
+		decoded, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return nil, fmt.Errorf("newSecretForCR(): data[%v] is not a valid base65 string", key)
+		}
+		strData[key] = string(decoded)
 	}
 
 	if secretTpl.Name == "" {
@@ -299,7 +323,7 @@ func newSecretForCR(
 			Annotations: annotations,
 		},
 		Type:       kubeSecretType,
-		StringData: data,
+		StringData: strData,
 	}
 	return secret, nil
 }
@@ -333,10 +357,10 @@ func getSecretType(paramType string) corev1.SecretType {
 
 // decryptSopsSecretInstance decrypts spec.secretTemplates
 func decryptSopsSecretInstance(
-	instanceEncrypted *isindirv1alpha2.SopsSecret,
+	instanceEncrypted *isindirv1alpha3.SopsSecret,
 	reqLogger logr.Logger,
-) (*isindirv1alpha2.SopsSecret, error) {
-	instance := &isindirv1alpha2.SopsSecret{}
+) (*isindirv1alpha3.SopsSecret, error) {
+	instance := &isindirv1alpha3.SopsSecret{}
 	reqBodyBytes, err := json.Marshal(instanceEncrypted)
 	if err != nil {
 		reqLogger.Info(

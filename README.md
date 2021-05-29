@@ -142,26 +142,37 @@ helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
 
 ```yaml
 cat >jenkins-secrets.yaml <<EOF
-apiVersion: isindir.github.com/v1alpha2
+apiVersion: isindir.github.com/v1alpha3
 kind: SopsSecret
 metadata:
   name: example-sopssecret
 spec:
+  # suspend reconciliation of the sops secret object
+  suspend: false
   secretTemplates:
+    - name: my-secret-name-1
+      labels:
+        label1: value1
+      annotations:
+        key1: value1
+      stringData:
+        data-name0: data-value0
+      data:
+        data-name1: ZGF0YS12YWx1ZTE=
     - name: jenkins-secret
       labels:
         "jenkins.io/credentials-type": "usernamePassword"
       annotations:
         "jenkins.io/credentials-description" : "credentials from Kubernetes"
-      data:
+      stingData:
         username: myUsername
         password: 'Pa$$word'
     - name: some-token
-      data:
+      stringData:
         token: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
     - name: docker-login
       type: 'kubernetes.io/dockerconfigjson'
-      data:
+      stringData:
         .dockerconfigjson: '{"auths":{"index.docker.io":{"username":"imyuser","password":"mypass","email":"myuser@abc.com","auth":"aW15dXNlcjpteXBhc3M="}}}'
 EOF
 ```

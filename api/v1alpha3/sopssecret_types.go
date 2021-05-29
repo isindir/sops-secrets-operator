@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-package v1alpha2
+package v1alpha3
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,9 +11,22 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 // For upstream reference, see https://github.com/mozilla/sops/blob/master/stores/stores.go
 
+// SopsSecretSpec defines the desired state of SopsSecret
+type SopsSecretSpec struct {
+	// Secrets template is a list of definitions to create Kubernetes Secrets
+	// +kubebuilder:validation:MinItems=1
+	// +required
+	SecretsTemplate []SopsSecretTemplate `json:"secretTemplates"`
+
+	// This flag tells the controller to suspend the reconciliation of this source.
+	// +optional
+	Suspend bool `json:"suspend,omitempty"`
+}
+
 // SopsSecretTemplate defines the map of secrets to create
 type SopsSecretTemplate struct {
 	// Name of the Kubernetes secret to create
+	// +required
 	Name string `json:"name"`
 
 	// Annotations to apply to Kubernetes secret
@@ -31,19 +44,15 @@ type SopsSecretTemplate struct {
 	// +optional
 	Type string `json:"type,omitempty"`
 
-	// Data map to use in Kubernetes secret (equivalent to Kubernetes Secret object stringData, please see for more
+	// Data map to use in Kubernetes secret (equivalent to Kubernetes Secret object data, please see for more
 	// information: https://kubernetes.io/docs/concepts/configuration/secret/#overview-of-secrets)
-	Data map[string]string `json:"data"`
-}
+	// +optional
+	Data map[string]string `json:"data,omitempty"`
 
-// SopsSecretSpec defines the desired state of SopsSecret
-type SopsSecretSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Secrets template is a list of definitions to create Kubernetes Secrets
-	//+kubebuilder:validation:MinItems=1
-	SecretsTemplate []SopsSecretTemplate `json:"secretTemplates"`
+	// stringData map to use in Kubernetes secret (equivalent to Kubernetes Secret object stringData, please see for more
+	// information: https://kubernetes.io/docs/concepts/configuration/secret/#overview-of-secrets)
+	// +optional
+	StringData map[string]string `json:"stringData,omitempty"`
 }
 
 // KmsDataItem defines AWS KMS specific encryption details
