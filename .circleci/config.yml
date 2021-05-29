@@ -287,13 +287,13 @@ jobs:
             sleep 3
             sops -e -p $FP \
               --encrypted-suffix='Templates' \
-              config/samples/isindir_v1alpha2_sopssecret.yaml \
-              > config/samples/isindir_v1alpha2_sopssecret.enc.yaml
-            file config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+              config/samples/isindir_v1alpha3_sopssecret.yaml \
+              > config/samples/isindir_v1alpha3_sopssecret.enc.yaml
+            file config/samples/isindir_v1alpha3_sopssecret.enc.yaml
             echo "====================================="
-            cat config/samples/isindir_v1alpha2_sopssecret.enc.yaml
+            cat config/samples/isindir_v1alpha3_sopssecret.enc.yaml
             echo "====================================="
-            kubectl apply -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
+            kubectl apply -f config/samples/isindir_v1alpha3_sopssecret.enc.yaml --namespace sops
             sleep 3
             nohup make run &
             sleep 150
@@ -301,16 +301,41 @@ jobs:
             echo
             kubectl get secrets --namespace sops
             echo
-            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
-              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops --no-headers \
+              | awk '$0 !~ /default-token/ { print $1; }' \
               | wc -l )
-            if [[ $SECRETS_NUMBER -ne 4 ]]; then
-              echo "Expected number of secrets in sops namespace is 4 - Failed"
+            if [[ $SECRETS_NUMBER -ne 5 ]]; then
+              echo "Expected number of secrets in sops namespace is 5 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
+            # Check specific k8s for amount of data entries
+            ## my-secret-name-0
+            export DATA_ENTRIES=$( kubectl get secrets my-secret-name-0 --namespace sops --no-headers \
+              | awk '{print $3}' )
+            if [[ $DATA_ENTRIES -ne 2 ]]; then
+              echo "Expected number of data entries in my-secret-name-0 is 2 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
+            ## my-secret-name-1
+            export DATA_ENTRIES=$( kubectl get secrets my-secret-name-1 --namespace sops --no-headers \
+              | awk '{print $3}' )
+            if [[ $DATA_ENTRIES -ne 3 ]]; then
+              echo "Expected number of data entries in my-secret-name-1 is 3 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
+            ## my-secret-name-2
+            export DATA_ENTRIES=$( kubectl get secrets my-secret-name-2 --namespace sops --no-headers \
+              | awk '{print $3}' )
+            if [[ $DATA_ENTRIES -ne 2 ]]; then
+              echo "Expected number of data entries in my-secret-name-2 is 2 - Failed"
               tail -40 nohup.out
               exit 1
             fi
             # Delete to check GC works
-            kubectl delete -f config/samples/isindir_v1alpha2_sopssecret.enc.yaml --namespace sops
+            kubectl delete -f config/samples/isindir_v1alpha3_sopssecret.enc.yaml --namespace sops
             sleep 15
             kubectl get sops --namespace sops
             echo

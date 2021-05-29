@@ -6,7 +6,7 @@ export SOPS_AGE_KEY=$( age-keygen -o qqq.key.txt 2>&1 | awk '{ print $3 }' )
 export SOPS_AGE_KEY_FILE=$PWD/qqq.key.txt
 
 cat >qqq.jenkins-secrets.yaml <<EOF
-apiVersion: isindir.github.com/v1alpha2
+apiVersion: isindir.github.com/v1alpha3
 kind: SopsSecret
 metadata:
   name: example-sopssecret
@@ -17,15 +17,15 @@ spec:
         "jenkins.io/credentials-type": "usernamePassword"
       annotations:
         "jenkins.io/credentials-description" : "credentials from Kubernetes"
-      data:
+      stringData:
         username: myUsername
         password: 'Pa$$word'
     - name: some-token
-      data:
+      stringData:
         token: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
     - name: docker-login
       type: 'kubernetes.io/dockerconfigjson'
-      data:
+      stringData:
         .dockerconfigjson: '{"auths":{"index.docker.io":{"username":"imyuser","password":"mypass","email":"myuser@abc.com","auth":"aW15dXNlcjpteXBhc3M="}}}'
 EOF
 

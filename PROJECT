@@ -11,6 +11,6 @@ resources:
   domain: github.com
   group: isindir
   kind: SopsSecret
-  path: github.com/isindir/sops-secrets-operator/api/v1alpha2
-  version: v1alpha2
+  path: github.com/isindir/sops-secrets-operator/api/v1alpha3
+  version: v1alpha3
 version: "3"

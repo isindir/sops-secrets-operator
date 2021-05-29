@@ -21,7 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	isindirv1alpha2 "github.com/isindir/sops-secrets-operator/api/v1alpha2"
+	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
 	"github.com/isindir/sops-secrets-operator/controllers"
 	//+kubebuilder:scaffold:imports
 )
@@ -34,7 +34,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(isindirv1alpha2.AddToScheme(scheme))
+	utilruntime.Must(isindirv1alpha3.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

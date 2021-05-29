@@ -1,6 +1,6 @@
 apiVersion: v2
-version: 0.8.4
-appVersion: 0.2.2
+version: 0.9.0
+appVersion: 0.3.0
 type: application
 description: Helm chart deploys sops-secrets-operator
 name: sops-secrets-operator
@@ -23,7 +23,7 @@ metadata:
     artifacthub.io/operatorCapabilities: "Full Lifecycle"
     artifacthub.io/crds:
     - kind: SopsSecret
-      version: isindir.github.com/v1alpha2
+      version: isindir.github.com/v1alpha3
       name: sopssecret
       displayName: SopsSecret
       description: SopsSecret - encapsulates sops encrypted kubernetes secrets definitions

@@ -18,7 +18,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	isindirv1alpha2 "github.com/isindir/sops-secrets-operator/api/v1alpha2"
+	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -50,7 +50,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
-	err = isindirv1alpha2.AddToScheme(scheme.Scheme)
+	err = isindirv1alpha3.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
