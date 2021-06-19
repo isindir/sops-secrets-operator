@@ -1,0 +1,17 @@
+apiVersion: isindir.github.com/v1alpha1
+kind: SopsSecret
+metadata:
+  name: example-sopssecret
+spec:
+  secret_templates:
+    - name: jenkins-secret
+      labels:
+        "jenkins.io/credentials-type": "usernamePassword"
+      annotations:
+        "jenkins.io/credentials-description" : "credentials from Kubernetes"
+      data:
+        username: myUsername
+        password: 'Pa$$word'
+    - name: some-token
+      data:
+        token: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
