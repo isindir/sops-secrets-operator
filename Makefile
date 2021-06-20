@@ -1,10 +1,12 @@
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.3.0
+SOPS_SEC_OPERATOR_VERSION := 0.3.1
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.4.1"
+# https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.8.3"
-KUSTOMIZE_VERSION := "v4.1.2"
+# https://github.com/kubernetes-sigs/kustomize/releases
+KUSTOMIZE_VERSION := "v4.1.3"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -51,6 +53,7 @@ help: ## Display this help.
 clean: ## Cleans dependency directories.
 	rm -fr $$( which controller-gen )
 	rm -fr ./vendor
+	rm -fr ./testbin
 
 tidy: ## Fetches all go dependencies.
 	$(GO) mod tidy

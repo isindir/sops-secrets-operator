@@ -10,7 +10,7 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.16.4
+      GOLANG_VERSION: 1.16.5
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/kubernetes-sigs/kustomize/releases
@@ -18,7 +18,7 @@ jobs:
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.9.1
+      GIT_CHGLOG_VERSION: 0.14.2
       # https://github.com/docker/buildx/releases
       BUILDX_BINARY_VERSION: 0.5.1
 
@@ -60,7 +60,8 @@ jobs:
       - run:
           name: install git-chglog
           command: |
-            curl -sSLo git-chglog https://github.com/git-chglog/git-chglog/releases/download/${GIT_CHGLOG_VERSION}/git-chglog_linux_amd64
+            curl -sSLO https://github.com/git-chglog/git-chglog/releases/download/v${GIT_CHGLOG_VERSION}/git-chglog_${GIT_CHGLOG_VERSION}_linux_amd64.tar.gz
+            tar -xzf git-chglog_${GIT_CHGLOG_VERSION}_linux_amd64.tar.gz
             chmod +x git-chglog
             sudo mv git-chglog /usr/local/bin/
       - run:
@@ -100,11 +101,11 @@ jobs:
       # https://github.com/kubernetes/kubernetes/releases
       K8S_VERSION: v1.20.7
       # https://github.com/rancher/k3d/releases
-      K3D_VERSION: v4.4.4
+      K3D_VERSION: v4.4.6
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.6.0
+      HELM_VERSION: v3.6.1
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.16.4
+      GOLANG_VERSION: 1.16.5
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/mozilla/sops/releases
