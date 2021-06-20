@@ -14,4 +14,5 @@ kubectl 1.20.7
 helm 3.6.1
 # https://github.com/instrumenta/kubeval/releases
 kubeval v0.16.1
+# https://github.com/git-chglog/git-chglog/releases
 git-chglog 0.9.1
