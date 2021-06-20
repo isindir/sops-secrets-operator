@@ -53,6 +53,7 @@ help: ## Display this help.
 clean: ## Cleans dependency directories.
 	rm -fr $$( which controller-gen )
 	rm -fr ./vendor
+	rm -fr ./testbin
 
 tidy: ## Fetches all go dependencies.
 	$(GO) mod tidy
