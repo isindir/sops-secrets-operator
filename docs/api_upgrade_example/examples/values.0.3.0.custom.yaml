@@ -1,0 +1,11 @@
+replicaCount: 1
+
+extraEnv:
+- name: AWS_SDK_LOAD_CONFIG
+  value: "1"
+- name: AWS_ACCESS_KEY_ID
+  value: "<place-yours-here>"
+- name: AWS_SECRET_ACCESS_KEY
+  value: "<place-yours-here>"
+- name: AWS_DEFAULT_REGION
+  value: eu-west-2

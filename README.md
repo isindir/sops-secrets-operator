@@ -229,6 +229,10 @@ sops --encrypt \
 > access to one of these is needed. For more information see `sops`
 > documentation.
 
+## Example procedure to upgrade from one `SopsSecret` API version to another
+
+Please see document here: [SopsSecret API and Operator Upgrade](docs/api_upgrade_example/README.md)
+
 # License
 
 Mozilla Public License Version 2.0
