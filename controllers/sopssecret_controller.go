@@ -181,7 +181,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		if !metav1.IsControlledBy(foundSecret, instance) {
+		if !metav1.IsControlledBy(foundSecret, instance) && !isAnnotatedToBeManaged(foundSecret) {
 			instanceEncrypted.Status.Message = "Child secret is not owned by controller error"
 			r.Status().Update(context.Background(), instanceEncrypted)
 
@@ -203,6 +203,9 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		foundSecret.Type = newSecret.Type
 		foundSecret.ObjectMeta.Annotations = newSecret.ObjectMeta.Annotations
 		foundSecret.ObjectMeta.Labels = newSecret.ObjectMeta.Labels
+		if isAnnotatedToBeManaged(origSecret) {
+			foundSecret.ObjectMeta.OwnerReferences = newSecret.ObjectMeta.OwnerReferences
+		}
 
 		if !apiequality.Semantic.DeepEqual(origSecret, foundSecret) {
 			r.Log.Info(
@@ -244,6 +247,11 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		req.NamespacedName,
 	)
 	return ctrl.Result{}, nil
+}
+
+// checks if the annotation equals to "true", and it's case sensitive
+func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
+	return secret.Annotations[isindirv1alpha3.SopsSecretManagedAnnotation] == "true"
 }
 
 // SetupWithManager sets up the controller with the Manager.

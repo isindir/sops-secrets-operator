@@ -11,6 +11,12 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 // For upstream reference, see https://github.com/mozilla/sops/blob/master/stores/stores.go
 
+const (
+	// SopsSecretManagedAnnotation is the name for the annotation for
+	// flagging the existing secret be managed by SopsSecret controller.
+	SopsSecretManagedAnnotation = "sopssecret/managed"
+)
+
 // SopsSecretSpec defines the desired state of SopsSecret
 type SopsSecretSpec struct {
 	// Secrets template is a list of definitions to create Kubernetes Secrets

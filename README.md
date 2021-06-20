@@ -229,6 +229,21 @@ sops --encrypt \
 > access to one of these is needed. For more information see `sops`
 > documentation.
 
+## Changing ownership of existing secrets
+
+If there is a need to re-own existing `Secrets` by `SopsSecret`, following annotation should
+be added to the target kubernetes native secret:
+
+```yaml
+...
+metadata:
+  annotations:
+    "sopssecret/managed": "true"
+...
+```
+> previously unmanaged secret will be replaced by `SopsSecret` owned at the next rescheduled
+  reconciliation event.
+
 ## Example procedure to upgrade from one `SopsSecret` API version to another
 
 Please see document here: [SopsSecret API and Operator Upgrade](docs/api_upgrade_example/README.md)
