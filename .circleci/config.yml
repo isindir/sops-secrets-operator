@@ -18,7 +18,7 @@ jobs:
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.9.1
+      GIT_CHGLOG_VERSION: 0.14.2
       # https://github.com/docker/buildx/releases
       BUILDX_BINARY_VERSION: 0.5.1
 
@@ -60,7 +60,8 @@ jobs:
       - run:
           name: install git-chglog
           command: |
-            curl -sSLo git-chglog https://github.com/git-chglog/git-chglog/releases/download/${GIT_CHGLOG_VERSION}/git-chglog_linux_amd64
+            curl -sSLO https://github.com/git-chglog/git-chglog/releases/download/v${GIT_CHGLOG_VERSION}/git-chglog_${GIT_CHGLOG_VERSION}_linux_amd64.tar.gz
+            tar -xzf git-chglog_${GIT_CHGLOG_VERSION}_linux_amd64.tar.gz
             chmod +x git-chglog
             sudo mv git-chglog /usr/local/bin/
       - run:
