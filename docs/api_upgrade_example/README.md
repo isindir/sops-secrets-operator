@@ -19,6 +19,15 @@ and we are using latest `helm` version to upgrade the release.
 The test environment will be AWS KMS key and local
 [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) cluster.
 
+## High level overview of the Upgrade
+
+CRD definition allows specifying multiple versions of Custom Resources managed
+by controller. Vanilla `SopsSecret` definition does not list multiple versions,
+so the idea is to gradually change and update CRD and CRs while the controller is not
+running and will not interfere. This in turn allows existing secrets to stay
+as is during upgrade and once upgrade finished - new version of controller
+will refresh the secrets.
+
 ## Create and prepare `kind` test cluster
 
 * Create cluster:
