@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-package v1alpha3
+package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,22 +11,12 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 // For upstream reference, see https://github.com/mozilla/sops/blob/master/stores/stores.go
 
-const (
-	// SopsSecretManagedAnnotation is the name for the annotation for
-	// flagging the existing secret be managed by SopsSecret controller.
-	SopsSecretManagedAnnotation = "sopssecret/managed"
-)
-
 // SopsSecretSpec defines the desired state of SopsSecret
 type SopsSecretSpec struct {
 	// Secrets template is a list of definitions to create Kubernetes Secrets
 	//+kubebuilder:validation:MinItems=1
 	//+required
-	SecretsTemplate []SopsSecretTemplate `json:"secretTemplates"`
-
-	// This flag tells the controller to suspend the reconciliation of this source.
-	//+optional
-	Suspend bool `json:"suspend,omitempty"`
+	SecretsTemplate []SopsSecretTemplate `json:"secret_templates"`
 }
 
 // SopsSecretTemplate defines the map of secrets to create
@@ -50,15 +40,9 @@ type SopsSecretTemplate struct {
 	//+optional
 	Type string `json:"type,omitempty"`
 
-	// Data map to use in Kubernetes secret (equivalent to Kubernetes Secret object data, please see for more
+	// Data map to use in Kubernetes secret (equivalent to Kubernetes Secret object stringData, please see for more
 	// information: https://kubernetes.io/docs/concepts/configuration/secret/#overview-of-secrets)
-	//+optional
-	Data map[string]string `json:"data,omitempty"`
-
-	// stringData map to use in Kubernetes secret (equivalent to Kubernetes Secret object stringData, please see for more
-	// information: https://kubernetes.io/docs/concepts/configuration/secret/#overview-of-secrets)
-	//+optional
-	StringData map[string]string `json:"stringData,omitempty"`
+	Data map[string]string `json:"data"`
 }
 
 // KmsDataItem defines AWS KMS specific encryption details
@@ -66,9 +50,6 @@ type KmsDataItem struct {
 	// Arn - KMS key ARN to use
 	//+optional
 	Arn string `json:"arn,omitempty"`
-	// AWS Iam Role
-	//+optional
-	Role string `json:"role,omitempty"`
 
 	//+optional
 	EncryptedKey string `json:"enc,omitempty"`
@@ -108,28 +89,6 @@ type AzureKmsItem struct {
 	CreationDate string `json:"created_at,omitempty"`
 }
 
-type AgeItem struct {
-	// Recepient which private key can be used for decription
-	//+optional
-	Recipient string `json:"recipient,omitempty"`
-	//+optional
-	EncryptedKey string `json:"enc,omitempty"`
-}
-
-// HcVaultItem defines Hashicorp Vault Key specific encryption details
-type HcVaultItem struct {
-	//+optional
-	VaultAddress string `json:"vault_address,omitempty"`
-	//+optional
-	EnginePath string `json:"engine_path,omitempty"`
-	//+optional
-	KeyName string `json:"key_name,omitempty"`
-	//+optional
-	CreationDate string `json:"created_at,omitempty"`
-	//+optional
-	EncryptedKey string `json:"enc,omitempty"`
-}
-
 // GcpKmsDataItem defines GCP KMS Key specific encryption details
 type GcpKmsDataItem struct {
 	//+optional
@@ -155,17 +114,9 @@ type SopsMetadata struct {
 	//+optional
 	AzureKms []AzureKmsItem `json:"azure_kv,omitempty"`
 
-	// Hashicorp Vault KMS configurarion
-	//+optional
-	HcVault []HcVaultItem `json:"hc_vault,omitempty"`
-
 	// Gcp KMS configuration
 	//+optional
 	GcpKms []GcpKmsDataItem `json:"gcp_kms,omitempty"`
-
-	// Age configuration
-	//+optional
-	Age []AgeItem `json:"age,omitempty"`
 
 	// Mac - sops setting
 	//+optional
@@ -182,21 +133,13 @@ type SopsMetadata struct {
 	// Suffix used to encrypt SopsSecret resource
 	//+optional
 	EncryptedSuffix string `json:"encrypted_suffix,omitempty"`
-
-	// Regex used to encrypt SopsSecret resource
-	// This opstion should be used with more care, as it can make resource unapplicable to the cluster.
-	//+optional
-	EncryptedRegex string `json:"encrypted_regex,omitempty"`
 }
 
 // SopsSecretStatus defines the observed state of SopsSecret
 type SopsSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// SopsSecret status message
-	//+optional
-	Message string `json:"message,omitempty"`
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 }
 
 //+kubebuilder:object:root=true
@@ -204,9 +147,8 @@ type SopsSecretStatus struct {
 
 // SopsSecret is the Schema for the sopssecrets API
 //+kubebuilder:resource:shortName=sops,scope=Namespaced
+//+kubebuilder:deprecatedversion
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
-//+kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.message`
 type SopsSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

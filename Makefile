@@ -1,8 +1,8 @@
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.3.1
+SOPS_SEC_OPERATOR_VERSION := 0.3.2
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.4.1"
+CONTROLLER_GEN_VERSION := "v0.6.1"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.8.3"
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -51,9 +51,9 @@ help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 clean: ## Cleans dependency directories.
-	rm -fr $$( which controller-gen )
 	rm -fr ./vendor
 	rm -fr ./testbin
+	rm -fr ./bin
 
 tidy: ## Fetches all go dependencies.
 	$(GO) mod tidy
