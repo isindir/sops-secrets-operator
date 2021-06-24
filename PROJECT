@@ -13,4 +13,20 @@ resources:
   kind: SopsSecret
   path: github.com/isindir/sops-secrets-operator/api/v1alpha3
   version: v1alpha3
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: github.com
+  group: isindir
+  kind: SopsSecret
+  path: github.com/isindir/sops-secrets-operator/api/v1alpha2
+  version: v1alpha2
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: github.com
+  group: isindir
+  kind: SopsSecret
+  path: github.com/isindir/sops-secrets-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"
