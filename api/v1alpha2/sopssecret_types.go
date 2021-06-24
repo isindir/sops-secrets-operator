@@ -188,6 +188,7 @@ type SopsSecretStatus struct {
 
 // SopsSecret is the Schema for the sopssecrets API
 //+kubebuilder:resource:shortName=sops,scope=Namespaced
+//+kubebuilder:deprecatedversion
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.message`
 type SopsSecret struct {

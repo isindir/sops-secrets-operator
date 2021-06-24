@@ -147,6 +147,7 @@ type SopsSecretStatus struct {
 
 // SopsSecret is the Schema for the sopssecrets API
 //+kubebuilder:resource:shortName=sops,scope=Namespaced
+//+kubebuilder:deprecatedversion
 //+kubebuilder:subresource:status
 type SopsSecret struct {
 	metav1.TypeMeta   `json:",inline"`
