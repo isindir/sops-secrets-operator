@@ -31,7 +31,7 @@ lint:
 
 ## validate: validate rendered chart templates using 'kubeval'
 validate:
-	helm template . | kubeval --ignore-missing-schemas --force-color -
+	helm template . | kubeval --strict --schema-location https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/ --ignore-missing-schemas --force-color -
 	@echo '--------------------'
 
 ## docs: generate chart documentation to stdout, if firgate is installed

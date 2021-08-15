@@ -131,7 +131,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.3.2"` | Operator image tag |
+| image.tag | string | `"0.3.3"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
 | logging | object | `{"encoder":"json","level":"info","stacktraceLevel":"error"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
