@@ -39,9 +39,8 @@ lint: ## runs helm chart linting
 
 validate: ## validates rendered chart templates using 'kubeval'
 	helm template . --set securityContextenabled=true \
-		| kubeval --ignore-missing-schemas \
-				--force-color \
+		| kubeval --force-color \
 				--strict \
 				--schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
-				--kubernetes-version v1.21.4 -
+				--kubernetes-version 1.21.4 -
 	@echo '--------------------'
