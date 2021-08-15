@@ -43,5 +43,5 @@ validate: ## validates rendered chart templates using 'kubeval'
 				--force-color \
 				--strict \
 				--schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
-				--kubernetes-version 1.20.7 -
+				--kubernetes-version v1.21.4 -
 	@echo '--------------------'

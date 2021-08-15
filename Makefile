@@ -1,12 +1,14 @@
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.3.2
+SOPS_SEC_OPERATOR_VERSION := 0.3.3
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.6.1"
+CONTROLLER_GEN_VERSION := "v0.6.2"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.8.3"
+CONTROLLER_RUNTIME_VERSION := "v0.9.6"
 # https://github.com/kubernetes-sigs/kustomize/releases
-KUSTOMIZE_VERSION := "v4.1.3"
+KUSTOMIZE_VERSION := "v4.2.0"
+# use `setup-envtest list` to obtain the list of available versions
+KUBE_VERSION := "1.21.2"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -27,7 +29,9 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
-# This is a requirement for 'setup-envtest.sh' in the test target.
+# This is a requirement for 'setup-envtest' in the test target.
+# for more information about setup-envtest refer to
+#     https://github.com/kubernetes-sigs/controller-runtime/tree/v0.9.6/tools/setup-envtest
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
@@ -93,11 +97,8 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
-test: manifests generate fmt vet ## Run tests.
-	mkdir -p ${ENVTEST_ASSETS_DIR}
-	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/${CONTROLLER_RUNTIME_VERSION}/hack/setup-envtest.sh
-	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools $(ENVTEST_ASSETS_DIR); setup_envtest_env $(ENVTEST_ASSETS_DIR); go test ./... -coverprofile cover.out
+test: setup-envtest manifests generate fmt vet ## Run tests.
+	KUBEBUILDER_ASSETS="$(shell $(SETUP_ENVTEST) use -p path --force ${KUBE_VERSION})" go test ./... -coverprofile cover.out
 
 ##@ Build
 
@@ -170,6 +171,10 @@ controller-gen: ## Download controller-gen locally if necessary.
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 kustomize: ## Download kustomize locally if necessary.
 	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@${KUSTOMIZE_VERSION})
+
+SETUP_ENVTEST = $(shell pwd)/bin/setup-envtest
+setup-envtest: ## Download setup-envtest locally if necessary.
+	$(call go-get-tool,$(SETUP_ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 # go-get-tool will 'go get' any package $2 and install it to $1
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
