@@ -140,6 +140,7 @@ docker-push: ## Push docker image with the manager.
 ##@ Deployment
 
 # TODO: re-tag with crane image to latest
+#       https://michaelsauter.github.io/crane/docs.html
 release: controller-gen generate fmt vet manifests ## Creates github release and pushes docker image to dockerhub.
 	@{ \
 		set +e ; \

@@ -10,7 +10,7 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.16.7
+      GOLANG_VERSION: "1.17"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/kubernetes-sigs/kustomize/releases
@@ -105,7 +105,7 @@ jobs:
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.6.3
       # https://golang.org/dl/
-      GOLANG_VERSION: 1.16.7
+      GOLANG_VERSION: "1.17"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/mozilla/sops/releases

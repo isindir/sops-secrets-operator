@@ -1,7 +1,7 @@
 # https://github.com/kubernetes-sigs/kubebuilder/releases
 kubebuilder 3.1.0
 # https://golang.org/dl/
-golang 1.16.7
+golang 1.17
 # https://github.com/mozilla/sops/releases
 sops 3.7.1
 # https://github.com/kubernetes-sigs/kustomize/releases

@@ -19,6 +19,8 @@ Dockerfile
 ```
 .circleci/config.yml
 .tool-versions
+Dockerfile
+go.mod
 ```
 
 * Dependencies - libraries
