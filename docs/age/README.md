@@ -2,7 +2,7 @@
 
 ```bash
 rm -f qqq.key.txt
-export SOPS_AGE_KEY=$( age-keygen -o qqq.key.txt 2>&1 | awk '{ print $3 }' )
+export SOPS_AGE_RECIPIENTS=$( age-keygen -o qqq.key.txt 2>&1 | awk '{ print $3 }' )
 export SOPS_AGE_KEY_FILE=$PWD/qqq.key.txt
 
 cat >qqq.jenkins-secrets.yaml <<EOF
@@ -29,7 +29,7 @@ spec:
         .dockerconfigjson: '{"auths":{"index.docker.io":{"username":"imyuser","password":"mypass","email":"myuser@abc.com","auth":"aW15dXNlcjpteXBhc3M="}}}'
 EOF
 
-sops -e --age ${SOPS_AGE_KEY} --encrypted-suffix Templates qqq.jenkins-secrets.yaml > qqq.jenkins-secrets.enc.yaml
+sops -e --age ${SOPS_AGE_RECIPIENTS} --encrypted-suffix Templates qqq.jenkins-secrets.yaml > qqq.jenkins-secrets.enc.yaml
 
 # check
 cat qqq.jenkins-secrets.enc.yaml
