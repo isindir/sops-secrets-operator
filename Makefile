@@ -1,5 +1,5 @@
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.3.3
+SOPS_SEC_OPERATOR_VERSION := 0.3.4
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.6.2"
@@ -8,7 +8,9 @@ CONTROLLER_RUNTIME_VERSION := "v0.9.6"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v4.2.0"
 # use `setup-envtest list` to obtain the list of available versions
-KUBE_VERSION := "1.21.2"
+# until fixed, can't use newer version, see:
+#   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
+KUBE_VERSION := "1.20.2"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -20,6 +22,9 @@ IMG_CACHE ?= ${IMG_NAME}:cache
 BUILDX_PLATFORMS ?= linux/amd64,linux/arm64
 # Produce CRDs that work back to Kubernetes 1.16
 CRD_OPTIONS ?= crd:crdVersions=v1
+
+TMP_COVER_FILE="cover.out"
+TMP_COVER_HTML_FILE="index.html"
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -58,6 +63,7 @@ clean: ## Cleans dependency directories.
 	rm -fr ./vendor
 	rm -fr ./testbin
 	rm -fr ./bin
+	rm -f $(TMP_COVER_HTML_FILE) $(TMP_COVER_FILE)
 
 tidy: ## Fetches all go dependencies.
 	$(GO) mod tidy
@@ -98,7 +104,11 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 test: setup-envtest manifests generate fmt vet ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(SETUP_ENVTEST) use -p path --force ${KUBE_VERSION})" go test ./... -coverprofile cover.out
+	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(SETUP_ENVTEST) use -p path --force ${KUBE_VERSION})" go test ./... -coverpkg=./controllers/... -coverprofile=$(TMP_COVER_FILE)
+
+cover: test ## Run tests with coverage.
+	$(GO) tool cover -func=$(TMP_COVER_FILE)
+	$(GO) tool cover -o $(TMP_COVER_HTML_FILE) -html=$(TMP_COVER_FILE)
 
 ##@ Build
 
@@ -175,6 +185,10 @@ kustomize: ## Download kustomize locally if necessary.
 SETUP_ENVTEST = $(shell pwd)/bin/setup-envtest
 setup-envtest: ## Download setup-envtest locally if necessary.
 	$(call go-get-tool,$(SETUP_ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+
+GINKGO = $(shell pwd)/ginkgo
+setup-ginkgo: ## Download ginkgo locally
+	$(call go-get-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
 
 # go-get-tool will 'go get' any package $2 and install it to $1
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
