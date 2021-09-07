@@ -297,7 +297,7 @@ func newSecretForCR(
 	for key, value := range secretTpl.Data {
 		decoded, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {
-			return nil, fmt.Errorf("newSecretForCR(): data[%v] is not a valid base65 string", key)
+			return nil, fmt.Errorf("newSecretForCR(): data[%v] is not a valid base64 string", key)
 		}
 		strData[key] = string(decoded)
 	}
