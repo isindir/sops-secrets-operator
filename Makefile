@@ -27,10 +27,10 @@ TMP_COVER_FILE="cover.out"
 TMP_COVER_HTML_FILE="index.html"
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
-ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
+ifeq (,$(shell $(GO) env GOBIN))
+GOBIN=$(shell $(GO) env GOPATH)/bin
 else
-GOBIN=$(shell go env GOBIN)
+GOBIN=$(shell $(GO) env GOBIN)
 endif
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
@@ -98,13 +98,13 @@ generate: controller-gen tidy ## Generate code containing DeepCopy, DeepCopyInto
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 fmt: ## Run go fmt against code.
-	go fmt ./...
+	$(GO) fmt ./...
 
 vet: ## Run go vet against code.
-	go vet ./...
+	$(GO) vet ./...
 
 test: setup-envtest manifests generate fmt vet ## Run tests.
-	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(SETUP_ENVTEST) use -p path --force ${KUBE_VERSION})" go test ./... -coverpkg=./controllers/... -coverprofile=$(TMP_COVER_FILE)
+	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(SETUP_ENVTEST) use -p path --force ${KUBE_VERSION})" $(GO) test ./... -coverpkg=./controllers/... -coverprofile=$(TMP_COVER_FILE)
 
 cover: test ## Run tests with coverage.
 	$(GO) tool cover -func=$(TMP_COVER_FILE)
@@ -200,7 +200,7 @@ TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+GOBIN=$(PROJECT_DIR)/bin $(GO) get $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
