@@ -10,11 +10,11 @@ jobs:
       image: ubuntu-2004:202010-01
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.17"
+      GOLANG_VERSION: "1.17.1"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v4.2.0
+      KUSTOMIZE_VERSION: v4.4.0
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
@@ -105,13 +105,13 @@ jobs:
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.6.3
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.17"
+      GOLANG_VERSION: "1.17.1"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.1
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v4.2.0
+      KUSTOMIZE_VERSION: v4.4.0
       # https://github.com/quintush/helm-unittest/releases
       HELM_UNITTEST_VERSION: 0.2.7
       # https://github.com/instrumenta/kubeval/releases

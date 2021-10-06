@@ -1,12 +1,12 @@
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.3.4
+SOPS_SEC_OPERATOR_VERSION := 0.3.5
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.6.2"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.9.6"
 # https://github.com/kubernetes-sigs/kustomize/releases
-KUSTOMIZE_VERSION := "v4.2.0"
+KUSTOMIZE_VERSION := "v4.4.0"
 # use `setup-envtest list` to obtain the list of available versions
 # until fixed, can't use newer version, see:
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
@@ -177,7 +177,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION})
+	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION})
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 kustomize: ## Download kustomize locally if necessary.
@@ -185,11 +185,25 @@ kustomize: ## Download kustomize locally if necessary.
 
 SETUP_ENVTEST = $(shell pwd)/bin/setup-envtest
 setup-envtest: ## Download setup-envtest locally if necessary.
-	$(call go-get-tool,$(SETUP_ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+	$(call go-install-tool,$(SETUP_ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 GINKGO = $(shell pwd)/ginkgo
 setup-ginkgo: ## Download ginkgo locally
-	$(call go-get-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
+	$(call go-install-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
+
+# go-install-tool will 'go install' any package $2 and install it to $1
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+define go-install-tool
+@[ -f $(1) ] || { \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
 
 # go-get-tool will 'go get' any package $2 and install it to $1
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
