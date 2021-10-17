@@ -28,8 +28,9 @@ spec:
       {{- if .Values.gpg.enabled }}
       initContainers:
         - name: init-myservice
-          image: debian:buster
-          imagePullPolicy: Always
+          # https://hub.docker.com/_/ubuntu?tab=tags&page=1&ordering=last_updated
+          image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+          imagePullPolicy: {{ .Values.initImage.pullPolicy }}
           command: ['/bin/sh', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
           volumeMounts:
           - mountPath: /var/secrets/gpg

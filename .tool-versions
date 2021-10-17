@@ -1,7 +1,7 @@
 # https://github.com/kubernetes-sigs/kubebuilder/releases
 kubebuilder 3.1.0
 # https://golang.org/dl/
-golang 1.17.1
+golang 1.17.2
 # https://github.com/mozilla/sops/releases
 sops 3.7.1
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -11,7 +11,7 @@ k3d 4.4.7
 # https://github.com/kubernetes/kubernetes/releases
 kubectl 1.21.4
 # https://github.com/helm/helm/releases
-helm 3.6.3
+helm 3.7.1
 # https://github.com/instrumenta/kubeval/releases
 kubeval v0.16.1
 # https://github.com/git-chglog/git-chglog/releases

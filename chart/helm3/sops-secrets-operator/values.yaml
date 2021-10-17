@@ -12,9 +12,18 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.3.5
+  tag: 0.3.6
   # -- Operator image pull policy
   pullPolicy: Always
+
+initImage:
+  # -- Init container image name
+  repository: ubuntu
+  # -- Init container image tag
+  tag: focal-20211006
+  # -- Init container image pull policy
+  pullPolicy: Always
+
 
 # -- Secrets to pull image from private docker repository
 imagePullSecrets: []

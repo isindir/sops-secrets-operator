@@ -7,10 +7,11 @@ jobs:
   release:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     machine:
+      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
       image: ubuntu-2004:202107-02
     environment:
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.17.1"
+      GOLANG_VERSION: "1.17.2"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/kubernetes-sigs/kustomize/releases
@@ -20,7 +21,7 @@ jobs:
       # https://github.com/git-chglog/git-chglog/releases
       GIT_CHGLOG_VERSION: 0.14.2
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_VERSION: 0.6.1
+      BUILDX_BINARY_VERSION: 0.6.3
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -96,6 +97,7 @@ jobs:
   build:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     machine:
+      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
       image: ubuntu-2004:202107-02
     environment:
       # https://github.com/kubernetes/kubernetes/releases
@@ -103,9 +105,9 @@ jobs:
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v4.4.7
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.6.3
+      HELM_VERSION: v3.7.1
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.17.1"
+      GOLANG_VERSION: "1.17.2"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.1.0
       # https://github.com/mozilla/sops/releases
@@ -117,7 +119,7 @@ jobs:
       # https://github.com/instrumenta/kubeval/releases
       KUBEVAL_VERSION: 0.16.1
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_VERSION: 0.6.1
+      BUILDX_BINARY_VERSION: 0.6.3
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64

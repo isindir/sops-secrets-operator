@@ -30,8 +30,20 @@ tests:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
-            app.kubernetes.io/version: 0.3.5
-            helm.sh/chart: sops-secrets-operator-0.9.5
+            app.kubernetes.io/version: 0.3.6
+            helm.sh/chart: sops-secrets-operator-0.9.6
+
+  # custom name
+  - it: should correctly render custome name
+    release:
+      name: sops
+      namespace: sops
+    set:
+      nameOverride: secrets-6789-123456789-123456789-123456789-123456789-123456789-123456789-
+    asserts:
+      - equal:
+          path: metadata.name
+          value: sops-secrets-6789-123456789-123456789-123456789-123456789-12345
 
   # template metadata and spec selector
   - it: should correctly render template metadata and spec selector
@@ -104,7 +116,7 @@ tests:
           path: spec.template.spec.imagePullSecrets[1].name
           value: your-harbor
 
-  # service account name (TODO: full coverage of include sops-secrets-operator.fullname)
+  # service account name
   - it: should correctly render deployment metadata
     release:
       name: sops
@@ -113,6 +125,18 @@ tests:
       - equal:
           path: spec.template.spec.serviceAccountName
           value: sops-sops-secrets-operator
+
+  # service account name when overriden
+  - it: should correctly render deployment metadata
+    release:
+      name: sops
+      namespace: sops
+    set:
+      nameOverride: secrets-6789-123456789-123456789-123456789-123456789-123456789-123456789-
+    asserts:
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: sops-secrets-6789-123456789-123456789-123456789-123456789-12345
 
   # GPG init container
   - it: should not create GPG init container by default
@@ -140,7 +164,7 @@ tests:
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
-          value: isindir/sops-secrets-operator:0.3.5
+          value: isindir/sops-secrets-operator:0.3.6
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always
@@ -158,6 +182,35 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].image
           value: myharbor.example.net/sops:0.42.0
+
+  # init container image and pull policy
+  - it: should set default initcontainer image
+    set:
+      gpg:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: ubuntu:focal-20211006
+      - equal:
+          path: spec.template.spec.initContainers[0].imagePullPolicy
+          value: Always
+
+  - it: should render nondefault initcontainer image pull policy and image name
+    set:
+      initImage:
+        repository: myharbor.example.net/debian
+        tag: 0.42.42
+        pullPolicy: ifNotPresent
+      gpg:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].imagePullPolicy
+          value: ifNotPresent
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: myharbor.example.net/debian:0.42.42
 
   # container volume mounts
   - it: should render empty set of volume mounts by default
