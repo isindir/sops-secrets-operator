@@ -6,9 +6,8 @@ package controllers
 
 import (
 	"path/filepath"
-	"testing"
-
 	ctrl "sigs.k8s.io/controller-runtime"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -90,6 +89,8 @@ var _ = BeforeSuite(func() {
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
+	// Double kill switch to ensure it is stopped
+	testEnv.Stop()
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
 }, 360)

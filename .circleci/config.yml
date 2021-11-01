@@ -13,13 +13,13 @@ jobs:
       # https://golang.org/dl/
       GOLANG_VERSION: "1.17.2"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 3.1.0
+      KUBEBUILDER_VERSION: 3.2.0
       # https://github.com/kubernetes-sigs/kustomize/releases
       KUSTOMIZE_VERSION: v4.4.0
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.14.2
+      GIT_CHGLOG_VERSION: 0.15.0
       # https://github.com/docker/buildx/releases
       BUILDX_BINARY_VERSION: 0.6.3
 
@@ -101,7 +101,7 @@ jobs:
       image: ubuntu-2004:202107-02
     environment:
       # https://github.com/kubernetes/kubernetes/releases
-      KUBECTL_VERSION: v1.21.4
+      KUBECTL_VERSION: v1.22.2
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v4.4.7
       # https://github.com/helm/helm/releases
@@ -109,7 +109,7 @@ jobs:
       # https://golang.org/dl/
       GOLANG_VERSION: "1.17.2"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 3.1.0
+      KUBEBUILDER_VERSION: 3.2.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.1
       # https://github.com/kubernetes-sigs/kustomize/releases
@@ -229,7 +229,7 @@ jobs:
       - run:
           name: start k3d
           command: |
-            k3d cluster create operator --agents 1
+            k3d cluster create operator --agents 1 --image rancher/k3s:${KUBECTL_VERSION}-k3s2
             JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;

@@ -1,16 +1,16 @@
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.3.6
+SOPS_SEC_OPERATOR_VERSION := 0.3.7
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.6.2"
+CONTROLLER_GEN_VERSION := "v0.7.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.9.6"
+CONTROLLER_RUNTIME_VERSION := "v0.10.2"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v4.4.0"
 # use `setup-envtest list` to obtain the list of available versions
 # until fixed, can't use newer version, see:
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
-KUBE_VERSION := "1.20.2"
+KUBE_VERSION := "1.22.1"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -20,7 +20,7 @@ IMG ?= ${IMG_NAME}:${SOPS_SEC_OPERATOR_VERSION}
 IMG_LATEST ?= ${IMG_NAME}:latest
 IMG_CACHE ?= ${IMG_NAME}:cache
 BUILDX_PLATFORMS ?= linux/amd64,linux/arm64
-# Produce CRDs that work back to Kubernetes 1.16
+# Produce CRDs are backwards compatible up to Kubernetes 1.16
 CRD_OPTIONS ?= crd:crdVersions=v1
 
 TMP_COVER_FILE="cover.out"
