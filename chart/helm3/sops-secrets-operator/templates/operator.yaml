@@ -12,11 +12,13 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
-{{- if .Values.podAnnotations }}
       annotations:
-{{ toYaml .Values.podAnnotations | indent 8 }}
-{{- end }}
+        kubectl.kubernetes.io/default-container: {{ .Chart.Name }}
+        {{- if .Values.podAnnotations }}
+        {{ toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end }}
       labels:
+        control-plane: controller-{{ .Chart.Name }}
         app.kubernetes.io/name: {{ include "sops-secrets-operator.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:

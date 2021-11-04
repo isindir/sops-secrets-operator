@@ -61,6 +61,7 @@ tests:
           value:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/name: sops-secrets-operator
+            control-plane: controller-sops-secrets-operator
 
   # replicas
   - it: should correctly set default replicas
@@ -78,10 +79,13 @@ tests:
           value: 5
 
   # pod annotations
-  - it: pod annotations should be empty by default
+  - it: pod annotations should not be empty by default
     asserts:
-      - isEmpty:
+    asserts:
+      - equal:
           path: spec.template.metadata.annotations
+          value:
+            kubectl.kubernetes.io/default-container: sops-secrets-operator
 
   - it: should render pod annotations if set in values
     set:
@@ -94,6 +98,7 @@ tests:
           value:
             abc: qqq
             cde: zzz
+            kubectl.kubernetes.io/default-container: sops-secrets-operator
 
   # image pull secrets
   - it: imagePullSecrets should be empty by default

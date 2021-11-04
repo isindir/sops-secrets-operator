@@ -52,7 +52,7 @@ type SopsSecretReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.2/pkg/reconcile
 func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = r.Log.WithValues("sopssecret", req.NamespacedName)
 
