@@ -5,6 +5,7 @@
 * version of docker image and kubebuilder dependencies
 
 ```
+README.md
 Makefile
 ```
 
@@ -36,9 +37,10 @@ go.mod
 chart/helm3/sops-secrets-operator/Makefile
 ```
 
-* chart version, docker image version
+* chart version, docker image version, kube version for kubeval
 
 ```
+chart/helm3/sops-secrets-operator/Makefile
 chart/helm3/sops-secrets-operator/Chart.yaml
 chart/helm3/sops-secrets-operator/values.yaml
 chart/helm3/sops-secrets-operator/tests/operator_test.yaml

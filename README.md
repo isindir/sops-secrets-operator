@@ -12,10 +12,17 @@ CRs, inspired by [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-
 [sops](https://github.com/mozilla/sops). SopsSecret CR defines multiple
 kubernetes Secret resources. It supports managing kubernetes Secrets with
 annotations and labels, that allows using these kubernetes secrets as [Jenkins Credentials](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/).
-The SopsSecret resources can be deployed by [Weaveworks Flux GitOps CD](https://www.weave.works/blog/managing-helm-releases-the-gitops-way) and
+The SopsSecret resources can be deployed by [Weaveworks Flux GitOps CD](https://fluxcd.io/) and
 encrypted using [sops](https://github.com/mozilla/sops) for AWS, GCP, Azure or
 on-prem hosted kubernetes clusters. Using `sops` greatly simplifies changing
 encrypted files stored in `git` repository.
+
+# Versioning
+
+| Kubernetes | Chart | Operator |
+|---|---|---|
+| v1.22.x | 0.9.7 | 0.3.7 |
+| v1.21.x | 0.9.6 | 0.3.6 |
 
 # Requirements for building operator from source code
 
@@ -276,11 +283,21 @@ Projects and tools inspired development of `sops-secrets-operator`:
   * [helm secrets plugin](https://github.com/futuresimple/helm-secrets)
 * [kiam](https://github.com/uswitch/kiam)
 * [kube2iam](https://github.com/jtblin/kube2iam)
-* [Weaveworks Flux - GitOps](https://www.weave.works/blog/managing-helm-releases-the-gitops-way)
-  * [Flux github repository](https://github.com/weaveworks/flux)
+* [Weaveworks Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
+  * [Flux github repositories](https://github.com/fluxcd)
 * [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
   * [Jenkins - Kubernetes Credentials Provider](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/)
   * [Jenkins Kubernetes Plugin](https://github.com/jenkinsci/kubernetes-plugin)
 * [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-secrets)
 * [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
   * [operator-sdk](https://github.com/operator-framework/operator-sdk)
+
+## Similar tools
+
+* [Kubernetes external secrets](https://github.com/godaddy/kubernetes-external-secrets)
+* [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
+* [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
+* [Kamus](https://kamus.soluto.io/)
+* [Sops Operator](https://github.com/craftypath/sops-operator)
+* [Tesoro](https://github.com/kapicorp/tesoro)
+* [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
