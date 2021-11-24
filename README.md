@@ -170,8 +170,8 @@ spec:
       labels:
         "jenkins.io/credentials-type": "usernamePassword"
       annotations:
-        "jenkins.io/credentials-description" : "credentials from Kubernetes"
-      stingData:
+        "jenkins.io/credentials-description": "credentials from Kubernetes"
+      stringData:
         username: myUsername
         password: 'Pa$$word'
     - name: some-token
