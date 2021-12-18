@@ -1,7 +1,8 @@
+# UPDATE_HERE
 # Build the manager binary
 # https://www.debian.org/releases/
 # https://hub.docker.com/_/golang?tab=tags&page=1&ordering=last_updated
-FROM golang:1.17.2-bullseye as builder
+FROM golang:1.17.5-bullseye as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
