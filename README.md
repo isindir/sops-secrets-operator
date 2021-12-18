@@ -19,7 +19,8 @@ encrypted files stored in `git` repository.
 
 # Versioning
 
-[//]: # "UPDATE_HERE"
+[//]: # (UPDATE_HERE)
+
 | Kubernetes | Sops | Chart | Operator |
 |---|---|---|---|
 | v1.23.x | v3.7.1 | 0.10.1 | 0.4.1 |
