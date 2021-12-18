@@ -108,8 +108,9 @@ type AzureKmsItem struct {
 	CreationDate string `json:"created_at,omitempty"`
 }
 
+// AgeItem defines FiloSottile/age specific encryption details
 type AgeItem struct {
-	// Recepient which private key can be used for decription
+	// Recipient which private key can be used for decription
 	//+optional
 	Recipient string `json:"recipient,omitempty"`
 	//+optional
