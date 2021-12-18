@@ -6,25 +6,46 @@ jobs:
   ##################################################
   release:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
-    machine:
+    # UPDATE_HERE
+    machine: &machine
       # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
-      image: ubuntu-2004:202107-02
-    environment:
+      #  ubuntu-2004:202111-01 - Ubuntu 20.04, Docker v20.10.11, Docker Compose v1.29.2,
+      #  ubuntu-2004:202107-02 - Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2,
+      # https://githubmemory.com/repo/rancher/k3d/issues/807
+      #  It doesn't happen anymore after upgrading from Docker 2.10.2 and containerd 1.4.3 to Docker 2.10.9 and containerd 1.4.11
+      image: ubuntu-2004:202111-01
+    environment: &versions
+      # https://github.com/kubernetes/kubernetes/releases
+      KUBECTL_VERSION: v1.23.1
+      # https://hub.docker.com/r/rancher/k3s/tags
+      K3S_VERSION: v1.22.5-k3s1
+      # https://github.com/rancher/k3d/releases
+      K3D_VERSION: v4.4.8
+      # https://github.com/helm/helm/releases
+      HELM_VERSION: v3.7.2
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.17.2"
+      GOLANG_VERSION: "1.17.5"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.2.0
+      # https://github.com/mozilla/sops/releases
+      SOPS_VERSION: v3.7.1
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v4.4.0
+      KUSTOMIZE_VERSION: v4.4.1
+      # https://github.com/quintush/helm-unittest/releases
+      HELM_UNITTEST_VERSION: 0.2.8
+      # https://github.com/instrumenta/kubeval/releases
+      KUBEVAL_VERSION: 0.16.1
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.15.0
+      GIT_CHGLOG_VERSION: 0.15.1
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_VERSION: 0.6.3
+      BUILDX_BINARY_VERSION: 0.7.1
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
+
+      KUBECONFIG: /home/circleci/.kube/config
 
       GOPATH: /home/circleci/gogo
       GOROOT: /usr/local/go
@@ -96,40 +117,8 @@ jobs:
   ##################################################
   build:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
-    machine:
-      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
-      image: ubuntu-2004:202107-02
-    environment:
-      # https://github.com/kubernetes/kubernetes/releases
-      KUBECTL_VERSION: v1.22.2
-      # https://github.com/rancher/k3d/releases
-      K3D_VERSION: v4.4.7
-      # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.7.1
-      # https://golang.org/dl/
-      GOLANG_VERSION: "1.17.2"
-      # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 3.2.0
-      # https://github.com/mozilla/sops/releases
-      SOPS_VERSION: v3.7.1
-      # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v4.4.0
-      # https://github.com/quintush/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.2.7
-      # https://github.com/instrumenta/kubeval/releases
-      KUBEVAL_VERSION: 0.16.1
-      # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_VERSION: 0.6.3
-
-      DOCKER_BUILDKIT: 1
-      BUILDX_PLATFORMS: linux/amd64,linux/arm64
-
-      KUBECONFIG: /home/circleci/.kube/config
-
-      GOPATH: /home/circleci/gogo
-      GOROOT: /usr/local/go
-      GO111MODULE: "on"
-      GO15VENDOREXPERIMENT: 1
+    machine: *machine
+    environment: *versions
     steps:
       - checkout
       - restore-cache:
@@ -137,6 +126,15 @@ jobs:
             - v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
             - v2-modules-{{ .Branch }}-
             - v2-modules-
+      - run:
+          name: install gpg2
+          command: |
+            sudo apt update
+            sudo apt install -f
+            sudo apt-get install gnupg2 -y
+            sudo apt-get install qemu-user-static -y
+            #sudo apt-get --only-upgrade install containerd -y
+          background: true
       - run:
           name: install buildx
           command: |
@@ -160,13 +158,6 @@ jobs:
             go get -u golang.org/x/lint/golint
             go version
             go env
-          background: true
-      - run:
-          name: install gpg2
-          command: |
-            sudo apt update
-            sudo apt install -f
-            sudo apt-get install gnupg2 -y
           background: true
       - run:
           name: install sops
@@ -229,7 +220,8 @@ jobs:
       - run:
           name: start k3d
           command: |
-            k3d cluster create operator --agents 1 --image rancher/k3s:${KUBECTL_VERSION}-k3s2
+            docker version
+            k3d cluster create operator --agents 1 --image rancher/k3s:${K3S_VERSION}
             JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
             until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
               sleep 1;
@@ -255,6 +247,7 @@ jobs:
           command: |
             make docker-login
             make docker-cross-build
+          no_output_timeout: 1h
       - save_cache:
           key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
           paths:

@@ -1,12 +1,13 @@
+# UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.3.7
+SOPS_SEC_OPERATOR_VERSION := 0.4.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.7.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.10.2"
+CONTROLLER_RUNTIME_VERSION := "v0.11.0"
 # https://github.com/kubernetes-sigs/kustomize/releases
-KUSTOMIZE_VERSION := "v4.4.0"
+KUSTOMIZE_VERSION := "v4.4.1"
 # use `setup-envtest list` to obtain the list of available versions
 # until fixed, can't use newer version, see:
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
@@ -98,12 +99,21 @@ test-helm: ## Tests helm chart.
 
 ##@ Development
 
+.PHONY: update-here
+update-here: ## Helper target to start editing all occurances with UPDATE_HERE.
+	@echo "Update following files for release:"
+	@grep --color -nHR UPDATE_HERE
+
+.PHONY: envtest-list
+envtest-list: envtest ## List of the available setup-envtest versions.
+	$(ENVTEST) list
+
 .PHONY: manifests
 manifests: tidy controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
-generate: controller-gen tidy ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: manifests ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	@echo
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
@@ -116,7 +126,7 @@ vet: ## Run go vet against code.
 	$(GO) vet ./...
 
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
+test: generate fmt vet envtest ## Run tests.
 	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" $(GO) test ./... -coverpkg=./controllers/... -coverprofile=$(TMP_COVER_FILE)
 
 cover: test ## Run tests with coverage.
@@ -130,7 +140,7 @@ build: generate fmt vet ## Build manager binary.
 	$(GO) build -o bin/manager main.go
 
 .PHONY: run
-run: manifests generate fmt vet ## Run a controller from your host.
+run: generate fmt vet ## Run a controller from your host.
 	$(GO) run ./main.go
 
 docker-login: ## Performs logging to dockerhub using DOCKERHUB_USERNAME and DOCKERHUB_PASS environment variables.
@@ -138,9 +148,9 @@ docker-login: ## Performs logging to dockerhub using DOCKERHUB_USERNAME and DOCK
 	docker buildx create --name mybuilder --use
 
 docker-cross-build: ## Build multi-arch docker image.
-	docker buildx build --quiet --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
+	docker buildx build --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 
-docker-build-dont-test: generate fmt vet manifests ## Build the docker image without running tests.
+docker-build-dont-test: generate fmt vet ## Build the docker image without running tests.
 	docker build -t ${IMG} .
 	docker tag ${IMG} ${IMG_LATEST}
 
@@ -163,7 +173,7 @@ endif
 # TODO: re-tag with crane image to latest
 #       https://michaelsauter.github.io/crane/docs.html
 .PHONY: release
-release: controller-gen generate fmt vet manifests ## Creates github release and pushes docker image to dockerhub.
+release: generate fmt vet ## Creates github release and pushes docker image to dockerhub.
 	@{ \
 		set +e ; \
 		git tag "${SOPS_SEC_OPERATOR_VERSION}" ; \
@@ -200,6 +210,8 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+##@ Misc
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen

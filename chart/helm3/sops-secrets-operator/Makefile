@@ -3,11 +3,7 @@
 CHART_NAME?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^name:/ { gsub(/['\'',]/, ""); print $$2; }')
 VERSION_TAG?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^version/ { gsub(/['\'',]/, ""); print $$2; }')
 
-# use `setup-envtest list` to obtain the list of available versions
-# until fixed, can't use newer version, see:
-#   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
-# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION := "1.22.1"
+K8S_VERSION := "1.23.1"
 
 SHELL=/bin/bash
 
@@ -55,5 +51,5 @@ validate: ## validates rendered chart templates using 'kubeval'
 		| kubeval --force-color \
 				--strict \
 				--schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
-				--kubernetes-version $(ENVTEST_K8S_VERSION) -
+				--kubernetes-version $(K8S_VERSION) -
 	@echo '--------------------'

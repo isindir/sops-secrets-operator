@@ -8,14 +8,16 @@
 # -- Deployment replica count - should not be modified
 replicaCount: 1
 
+# UPDATE_HERE
 image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.3.7
+  tag: 0.4.0
   # -- Operator image pull policy
   pullPolicy: Always
 
+# UPDATE_HERE
 initImage:
   # -- Init container image name
   repository: ubuntu

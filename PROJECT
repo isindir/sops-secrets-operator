@@ -3,6 +3,7 @@ layout:
 - go.kubebuilder.io/v3
 projectName: sops-secrets-operator
 repo: github.com/isindir/sops-secrets-operator
+# UPDATE_HERE
 resources:
 - api:
     crdVersion: v1
