@@ -1,9 +1,9 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.4.2
+SOPS_SEC_OPERATOR_VERSION := 0.4.3
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.7.0"
+CONTROLLER_GEN_VERSION := "v0.8.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.11.0"
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -102,7 +102,7 @@ test-helm: ## Tests helm chart.
 .PHONY: update-here
 update-here: ## Helper target to start editing all occurances with UPDATE_HERE.
 	@echo "Update following files for release:"
-	@grep --color -nHR UPDATE_HERE
+	@grep --color -nHR UPDATE_HERE .
 
 .PHONY: envtest-list
 envtest-list: envtest ## List of the available setup-envtest versions.
