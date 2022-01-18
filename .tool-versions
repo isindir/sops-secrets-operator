@@ -1,6 +1,6 @@
 # UPDATE_HERE
 # https://github.com/kubernetes-sigs/kubebuilder/releases
-kubebuilder 3.2.0
+kubebuilder 3.3.0
 # https://golang.org/dl/
 golang 1.17.6
 # https://github.com/mozilla/sops/releases
