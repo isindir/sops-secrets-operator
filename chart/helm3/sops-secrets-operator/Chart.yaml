@@ -1,7 +1,7 @@
 apiVersion: v2
 # UPDATE_HERE
-version: 0.10.3
-appVersion: 0.4.3
+version: 0.10.4
+appVersion: 0.4.4
 type: application
 description: Helm chart deploys sops-secrets-operator
 name: sops-secrets-operator
