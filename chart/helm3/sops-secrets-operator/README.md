@@ -114,6 +114,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | azure.clientId | string | `""` | ClientID (Application ID) of Azure Service Principal to use |
 | azure.clientSecret | string | `""` | Client Secret of Azure Service Principal |
 | azure.enabled | bool | `false` | if true Azure KeyVault will be used |
+| azure.existingSecretName | string | `""` | Name of a pre-existing secret containing Azure Service Principal Credentials (ClientID, ClientSecret, TenantID) |
 | azure.tenantId | string | `""` | TenantID of Azure Service principal to use |
 | extraEnv | list | `[]` | A list of additional environment variables |
 | fullnameOverride | string | `""` | Overrides auto-generated long resource name |
@@ -131,11 +132,11 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.4.3"` | Operator image tag |
+| image.tag | string | `"0.4.4"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"ubuntu"` | Init container image name |
-| initImage.tag | string | `"focal-20211006"` | Init container image tag |
+| initImage.tag | string | `"focal-20220113"` | Init container image tag |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
 | logging | object | `{"encoder":"json","level":"info","stacktraceLevel":"error"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
 | logging.encoder | string | `"json"` | Zap log encoding (one of 'json' or 'console') |
