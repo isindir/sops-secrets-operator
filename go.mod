@@ -8,7 +8,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
 	github.com/sirupsen/logrus v1.8.1
-	go.mozilla.org/sops/v3 v3.7.1
+	go.mozilla.org/sops/v3 v3.7.2
 	k8s.io/api v0.23.1
 	k8s.io/apimachinery v0.23.1
 	k8s.io/client-go v0.23.1
