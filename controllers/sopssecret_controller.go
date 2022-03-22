@@ -58,8 +58,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	r.Log.Info("Reconciling", "sopssecret", req.NamespacedName)
 
-	instanceEncrypted := &isindirv1alpha3.SopsSecret{}
-	err := r.Get(ctx, req.NamespacedName, instanceEncrypted)
+	encryptedSopsSecret := &isindirv1alpha3.SopsSecret{}
+	err := r.Get(ctx, req.NamespacedName, encryptedSopsSecret)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -82,40 +82,40 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, err
 	}
 
-	// Return early if the object is suspended.
-	if instanceEncrypted.Spec.Suspend {
+	// Return early if SopsSecret object is suspended.
+	if encryptedSopsSecret.Spec.Suspend {
 		r.Log.Info(
 			"Reconciliation is suspended for this object",
 			"sopssecret",
 			req.NamespacedName,
 		)
 
-		instanceEncrypted.Status.Message = "Reconciliation is suspended"
-		r.Status().Update(context.Background(), instanceEncrypted)
+		encryptedSopsSecret.Status.Message = "Reconciliation is suspended"
+		r.Status().Update(context.Background(), encryptedSopsSecret)
 
 		return reconcile.Result{}, nil
 	}
 
-	instance, err := decryptSopsSecretInstance(instanceEncrypted, r.Log)
+	plainTextSopsSecret, err := decryptSopsSecretInstance(encryptedSopsSecret, r.Log)
 	if err != nil {
-		//instance.Status.SecretsTotal = len(instance.Spec.SecretsTemplate)
-		instanceEncrypted.Status.Message = "Decryption error"
+		//plainTextSopsSecret.Status.SecretsTotal = len(plainTextSopsSecret.Spec.SecretsTemplate)
+		encryptedSopsSecret.Status.Message = "Decryption error"
 
-		// will not process instance error as we are already in error mode here
-		r.Status().Update(context.Background(), instanceEncrypted)
+		// will not process plainTextSopsSecret error as we are already in error mode here
+		r.Status().Update(context.Background(), encryptedSopsSecret)
 
 		// Failed to decrypt, re-schedule reconciliation in 5 minutes
 		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 	}
 
-	// iterating over secret templates
+	// Iterate over secret templates
 	r.Log.Info("Entering template data loop", "sopssecret", req.NamespacedName)
-	for _, secretTemplateValue := range instance.Spec.SecretsTemplate {
+	for _, secretTemplateValue := range plainTextSopsSecret.Spec.SecretsTemplate {
 		// Define a new secret object
-		newSecret, err := newSecretForCR(instance, &secretTemplateValue, r.Log)
+		newSecret, err := createSecretFromSopsSecretTemplate(plainTextSopsSecret, &secretTemplateValue, r.Log)
 		if err != nil {
-			instanceEncrypted.Status.Message = "New child secret creation error"
-			r.Status().Update(context.Background(), instanceEncrypted)
+			encryptedSopsSecret.Status.Message = "New child secret creation error"
+			r.Status().Update(context.Background(), encryptedSopsSecret)
 
 			r.Log.Info(
 				"New child secret creation error",
@@ -127,14 +127,14 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		// Set SopsSecret instance as the owner and controller
+		// Set SopsSecret plainTextSopsSecret as the owner and controller
 		if err := controllerutil.SetControllerReference(
-			instance,
+			plainTextSopsSecret,
 			newSecret,
 			r.Scheme,
 		); err != nil {
-			instanceEncrypted.Status.Message = "Setting controller ownership of the child secret error"
-			r.Status().Update(context.Background(), instanceEncrypted)
+			encryptedSopsSecret.Status.Message = "Setting controller ownership of the child secret error"
+			r.Status().Update(context.Background(), encryptedSopsSecret)
 
 			r.Log.Info(
 				"Setting controller ownership of the child secret error",
@@ -168,8 +168,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			foundSecret = newSecret.DeepCopy()
 		}
 		if err != nil {
-			instanceEncrypted.Status.Message = "Unknown Error"
-			r.Status().Update(context.Background(), instanceEncrypted)
+			encryptedSopsSecret.Status.Message = "Unknown Error"
+			r.Status().Update(context.Background(), encryptedSopsSecret)
 
 			r.Log.Info(
 				"Unknown Error",
@@ -181,9 +181,9 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		if !metav1.IsControlledBy(foundSecret, instance) && !isAnnotatedToBeManaged(foundSecret) {
-			instanceEncrypted.Status.Message = "Child secret is not owned by controller error"
-			r.Status().Update(context.Background(), instanceEncrypted)
+		if !metav1.IsControlledBy(foundSecret, plainTextSopsSecret) && !isAnnotatedToBeManaged(foundSecret) {
+			encryptedSopsSecret.Status.Message = "Child secret is not owned by controller error"
+			r.Status().Update(context.Background(), encryptedSopsSecret)
 
 			r.Log.Info(
 				"Child secret is not owned by controller or sopssecret Error",
@@ -216,8 +216,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				foundSecret.Namespace,
 			)
 			if err = r.Update(ctx, foundSecret); err != nil {
-				instanceEncrypted.Status.Message = "Child secret update error"
-				r.Status().Update(context.Background(), instanceEncrypted)
+				encryptedSopsSecret.Status.Message = "Child secret update error"
+				r.Status().Update(context.Background(), encryptedSopsSecret)
 
 				r.Log.Info(
 					"Child secret update error",
@@ -238,8 +238,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	instanceEncrypted.Status.Message = "Healthy"
-	r.Status().Update(context.Background(), instanceEncrypted)
+	encryptedSopsSecret.Status.Message = "Healthy"
+	r.Status().Update(context.Background(), encryptedSopsSecret)
 
 	r.Log.Info(
 		"SopsSecret is Healthy",
@@ -271,42 +271,42 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-// newSecretForCR returns a secret with the same namespace as the cr
-func newSecretForCR(
+// createSecretFromSopsSecretTemplate returns a secret with the same namespace as the cr
+func createSecretFromSopsSecretTemplate(
 	cr *isindirv1alpha3.SopsSecret,
-	secretTpl *isindirv1alpha3.SopsSecretTemplate,
-	reqLogger logr.Logger,
+	sopsSecretTemplate *isindirv1alpha3.SopsSecretTemplate,
+	logger logr.Logger,
 ) (*corev1.Secret, error) {
 	labels := make(map[string]string)
-	for key, value := range secretTpl.Labels {
+	for key, value := range sopsSecretTemplate.Labels {
 		labels[key] = value
 	}
 
 	// Construct annotations for the secret
 	annotations := make(map[string]string)
-	for key, value := range secretTpl.Annotations {
+	for key, value := range sopsSecretTemplate.Annotations {
 		annotations[key] = value
 	}
 
 	// Construct stringData for the secret
 	strData := make(map[string]string)
-	for key, value := range secretTpl.StringData {
+	for key, value := range sopsSecretTemplate.StringData {
 		strData[key] = value
 	}
 	// add data to stringData
-	for key, value := range secretTpl.Data {
+	for key, value := range sopsSecretTemplate.Data {
 		decoded, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {
-			return nil, fmt.Errorf("newSecretForCR(): data[%v] is not a valid base64 string", key)
+			return nil, fmt.Errorf("createSecretFromSopsSecretTemplate(): data[%v] is not a valid base64 string", key)
 		}
 		strData[key] = string(decoded)
 	}
 
-	if secretTpl.Name == "" {
-		return nil, fmt.Errorf("newSecretForCR(): secret template name must be specified and not empty string")
+	if sopsSecretTemplate.Name == "" {
+		return nil, fmt.Errorf("createSecretFromSopsSecretTemplate(): secret template name must be specified and not empty string")
 	}
 
-	reqLogger.Info("Processing", "sopssecret",
+	logger.Info("Processing", "sopssecret",
 		fmt.Sprintf(
 			"%s.%s.%s",
 			cr.Kind,
@@ -314,18 +314,17 @@ func newSecretForCR(
 			cr.Name,
 		),
 		"type",
-		secretTpl.Type,
+		sopsSecretTemplate.Type,
 		"namespace", cr.Namespace,
 		"templateItem",
-		fmt.Sprintf("secret/%s", secretTpl.Name),
+		fmt.Sprintf("secret/%s", sopsSecretTemplate.Name),
 	)
 
-	kubeSecretType := getSecretType(secretTpl.Type)
+	kubeSecretType := getSecretType(sopsSecretTemplate.Type)
 
-	// return resulting secret
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        secretTpl.Name,
+			Name:        sopsSecretTemplate.Name,
 			Namespace:   cr.Namespace,
 			Labels:      labels,
 			Annotations: annotations,
@@ -337,28 +336,24 @@ func newSecretForCR(
 }
 
 func getSecretType(paramType string) corev1.SecretType {
-	// by default secret type is Opaque
-	kubeSecretType := corev1.SecretTypeOpaque
-	if paramType == "kubernetes.io/service-account-token" {
+	var kubeSecretType corev1.SecretType
+	switch paramType {
+	case "kubernetes.io/service-account-token":
 		kubeSecretType = corev1.SecretTypeServiceAccountToken
-	}
-	if paramType == "kubernetes.io/dockercfg" {
+	case "kubernetes.io/dockercfg":
 		kubeSecretType = corev1.SecretTypeDockercfg
-	}
-	if paramType == "kubernetes.io/dockerconfigjson" {
+	case "kubernetes.io/dockerconfigjson":
 		kubeSecretType = corev1.SecretTypeDockerConfigJson
-	}
-	if paramType == "kubernetes.io/basic-auth" {
+	case "kubernetes.io/basic-auth":
 		kubeSecretType = corev1.SecretTypeBasicAuth
-	}
-	if paramType == "kubernetes.io/ssh-auth" {
+	case "kubernetes.io/ssh-auth":
 		kubeSecretType = corev1.SecretTypeSSHAuth
-	}
-	if paramType == "kubernetes.io/tls" {
+	case "kubernetes.io/tls":
 		kubeSecretType = corev1.SecretTypeTLS
-	}
-	if paramType == "bootstrap.kubernetes.io/token" {
+	case "bootstrap.kubernetes.io/token":
 		kubeSecretType = corev1.SecretTypeBootstrapToken
+	default:
+		kubeSecretType = corev1.SecretTypeOpaque
 	}
 	return kubeSecretType
 }
