@@ -1,7 +1,7 @@
 module github.com/isindir/sops-secrets-operator
 
 // UPDATE_HERE
-go 1.17
+go 1.18
 
 require (
 	github.com/go-logr/logr v1.2.2
@@ -9,9 +9,9 @@ require (
 	github.com/onsi/gomega v1.18.1
 	github.com/sirupsen/logrus v1.8.1
 	go.mozilla.org/sops/v3 v3.7.2
-	k8s.io/api v0.23.1
-	k8s.io/apimachinery v0.23.1
-	k8s.io/client-go v0.23.1
+	k8s.io/api v0.23.3
+	k8s.io/apimachinery v0.23.3
+	k8s.io/client-go v0.23.3
 	sigs.k8s.io/controller-runtime v0.11.1
 )
 
@@ -108,8 +108,8 @@ require (
 	k8s.io/component-base v0.23.0 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
-	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
+	k8s.io/utils v0.0.0-20211116205334-6203023598ed // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
