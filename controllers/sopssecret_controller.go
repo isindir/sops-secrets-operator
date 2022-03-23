@@ -112,7 +112,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	r.Log.Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
 		// Define a new secret object
-		kubeSecret, err := createKubeSecretFromTemplate(plainTextSopsSecret, &secretTemplate, r.Log)
+		kubeSecretFromTemplate, err := createKubeSecretFromTemplate(plainTextSopsSecret, &secretTemplate, r.Log)
 		if err != nil {
 			encryptedSopsSecret.Status.Message = "New child secret creation error"
 			r.Status().Update(context.Background(), encryptedSopsSecret)
@@ -126,7 +126,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 
 		// Set plainTextSopsSecret as the owner and controller
-		err = controllerutil.SetControllerReference(plainTextSopsSecret, kubeSecret, r.Scheme)
+		err = controllerutil.SetControllerReference(plainTextSopsSecret, kubeSecretFromTemplate, r.Scheme)
 		if err != nil {
 			encryptedSopsSecret.Status.Message = "Setting controller ownership of the child secret error"
 			r.Status().Update(context.Background(), encryptedSopsSecret)
@@ -140,27 +140,27 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		// Check if kubeSecret already exists in the cluster store
+		// Check if kubeSecretFromTemplate already exists in the cluster store
 		kubeSecretToFindAndCompare := &corev1.Secret{}
 		err = r.Get(
 			ctx,
 			types.NamespacedName{
-				Name:      kubeSecret.Name,
-				Namespace: kubeSecret.Namespace,
+				Name:      kubeSecretFromTemplate.Name,
+				Namespace: kubeSecretFromTemplate.Namespace,
 			},
 			kubeSecretToFindAndCompare,
 		)
-		// No kubeSecret like found - create one
+		// No kubeSecretFromTemplate alike found - create one
 		if errors.IsNotFound(err) {
 			r.Log.Info(
 				"Creating a new Secret",
 				"sopssecret", req.NamespacedName,
 				"message", err,
 			)
-			err = r.Create(ctx, kubeSecret)
-			kubeSecretToFindAndCompare = kubeSecret.DeepCopy()
+			err = r.Create(ctx, kubeSecretFromTemplate)
+			kubeSecretToFindAndCompare = kubeSecretFromTemplate.DeepCopy()
 		}
-		// Unknown error while trying to find kubeSecret in cluster - reschedule reconciliation
+		// Unknown error while trying to find kubeSecretFromTemplate in cluster - reschedule reconciliation
 		if err != nil {
 			encryptedSopsSecret.Status.Message = "Unknown Error"
 			r.Status().Update(context.Background(), encryptedSopsSecret)
@@ -173,7 +173,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		// kubeSecret found - perform ownership check
+		// kubeSecretFromTemplate found - perform ownership check
 		// TODO: check if it is correct to use plainTextSopsSecret here and not encrypted Original
 		if !metav1.IsControlledBy(kubeSecretToFindAndCompare, plainTextSopsSecret) && !isAnnotatedToBeManaged(kubeSecretToFindAndCompare) {
 			encryptedSopsSecret.Status.Message = "Child secret is not owned by controller error"
@@ -187,25 +187,26 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		origSecret := kubeSecretToFindAndCompare
-		kubeSecretToFindAndCompare = kubeSecretToFindAndCompare.DeepCopy()
+		foundOrCreatedSecret := kubeSecretToFindAndCompare
+		copyOfKubeSecretToFindAndCompare := kubeSecretToFindAndCompare.DeepCopy()
 
-		kubeSecretToFindAndCompare.StringData = kubeSecret.StringData
-		kubeSecretToFindAndCompare.Data = map[string][]byte{}
-		kubeSecretToFindAndCompare.Type = kubeSecret.Type
-		kubeSecretToFindAndCompare.ObjectMeta.Annotations = kubeSecret.ObjectMeta.Annotations
-		kubeSecretToFindAndCompare.ObjectMeta.Labels = kubeSecret.ObjectMeta.Labels
-		if isAnnotatedToBeManaged(origSecret) {
-			kubeSecretToFindAndCompare.ObjectMeta.OwnerReferences = kubeSecret.ObjectMeta.OwnerReferences
+		copyOfKubeSecretToFindAndCompare.StringData = kubeSecretFromTemplate.StringData
+		copyOfKubeSecretToFindAndCompare.Data = map[string][]byte{}
+		copyOfKubeSecretToFindAndCompare.Type = kubeSecretFromTemplate.Type
+		copyOfKubeSecretToFindAndCompare.ObjectMeta.Annotations = kubeSecretFromTemplate.ObjectMeta.Annotations
+		copyOfKubeSecretToFindAndCompare.ObjectMeta.Labels = kubeSecretFromTemplate.ObjectMeta.Labels
+		// TODO: following if statement looks useless
+		if isAnnotatedToBeManaged(foundOrCreatedSecret) {
+			copyOfKubeSecretToFindAndCompare.ObjectMeta.OwnerReferences = kubeSecretFromTemplate.ObjectMeta.OwnerReferences
 		}
 
-		if !apiequality.Semantic.DeepEqual(origSecret, kubeSecretToFindAndCompare) {
+		if !apiequality.Semantic.DeepEqual(foundOrCreatedSecret, copyOfKubeSecretToFindAndCompare) {
 			r.Log.Info(
 				"Secret already exists and needs to be refreshed",
-				"secret", kubeSecretToFindAndCompare.Name,
-				"namespace", kubeSecretToFindAndCompare.Namespace,
+				"secret", copyOfKubeSecretToFindAndCompare.Name,
+				"namespace", copyOfKubeSecretToFindAndCompare.Namespace,
 			)
-			if err = r.Update(ctx, kubeSecretToFindAndCompare); err != nil {
+			if err = r.Update(ctx, copyOfKubeSecretToFindAndCompare); err != nil {
 				encryptedSopsSecret.Status.Message = "Child secret update error"
 				r.Status().Update(context.Background(), encryptedSopsSecret)
 
@@ -218,8 +219,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			}
 			r.Log.Info(
 				"Secret successfully refreshed",
-				"secret", kubeSecretToFindAndCompare.Name,
-				"namespace", kubeSecretToFindAndCompare.Namespace,
+				"secret", copyOfKubeSecretToFindAndCompare.Name,
+				"namespace", copyOfKubeSecretToFindAndCompare.Namespace,
 			)
 		}
 	}
