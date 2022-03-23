@@ -17,11 +17,11 @@ jobs:
       image: ubuntu-2004:202111-02
     environment: &versions
       # https://github.com/kubernetes/kubernetes/releases
-      KUBECTL_VERSION: v1.23.1
+      KUBECTL_VERSION: v1.23.4
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.22.5-k3s1
+      K3S_VERSION: v1.23.4-k3s1
       # https://github.com/rancher/k3d/releases
-      K3D_VERSION: v4.4.8
+      K3D_VERSION: v5.3.0
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.8.1
       # https://golang.org/dl/
@@ -235,27 +235,17 @@ jobs:
             kubectl describe node k3d-operator-server-0
             kubectl describe node k3d-operator-agent-0
       - run:
-          name: make test
+          name: Unit tests and envtest integration tests
           command: |
             make test
-      # run helm tests
+      # helm tests
       - run:
           name: Test helm charts
           command: |
             make test-helm
+      # k3d integration tests
       - run:
-          name: Docker build
-          command: |
-            make docker-login
-            make docker-cross-build
-          no_output_timeout: 1h
-      - save_cache:
-          key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
-          paths:
-            - "/home/circleci/gogo/pkg"
-      # tests start here
-      - run:
-          name: Run Local Tests
+          name: In cluster integration tests
           command: |
             export GNUPGHOME="$(mktemp -d)"
             cat >$GNUPGHOME/foo <<EOF
@@ -346,6 +336,16 @@ jobs:
               exit 1
             fi
             rm -fr $GNUPGHOME
+      - run:
+          name: Docker build
+          command: |
+            make docker-login
+            make docker-cross-build
+          no_output_timeout: 1h
+      - save_cache:
+          key: v2-modules-{{ .Branch }}-{{ checksum "go.sum" }}
+          paths:
+            - "/home/circleci/gogo/pkg"
 
 workflows:
   version: 2
