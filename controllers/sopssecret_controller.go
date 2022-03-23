@@ -58,41 +58,12 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	r.Log.Info("Reconciling", "sopssecret", req.NamespacedName)
 
-	encryptedSopsSecret := &isindirv1alpha3.SopsSecret{}
-	err := r.Get(ctx, req.NamespacedName, encryptedSopsSecret)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
-			r.Log.Info(
-				"Request object not found, could have been deleted after reconcile request",
-				"sopssecret",
-				req.NamespacedName,
-			)
-			return reconcile.Result{}, nil
-		}
-
-		// Error reading the object - requeue the request.
-		r.Log.Info(
-			"Error reading the object",
-			"sopssecret",
-			req.NamespacedName,
-		)
+	encryptedSopsSecret, finishReconcileLoop, err := r.getEncryptedSopsSecret(ctx, req)
+	if finishReconcileLoop {
 		return reconcile.Result{}, err
 	}
 
-	// Return early if SopsSecret object is suspended.
-	if encryptedSopsSecret.Spec.Suspend {
-		r.Log.Info(
-			"Reconciliation is suspended for this object",
-			"sopssecret",
-			req.NamespacedName,
-		)
-
-		encryptedSopsSecret.Status.Message = "Reconciliation is suspended"
-		r.Status().Update(context.Background(), encryptedSopsSecret)
-
+	if r.isSecretSuspended(encryptedSopsSecret, req) {
 		return reconcile.Result{}, nil
 	}
 
@@ -126,7 +97,9 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 
 		// Set plainTextSopsSecret as the owner and controller
-		err = controllerutil.SetControllerReference(plainTextSopsSecret, kubeSecretFromTemplate, r.Scheme)
+		// TODO: decide what to leave there and remove duplicate
+		//err = controllerutil.SetControllerReference(plainTextSopsSecret, kubeSecretFromTemplate, r.Scheme)
+		err = controllerutil.SetControllerReference(encryptedSopsSecret, kubeSecretFromTemplate, r.Scheme)
 		if err != nil {
 			encryptedSopsSecret.Status.Message = "Setting controller ownership of the child secret error"
 			r.Status().Update(context.Background(), encryptedSopsSecret)
@@ -234,6 +207,55 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		req.NamespacedName,
 	)
 	return ctrl.Result{}, nil
+}
+
+func (r *SopsSecretReconciler) isSecretSuspended(
+	encryptedSopsSecret *isindirv1alpha3.SopsSecret, req ctrl.Request) bool {
+
+	// Return early if SopsSecret object is suspended.
+	if encryptedSopsSecret.Spec.Suspend {
+		r.Log.Info(
+			"Reconciliation is suspended for this object",
+			"sopssecret", req.NamespacedName,
+		)
+
+		encryptedSopsSecret.Status.Message = "Reconciliation is suspended"
+		r.Status().Update(context.Background(), encryptedSopsSecret)
+
+		return true
+	}
+
+	return false
+}
+
+func (r *SopsSecretReconciler) getEncryptedSopsSecret(
+	ctx context.Context, req ctrl.Request) (*isindirv1alpha3.SopsSecret, bool, error) {
+
+	encryptedSopsSecret := &isindirv1alpha3.SopsSecret{}
+
+	err := r.Get(ctx, req.NamespacedName, encryptedSopsSecret)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			r.Log.Info(
+				"Request object not found, could have been deleted after reconcile request",
+				"sopssecret",
+				req.NamespacedName,
+			)
+			return nil, true, nil
+		}
+
+		// Error reading the object - requeue the request.
+		r.Log.Info(
+			"Error reading the object",
+			"sopssecret",
+			req.NamespacedName,
+		)
+		return nil, true, err
+	}
+	return encryptedSopsSecret, false, nil
 }
 
 // checks if the annotation equals to "true", and it's case sensitive
