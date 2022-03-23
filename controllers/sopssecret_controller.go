@@ -67,97 +67,125 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, nil
 	}
 
-	plainTextSopsSecret, err := decryptSopsSecretInstance(encryptedSopsSecret, r.Log)
-	if err != nil {
-		//plainTextSopsSecret.Status.SecretsTotal = len(plainTextSopsSecret.Spec.SecretsTemplate)
-		encryptedSopsSecret.Status.Message = "Decryption error"
-
-		// will not process plainTextSopsSecret error as we are already in error mode here
-		r.Status().Update(context.Background(), encryptedSopsSecret)
-
-		// Failed to decrypt, re-schedule reconciliation in 5 minutes
+	plainTextSopsSecret, rescheduleReconcileLoop := r.decryptSopsSecret(encryptedSopsSecret)
+	if rescheduleReconcileLoop {
 		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 	}
 
 	// Iterate over secret templates
 	r.Log.Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
-		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(
-			req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
+
+		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
 		if rescheduleReconcileLoop {
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		kubeSecretToFindAndCompare, rescheduleReconcileLoop := r.getSecretFromClusterOrTemplate(
-			ctx, req, encryptedSopsSecret, kubeSecretFromTemplate)
+		kubeSecretInCluster, rescheduleReconcileLoop := r.getSecretFromClusterOrCreateFromTemplate(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate)
 		if rescheduleReconcileLoop {
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		// kubeSecretFromTemplate found - perform ownership check
-		// TODO: check if it is correct to use plainTextSopsSecret here and not encrypted Original
-		if !metav1.IsControlledBy(kubeSecretToFindAndCompare, plainTextSopsSecret) && !isAnnotatedToBeManaged(kubeSecretToFindAndCompare) {
-			encryptedSopsSecret.Status.Message = "Child secret is not owned by controller error"
-			r.Status().Update(context.Background(), encryptedSopsSecret)
-
-			r.Log.Info(
-				"Child secret is not owned by controller or sopssecret Error",
-				"sopssecret", req.NamespacedName,
-				"error", fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
-			)
+		rescheduleReconcileLoop = r.isKubeSecretManagedOrAnnotatedToBeManaged(req, encryptedSopsSecret, kubeSecretInCluster)
+		if rescheduleReconcileLoop {
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		foundOrCreatedSecret := kubeSecretToFindAndCompare
-		copyOfKubeSecretToFindAndCompare := kubeSecretToFindAndCompare.DeepCopy()
-
-		copyOfKubeSecretToFindAndCompare.StringData = kubeSecretFromTemplate.StringData
-		copyOfKubeSecretToFindAndCompare.Data = map[string][]byte{}
-		copyOfKubeSecretToFindAndCompare.Type = kubeSecretFromTemplate.Type
-		copyOfKubeSecretToFindAndCompare.ObjectMeta.Annotations = kubeSecretFromTemplate.ObjectMeta.Annotations
-		copyOfKubeSecretToFindAndCompare.ObjectMeta.Labels = kubeSecretFromTemplate.ObjectMeta.Labels
-		// TODO: following if statement looks useless
-		if isAnnotatedToBeManaged(foundOrCreatedSecret) {
-			copyOfKubeSecretToFindAndCompare.ObjectMeta.OwnerReferences = kubeSecretFromTemplate.ObjectMeta.OwnerReferences
-		}
-
-		if !apiequality.Semantic.DeepEqual(foundOrCreatedSecret, copyOfKubeSecretToFindAndCompare) {
-			r.Log.Info(
-				"Secret already exists and needs to be refreshed",
-				"secret", copyOfKubeSecretToFindAndCompare.Name,
-				"namespace", copyOfKubeSecretToFindAndCompare.Namespace,
-			)
-			if err = r.Update(ctx, copyOfKubeSecretToFindAndCompare); err != nil {
-				encryptedSopsSecret.Status.Message = "Child secret update error"
-				r.Status().Update(context.Background(), encryptedSopsSecret)
-
-				r.Log.Info(
-					"Child secret update error",
-					"sopssecret", req.NamespacedName,
-					"error", err,
-				)
-				return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
-			}
-			r.Log.Info(
-				"Secret successfully refreshed",
-				"secret", copyOfKubeSecretToFindAndCompare.Name,
-				"namespace", copyOfKubeSecretToFindAndCompare.Namespace,
-			)
+		rescheduleReconcileLoop = r.refreshKubeSecretIfNeeded(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate, kubeSecretInCluster)
+		if rescheduleReconcileLoop {
+			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 	}
 
 	encryptedSopsSecret.Status.Message = "Healthy"
 	r.Status().Update(context.Background(), encryptedSopsSecret)
 
-	r.Log.Info(
-		"SopsSecret is Healthy",
-		"sopssecret",
-		req.NamespacedName,
-	)
+	r.Log.Info("SopsSecret is Healthy", "sopssecret", req.NamespacedName)
 	return ctrl.Result{}, nil
 }
 
-func (r *SopsSecretReconciler) getSecretFromClusterOrTemplate(
+func (r *SopsSecretReconciler) decryptSopsSecret(
+	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
+) (*isindirv1alpha3.SopsSecret, bool) {
+	decryptedSopsSecret, err := decryptSopsSecretInstance(encryptedSopsSecret, r.Log)
+	if err != nil {
+		encryptedSopsSecret.Status.Message = "Decryption error"
+
+		// will not process plainTextSopsSecret error as we are already in error mode here
+		r.Status().Update(context.Background(), encryptedSopsSecret)
+
+		// Failed to decrypt, re-schedule reconciliation in 5 minutes
+		return nil, true
+	}
+	return decryptedSopsSecret, false
+}
+
+func (r *SopsSecretReconciler) isKubeSecretManagedOrAnnotatedToBeManaged(
+	req ctrl.Request,
+	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
+	kubeSecretInCluster *corev1.Secret,
+) bool {
+	// kubeSecretFromTemplate found - perform ownership check
+	if !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) && !isAnnotatedToBeManaged(kubeSecretInCluster) {
+		encryptedSopsSecret.Status.Message = "Child secret is not owned by controller error"
+		r.Status().Update(context.Background(), encryptedSopsSecret)
+
+		r.Log.Info(
+			"Child secret is not owned by controller or sopssecret Error",
+			"sopssecret", req.NamespacedName,
+			"error", fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
+		)
+		return true
+	}
+	return false
+}
+
+func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
+	ctx context.Context,
+	req ctrl.Request,
+	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
+	kubeSecretFromTemplate *corev1.Secret,
+	kubeSecretInCluster *corev1.Secret,
+) bool {
+	copyOfKubeSecretInCluster := kubeSecretInCluster.DeepCopy()
+
+	copyOfKubeSecretInCluster.StringData = kubeSecretFromTemplate.StringData
+	copyOfKubeSecretInCluster.Data = map[string][]byte{}
+	copyOfKubeSecretInCluster.Type = kubeSecretFromTemplate.Type
+	copyOfKubeSecretInCluster.ObjectMeta.Annotations = kubeSecretFromTemplate.ObjectMeta.Annotations
+	copyOfKubeSecretInCluster.ObjectMeta.Labels = kubeSecretFromTemplate.ObjectMeta.Labels
+
+	if isAnnotatedToBeManaged(kubeSecretInCluster) {
+		copyOfKubeSecretInCluster.ObjectMeta.OwnerReferences = kubeSecretFromTemplate.ObjectMeta.OwnerReferences
+	}
+
+	if !apiequality.Semantic.DeepEqual(kubeSecretInCluster, copyOfKubeSecretInCluster) {
+		r.Log.Info(
+			"Secret already exists and needs to be refreshed",
+			"secret", copyOfKubeSecretInCluster.Name,
+			"namespace", copyOfKubeSecretInCluster.Namespace,
+		)
+		if err := r.Update(ctx, copyOfKubeSecretInCluster); err != nil {
+			encryptedSopsSecret.Status.Message = "Child secret update error"
+			r.Status().Update(context.Background(), encryptedSopsSecret)
+
+			r.Log.Info(
+				"Child secret update error",
+				"sopssecret", req.NamespacedName,
+				"error", err,
+			)
+			return true
+		}
+		r.Log.Info(
+			"Secret successfully refreshed",
+			"secret", copyOfKubeSecretInCluster.Name,
+			"namespace", copyOfKubeSecretInCluster.Namespace,
+		)
+	}
+	return false
+}
+
+func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 	ctx context.Context,
 	req ctrl.Request,
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
@@ -175,7 +203,7 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrTemplate(
 		kubeSecretToFindAndCompare,
 	)
 
-	// No kubeSecretFromTemplate alike found - create one
+	// No kubeSecretFromTemplate alike found - CREATE one
 	if errors.IsNotFound(err) {
 		r.Log.Info(
 			"Creating a new Secret",
