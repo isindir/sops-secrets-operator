@@ -8,8 +8,8 @@ sops 3.7.2
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize 4.5.4
 # https://github.com/rancher/k3d/releases
-#k3d 4.4.8
-k3d 5.4.1
+#k3d 5.4.1
+k3d 4.4.8
 # https://github.com/kubernetes/kubernetes/releases
 kubectl 1.23.6
 # https://github.com/helm/helm/releases
