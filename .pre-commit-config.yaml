@@ -1,6 +1,7 @@
+# UPDATE_HERE: at least helm-docs
 repos:
 - repo: https://github.com/norwoodj/helm-docs
-  rev: v1.6.0
+  rev: v1.9.1
   hooks:
   - id: helm-docs
     args:
@@ -9,7 +10,7 @@ repos:
       # The `./` makes it relative to the chart-search-root set above
       - --template-files=./README.md.gotmpl
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.2.0
   hooks:
   - id: check-symlinks
   - id: check-merge-conflict
