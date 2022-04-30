@@ -22,7 +22,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
 
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu?tab=tags&page=1&ordering=last_updated
-FROM ubuntu:focal-20220404
+FROM ubuntu:focal-20220426
 
 RUN apt-get -y update \
       && apt-get -y upgrade \

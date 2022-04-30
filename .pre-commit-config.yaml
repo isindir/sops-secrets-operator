@@ -1,6 +1,7 @@
+# UPDATE_HERE: at least helm-docs
 repos:
 - repo: https://github.com/norwoodj/helm-docs
-  rev: v1.6.0
+  rev: v1.9.1
   hooks:
   - id: helm-docs
     args:

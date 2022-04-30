@@ -9,25 +9,28 @@ jobs:
     # UPDATE_HERE
     machine: &machine
       # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+      #  ubuntu-2004:202201-02 - Ubuntu 20.04, Docker v20.10.12, Docker Compose v1.29.2, Google Cloud SDK updates
+      #  ubuntu-2004:202201-01 - Ubuntu 20.04, Docker v20.10.12, Docker Compose v1.29.2
       #  ubuntu-2004:202111-02 - Ubuntu 20.04, Docker v20.10.11, Docker Compose v1.29.2, log4j updates
       #  ubuntu-2004:202111-01 - Ubuntu 20.04, Docker v20.10.11, Docker Compose v1.29.2,
       #  ubuntu-2004:202107-02 - Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2,
       # https://githubmemory.com/repo/rancher/k3d/issues/807
       #  It doesn't happen anymore after upgrading from Docker 2.10.2 and containerd 1.4.3 to Docker 2.10.9 and containerd 1.4.11
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2004:202201-02
     environment: &versions
       # https://github.com/kubernetes/kubernetes/releases
-      KUBECTL_VERSION: v1.23.5
+      KUBECTL_VERSION: v1.23.6
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.23.5-k3s1
+      K3S_VERSION: v1.23.6-k3s1
       # https://github.com/rancher/k3d/releases
+      #K3D_VERSION: v5.4.1
       K3D_VERSION: v4.4.8
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.8.2
       # https://golang.org/dl/
       GOLANG_VERSION: "1.18.1"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 3.3.0
+      KUBEBUILDER_VERSION: 3.4.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.2
       # https://github.com/kubernetes-sigs/kustomize/releases
