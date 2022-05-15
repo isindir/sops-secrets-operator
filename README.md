@@ -23,6 +23,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops | Chart | Operator |
 |---|---|---|---|
+| v1.24.x | v3.7.3 | 0.11.0 | 0.5.0 |
 | v1.23.x | v3.7.2 | 0.10.8 | 0.4.8 |
 | v1.22.x | v3.7.1 | 0.9.7 | 0.3.7 |
 | v1.21.x | v3.7.1 | 0.9.6 | 0.3.6 |
