@@ -9,10 +9,10 @@ require (
 	github.com/onsi/gomega v1.19.0
 	github.com/sirupsen/logrus v1.8.1
 	go.mozilla.org/sops/v3 v3.7.3
-	k8s.io/api v0.24.0
-	k8s.io/apimachinery v0.24.0
-	k8s.io/client-go v0.24.0
-	sigs.k8s.io/controller-runtime v0.12.0
+	k8s.io/api v0.24.1
+	k8s.io/apimachinery v0.24.1
+	k8s.io/client-go v0.24.1
+	sigs.k8s.io/controller-runtime v0.12.1
 )
 
 require (
