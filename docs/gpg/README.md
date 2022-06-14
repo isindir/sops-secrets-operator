@@ -14,7 +14,7 @@ Then generate PGP keys inside container. PGP key files will remain in the folder
 after closing container session:
 
 ```bash
-cd /tmp/scripts
+cd /tmp/scripts/docs/gpg
 ./install.sh
 make
 ```
