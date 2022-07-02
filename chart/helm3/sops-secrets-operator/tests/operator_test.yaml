@@ -199,7 +199,7 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].image
           # UPDATE_HERE
-          value: ubuntu:focal-20220602
+          value: ubuntu:jammy-20220531
       - equal:
           path: spec.template.spec.initContainers[0].imagePullPolicy
           value: Always

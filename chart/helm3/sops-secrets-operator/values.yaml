@@ -22,7 +22,7 @@ initImage:
   # -- Init container image name
   repository: ubuntu
   # -- Init container image tag
-  tag: focal-20220602
+  tag: jammy-20220531
   # -- Init container image pull policy
   pullPolicy: Always
 
