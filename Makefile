@@ -1,11 +1,11 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.5.1
+SOPS_SEC_OPERATOR_VERSION := 0.5.2
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.9.0"
+CONTROLLER_GEN_VERSION := "v0.9.2"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.12.1"
+CONTROLLER_RUNTIME_VERSION := "v0.12.2"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v4.5.5"
 # use `setup-envtest list` to obtain the list of available versions
@@ -13,7 +13,7 @@ KUSTOMIZE_VERSION := "v4.5.5"
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # https://storage.googleapis.com/kubebuilder-tools
-ENVTEST_K8S_VERSION := "1.23.5"
+ENVTEST_K8S_VERSION := "1.24.1"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -45,7 +45,7 @@ SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
 .PHONY: all
-all: build
+all: clean build
 
 ##@ General
 
@@ -127,7 +127,7 @@ vet: ## Run go vet against code.
 	$(GO) vet ./...
 
 .PHONY: test
-test: generate fmt vet envtest ## Run tests.
+test: clean generate fmt vet envtest ## Run tests.
 	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" $(GO) test ./... -coverpkg=./controllers/... -coverprofile=$(TMP_COVER_FILE)
 
 cover: test ## Run tests with coverage.
