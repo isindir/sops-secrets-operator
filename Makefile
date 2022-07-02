@@ -127,7 +127,7 @@ vet: ## Run go vet against code.
 	$(GO) vet ./...
 
 .PHONY: test
-test: generate fmt vet envtest ## Run tests.
+test: clean generate fmt vet envtest ## Run tests.
 	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" $(GO) test ./... -coverpkg=./controllers/... -coverprofile=$(TMP_COVER_FILE)
 
 cover: test ## Run tests with coverage.

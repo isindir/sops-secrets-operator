@@ -19,7 +19,7 @@ jobs:
       image: ubuntu-2204:2022.04.1
     environment: &versions
       # https://github.com/kubernetes/kubernetes/releases
-      KUBECTL_VERSION: v1.24.1
+      KUBECTL_VERSION: v1.24.2
       # https://hub.docker.com/r/rancher/k3s/tags
       K3S_VERSION: v1.24.0-rc1-k3s1
       # https://github.com/rancher/k3d/releases
@@ -30,7 +30,7 @@ jobs:
       # https://golang.org/dl/
       GOLANG_VERSION: "1.18.3"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 3.4.1
+      KUBEBUILDER_VERSION: 3.5.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.3
       # https://github.com/kubernetes-sigs/kustomize/releases
