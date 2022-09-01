@@ -471,7 +471,8 @@ func decryptSopsSecretInstance(
 // The format string can be `json`, `yaml`, `dotenv` or `binary`.
 // If the format string is empty, binary format is assumed.
 // NOTE: this function is taken from sops code and adjusted
-//       to ignore mac, as CR will always be mutated in k8s
+//
+//	to ignore mac, as CR will always be mutated in k8s
 func customDecryptData(data []byte, format string) (cleartext []byte, err error) {
 	// Initialize a Sops JSON store
 	var store sops.Store
