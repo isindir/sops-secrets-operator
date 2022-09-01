@@ -1,6 +1,6 @@
 // Package v1alpha3 contains API Schema definitions for the isindir v1alpha3 API group
-//+kubebuilder:object:generate=true
-//+groupName=isindir.github.com
+// +kubebuilder:object:generate=true
+// +groupName=isindir.github.com
 package v1alpha3
 
 import (

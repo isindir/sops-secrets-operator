@@ -188,10 +188,10 @@ type SopsSecretStatus struct {
 //+kubebuilder:subresource:status
 
 // SopsSecret is the Schema for the sopssecrets API
-//+kubebuilder:resource:shortName=sops,scope=Namespaced
-//+kubebuilder:deprecatedversion
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.message`
+// +kubebuilder:resource:shortName=sops,scope=Namespaced
+// +kubebuilder:deprecatedversion
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.message`
 type SopsSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

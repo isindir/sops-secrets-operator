@@ -3,8 +3,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Package v1alpha2 contains API Schema definitions for the isindir v1alpha2 API group
-//+kubebuilder:object:generate=true
-//+groupName=isindir.github.com
+// +kubebuilder:object:generate=true
+// +groupName=isindir.github.com
 package v1alpha2
 
 import (
