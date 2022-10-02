@@ -31,8 +31,8 @@ tests:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
-            app.kubernetes.io/version: 0.6.0
-            helm.sh/chart: sops-secrets-operator-0.12.0
+            app.kubernetes.io/version: 0.6.1
+            helm.sh/chart: sops-secrets-operator-0.12.1
 
   # custom name
   - it: should correctly render custome name
@@ -171,7 +171,7 @@ tests:
       # UPDATE_HERE
       - equal:
           path: spec.template.spec.containers[0].image
-          value: isindir/sops-secrets-operator:0.6.0
+          value: isindir/sops-secrets-operator:0.6.1
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always
@@ -199,7 +199,7 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].image
           # UPDATE_HERE
-          value: ubuntu:jammy-20220801
+          value: ubuntu:jammy-20220815
       - equal:
           path: spec.template.spec.initContainers[0].imagePullPolicy
           value: Always

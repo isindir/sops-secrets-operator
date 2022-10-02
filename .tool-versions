@@ -1,8 +1,8 @@
 # UPDATE_HERE
 # https://github.com/kubernetes-sigs/kubebuilder/releases
-kubebuilder 3.6.0
+kubebuilder 3.7.0
 # https://golang.org/dl/
-golang 1.19
+golang 1.19.1
 # https://github.com/mozilla/sops/releases
 sops 3.7.3
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -11,9 +11,9 @@ kustomize 4.5.7
 #k3d 5.4.1
 k3d 4.4.8
 # https://github.com/kubernetes/kubernetes/releases
-kubectl 1.25.0
+kubectl 1.25.2
 # https://github.com/helm/helm/releases
-helm 3.9.4
+helm 3.10.0
 # https://github.com/norwoodj/helm-docs/releases
 helm-docs 1.11.0
 # https://github.com/instrumenta/kubeval/releases

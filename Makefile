@@ -1,11 +1,11 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.6.0
+SOPS_SEC_OPERATOR_VERSION := 0.6.1
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.9.2"
+CONTROLLER_GEN_VERSION := "v0.10.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.12.3"
+CONTROLLER_RUNTIME_VERSION := "v0.13.0"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v4.5.7"
 # use `setup-envtest list` to obtain the list of available versions
@@ -13,7 +13,7 @@ KUSTOMIZE_VERSION := "v4.5.7"
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # https://storage.googleapis.com/kubebuilder-tools
-ENVTEST_K8S_VERSION := "1.24.2"
+ENVTEST_K8S_VERSION := "1.25.0"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
