@@ -32,7 +32,7 @@ tests:
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
             app.kubernetes.io/version: 0.6.2
-            helm.sh/chart: sops-secrets-operator-0.12.2
+            helm.sh/chart: sops-secrets-operator-0.12.3
 
   # custom name
   - it: should correctly render custome name
