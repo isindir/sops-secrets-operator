@@ -13,7 +13,9 @@ $ kubectl create namespace sops
 
 $ kubectl apply -f deploy/crds/isindir_v1alpha1_sopssecret_crd.yaml
 
-$ helm upgrade --install sops chart/sops-secrets-operator/ \
+$ helm repo add sops https://isindir.github.io/sops-secrets-operator/
+
+$ helm upgrade --install sops sops/sops-secrets-operator \
   --namespace sops -f custom.values.yaml
 ```
 

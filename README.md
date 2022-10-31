@@ -61,8 +61,8 @@ kubectl apply -f config/crd/bases/isindir.github.com_sopssecrets.yaml
 ```bash
 kubectl create namespace sops
 
-helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
-  --namespace sops
+helm repo add sops https://isindir.github.io/sops-secrets-operator/
+helm upgrade --install sops sops/sops-secrets-operator --namespace sops
 ```
 
 ## Age
@@ -90,7 +90,8 @@ kubectl apply -f docs/gpg/2.yaml --namespace sops
 
 kubectl apply -f config/crd/bases/isindir.github.com_sopssecrets.yaml
 
-helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
+helm repo add sops https://isindir.github.io/sops-secrets-operator/
+helm upgrade --install sops sops/sops-secrets-operator \
   --namespace sops --set gpg.enabled=true
 ```
 
@@ -116,7 +117,8 @@ EOF
 
 kubectl create namespace sops
 
-helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
+helm repo add sops https://isindir.github.io/sops-secrets-operator/
+helm upgrade --install sops sops/sops-secrets-operator \
   --namespace sops -f azure_values.yaml
 ```
 
@@ -144,7 +146,8 @@ EOF
 kubectl create namespace sops
 kubectl apply -n sops -f azure_secret.yaml
 
-helm upgrade --install sops chart/helm3/sops-secrets-operator/ \
+helm repo add sops https://isindir.github.io/sops-secrets-operator/
+helm upgrade --install sops sops/sops-secrets-operator \
   --namespace sops -f azure_values.yaml
 ```
 
