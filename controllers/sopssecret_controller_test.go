@@ -23,12 +23,31 @@ import (
 
 var _ = Describe("SopssecretController", func() {
 	TestSecretObject00 := &isindirv1alpha3.SopsSecret{}
+	TestSecretObject01 := &isindirv1alpha3.SopsSecret{}
+	TestSecretObject02 := &isindirv1alpha3.SopsSecret{}
 	BeforeEach(func() {
+		// 00 secret
 		content, err := ioutil.ReadFile(filepath.Join("..", "config", "age-test-key", "00-test-secrets.yaml"))
 		Expect(err).Should(BeNil())
 
 		obj, _, err := scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
 		TestSecretObject00 = obj.(*isindirv1alpha3.SopsSecret)
+		Expect(err).Should(BeNil())
+
+		// 01 secret
+		content, err = ioutil.ReadFile(filepath.Join("..", "config", "age-test-key", "01-test-secrets.yaml"))
+		Expect(err).Should(BeNil())
+
+		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
+		TestSecretObject01 = obj.(*isindirv1alpha3.SopsSecret)
+		Expect(err).Should(BeNil())
+
+		// 02 secret
+		content, err = ioutil.ReadFile(filepath.Join("..", "config", "age-test-key", "02-test-secrets.yaml"))
+		Expect(err).Should(BeNil())
+
+		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
+		TestSecretObject02 = obj.(*isindirv1alpha3.SopsSecret)
 		Expect(err).Should(BeNil())
 	})
 
@@ -78,7 +97,7 @@ var _ = Describe("SopssecretController", func() {
 	})
 
 	Context("When Creating Correctly Defined SopsSecret Object", func() {
-		It("Should Succeed to Create SopsSecret", func() {
+		It("Should Succeed to perform tests using SopsSecret 00", func() {
 			By("By creating a new SopsSecret version 00")
 			ctx := context.Background()
 
@@ -149,14 +168,67 @@ var _ = Describe("SopssecretController", func() {
 			time.Sleep(10 * time.Second)
 			secretsList = &corev1.SecretList{}
 			Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
+
 			// 3 from SopsSecret object + 1 for Service Account
 			Expect(len(secretsList.Items)).To(Equal(3))
 			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
 			Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
+
+			By("By deleting SopsSecret version 00")
+			Expect(controller.K8sClient.Delete(ctx, TestSecretObject00)).To(Succeed())
 		}, float64(timeout))
 	})
 
-	// TODO: check by creating sops secret with one broken k8s secret definition will manifest in non-healthy sops object
-	// TODO: check pre-existing secret conflict with SopsSecret template
+	Context("When Creating Syntactically Correct SopsSecret Object with broken encrypted data", func() {
+		It("Should Succeed to Create SopsSecret 01", func() {
+			By("By creating a new SopsSecret version 01")
+			ctx := context.Background()
+			Expect(controller.K8sClient.Create(ctx, TestSecretObject01)).To(Succeed())
+			time.Sleep(10 * time.Second)
+
+			By("By checking that status of the SopsSecret is 'Decryption error'")
+			sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+			sourceSopsSecretNamespacedName := &types.NamespacedName{Namespace: "default", Name: "test-sopssecret-01"}
+			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+			Expect(sourceSopsSecret.Status.Message).To(Equal("Decryption error"))
+
+			By("By deleting SopsSecret version 01")
+			Expect(controller.K8sClient.Delete(ctx, TestSecretObject01)).To(Succeed())
+		})
+	})
+
+	Context("When Creating Correctly Defined SopsSecret Object when pre-existing not owned secret blocks child creation", func() {
+		It("Should Succeed to run tests using SopsSecret 02", func() {
+			By("By creating a new not owned by controller plain kubernetes secret 'not-owned-secret-02'")
+			ctx := context.Background()
+			testSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "default",
+					Name:      "not-owned-secret-02",
+				},
+				Type: corev1.SecretTypeOpaque,
+			}
+			Expect(controller.K8sClient.Create(ctx, testSecret)).To(Succeed())
+			time.Sleep(10 * time.Second)
+
+			By("By creating a new SopsSecret version 02")
+			Expect(controller.K8sClient.Create(ctx, TestSecretObject02)).To(Succeed())
+			time.Sleep(10 * time.Second)
+
+			By("By checking that status of the SopsSecret is 'Child secret is not owned by controller error'")
+			sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+			sourceSopsSecretNamespacedName := &types.NamespacedName{Namespace: "default", Name: "test-sopssecret-02"}
+			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+			Expect(sourceSopsSecret.Status.Message).To(Equal("Child secret is not owned by controller error"))
+
+			By("By deleting SopsSecret version 02")
+			Expect(controller.K8sClient.Delete(ctx, TestSecretObject02)).To(Succeed())
+		})
+	})
+
 	// TODO: check pre-existing k8s secret being taken over by SopsSecret using sops managed annotation
+	// TODO: check that sopssecret is suspended correctly - not processed - "Reconciliation is suspended"
+	// TODO: check the error message is "createKubeSecretFromTemplate(): secret template name must be specified and not empty string".
+	//       when child secret template name is empty
+	// TODO: check all types of secret - BasicAuth, SSHAuth, BootstrapToken, TLS, Dockercfg, ServiceAccountToken???
 })
