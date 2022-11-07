@@ -24,11 +24,10 @@ jobs:
       K3S_VERSION: v1.25.3-k3s1
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v5.4.6
-      #K3D_VERSION: v4.4.8
       # https://github.com/helm/helm/releases
       HELM_VERSION: v3.10.1
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.19.2"
+      GOLANG_VERSION: "1.19.3"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.7.0
       # https://github.com/mozilla/sops/releases
