@@ -1,11 +1,11 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.6.2
+SOPS_SEC_OPERATOR_VERSION := 0.6.3
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.10.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.13.0"
+CONTROLLER_RUNTIME_VERSION := "v0.13.1"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v4.5.7"
 # use `setup-envtest list` to obtain the list of available versions
