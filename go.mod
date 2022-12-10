@@ -5,16 +5,16 @@ go 1.19
 
 require (
 	github.com/go-logr/logr v1.2.3
-	github.com/onsi/ginkgo/v2 v2.4.0
-	github.com/onsi/gomega v1.23.0
+	github.com/onsi/ginkgo/v2 v2.6.0
+	github.com/onsi/gomega v1.24.1
 	github.com/sirupsen/logrus v1.9.0
 	// https://github.com/mozilla/sops/releases
 	go.mozilla.org/sops/v3 v3.7.3
-	k8s.io/api v0.25.3
+	k8s.io/api v0.25.5
 	// https://github.com/kubernetes/apimachinery/tags
-	k8s.io/apimachinery v0.25.3
-	k8s.io/client-go v0.25.3
-	sigs.k8s.io/controller-runtime v0.13.0
+	k8s.io/apimachinery v0.25.5
+	k8s.io/client-go v0.25.5
+	sigs.k8s.io/controller-runtime v0.13.1
 )
 
 require (
@@ -114,11 +114,11 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
-	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/net v0.3.1-0.20221206200815-1e63c2f08a10 // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/term v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/term v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/api v0.74.0 // indirect
