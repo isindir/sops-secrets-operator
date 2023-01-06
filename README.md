@@ -303,10 +303,10 @@ Projects and tools inspired development of `sops-secrets-operator`:
 
 ## Similar tools
 
-* [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
-* [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
 * [Kubernetes external secrets](https://github.com/godaddy/kubernetes-external-secrets)
-* [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
+* [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
+* [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
 * [Kamus](https://kamus.soluto.io/)
 * [Sops Operator](https://github.com/craftypath/sops-operator)
 * [Tesoro](https://github.com/kapicorp/tesoro)
+* [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
