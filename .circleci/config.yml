@@ -21,7 +21,7 @@ jobs:
       # https://github.com/kubernetes/kubernetes/releases
       KUBECTL_VERSION: v1.26.1
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.26.1-k3s1
+      K3S_VERSION: v1.26.0-k3s1
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v5.4.6
       # https://github.com/helm/helm/releases
