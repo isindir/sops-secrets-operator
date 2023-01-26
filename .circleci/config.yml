@@ -19,31 +19,31 @@ jobs:
       image: ubuntu-2204:2022.10.2
     environment: &versions
       # https://github.com/kubernetes/kubernetes/releases
-      KUBECTL_VERSION: v1.26.0
+      KUBECTL_VERSION: v1.26.1
       # https://hub.docker.com/r/rancher/k3s/tags
       K3S_VERSION: v1.26.0-k3s1
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v5.4.6
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.10.3
+      HELM_VERSION: v3.11.0
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.19.4"
+      GOLANG_VERSION: "1.19.5"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 3.8.0
+      KUBEBUILDER_VERSION: 3.9.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.3
       # https://github.com/kubernetes-sigs/kustomize/releases
       KUSTOMIZE_VERSION: v4.5.7
       # https://github.com/quintush/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.2.10
+      HELM_UNITTEST_VERSION: 0.2.11
       # https://github.com/instrumenta/kubeval/releases
       KUBEVAL_VERSION: 0.16.1
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.15.1
+      GIT_CHGLOG_VERSION: 0.15.2
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_VERSION: 0.9.1
+      BUILDX_BINARY_VERSION: 0.10.0
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
