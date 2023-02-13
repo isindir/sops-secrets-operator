@@ -38,7 +38,7 @@ echo: ## prints chart information
 
 .PHONY: test
 test: ## runs unittests
-	helm unittest --helm3 --color .
+	helm unittest --color .
 	@echo '--------------------'
 
 .PHONY: lint
