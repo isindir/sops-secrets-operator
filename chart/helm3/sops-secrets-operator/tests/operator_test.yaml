@@ -31,8 +31,8 @@ tests:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
-            app.kubernetes.io/version: 0.7.1
-            helm.sh/chart: sops-secrets-operator-0.13.1
+            app.kubernetes.io/version: 0.7.2
+            helm.sh/chart: sops-secrets-operator-0.13.2
 
   # custom name
   - it: should correctly render custome name
@@ -82,7 +82,6 @@ tests:
   # pod annotations
   - it: pod annotations should not be empty by default
     asserts:
-    asserts:
       - equal:
           path: spec.template.metadata.annotations
           value:
@@ -104,7 +103,7 @@ tests:
   # image pull secrets
   - it: imagePullSecrets should be empty by default
     asserts:
-      - isEmpty:
+      - isNull:
           path: spec.template.spec.imagePullSecrets
 
   - it: should correctly render imagePullSecrets
@@ -147,7 +146,7 @@ tests:
   # GPG init container
   - it: should not create GPG init container by default
     asserts:
-      - isEmpty:
+      - isNull:
           path: spec.template.spec.initContainers
 
   - it: should create GPG init container if enabled
@@ -171,7 +170,7 @@ tests:
       # UPDATE_HERE
       - equal:
           path: spec.template.spec.containers[0].image
-          value: isindir/sops-secrets-operator:0.7.1
+          value: isindir/sops-secrets-operator:0.7.2
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always
@@ -199,7 +198,7 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].image
           # UPDATE_HERE
-          value: ubuntu:jammy-20221130
+          value: ubuntu:jammy-20230126
       - equal:
           path: spec.template.spec.initContainers[0].imagePullPolicy
           value: Always
@@ -223,7 +222,7 @@ tests:
   # container volume mounts
   - it: should render empty set of volume mounts by default
     asserts:
-      - isEmpty:
+      - isNull:
           path: spec.template.spec.containers[0].volumeMounts
 
   - it: should render gcp volume mount if enabled
@@ -437,7 +436,7 @@ tests:
   # pod volumes
   - it: should not render pod volumes by default
     asserts:
-      - isEmpty:
+      - isNull:
           path: spec.template.spec.volumes
 
   # GCP volumes

@@ -8,7 +8,7 @@ jobs:
     working_directory: /home/circleci/gogo/src/github.com/isindir/sops-secrets-operator
     # UPDATE_HERE
     machine: &machine
-      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+      # https://circleci.com/developer/machine/image/ubuntu-2204
       #  ubuntu-2004:202201-02 - Ubuntu 20.04, Docker v20.10.12, Docker Compose v1.29.2, Google Cloud SDK updates
       #  ubuntu-2004:202201-01 - Ubuntu 20.04, Docker v20.10.12, Docker Compose v1.29.2
       #  ubuntu-2004:202111-02 - Ubuntu 20.04, Docker v20.10.11, Docker Compose v1.29.2, log4j updates
@@ -21,29 +21,29 @@ jobs:
       # https://github.com/kubernetes/kubernetes/releases
       KUBECTL_VERSION: v1.26.1
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.26.0-k3s1
+      K3S_VERSION: v1.26.1-k3s1
       # https://github.com/rancher/k3d/releases
-      K3D_VERSION: v5.4.6
+      K3D_VERSION: v5.4.7
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.11.0
+      HELM_VERSION: v3.11.1
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.19.5"
+      GOLANG_VERSION: "1.20"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
       KUBEBUILDER_VERSION: 3.9.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.3
       # https://github.com/kubernetes-sigs/kustomize/releases
-      KUSTOMIZE_VERSION: v4.5.7
-      # https://github.com/quintush/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.2.11
+      KUSTOMIZE_VERSION: v5.0.0
+      # https://github.com/helm-unittest/helm-unittest/releases
+      HELM_UNITTEST_VERSION: 0.3.0
       # https://github.com/instrumenta/kubeval/releases
       KUBEVAL_VERSION: 0.16.1
       # https://github.com/github/hub/releases
       HUB_VERSION: 2.14.2
       # https://github.com/git-chglog/git-chglog/releases
-      GIT_CHGLOG_VERSION: 0.15.2
+      GIT_CHGLOG_VERSION: 0.15.3
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_VERSION: 0.10.0
+      BUILDX_BINARY_VERSION: 0.10.2
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -194,7 +194,7 @@ jobs:
             rm -fr linux-amd64
             helm version
             # install helm-unittest plugin
-            helm plugin install https://github.com/quintush/helm-unittest --version ${HELM_UNITTEST_VERSION}
+            helm plugin install https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
             helm unittest --help
           background: true
       - run:

@@ -23,7 +23,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops | Chart | Operator |
 |---|---|---|---|
-| v1.26.x | v3.7.3 | 0.13.1 | 0.7.1 |
+| v1.26.x | v3.7.3 | 0.13.2 | 0.7.2 |
 | v1.25.x | v3.7.3 | 0.12.5 | 0.6.4 |
 | v1.24.x | v3.7.3 | 0.11.3 | 0.5.3 |
 | v1.23.x | v3.7.2 | 0.10.8 | 0.4.8 |
@@ -79,7 +79,7 @@ References:
 
 ## PGP
 
-For instructions on howto configure PGP keys for operator, see [Preparing GPG keys](docs/gpg/README.md)
+For instructions on how-to configure PGP keys for operator, see [Preparing GPG keys](docs/gpg/README.md)
 
 Then install operator:
 
@@ -211,7 +211,7 @@ sops --encrypt \
   > jenkins-secrets.enc.yaml
 ```
 
-> **NOTE:** after using regex `sops --encrypted-regex` resulting file may be unapplicable to the kubernetes cluster, use
+> **NOTE:** after using regex `sops --encrypted-regex` resulting file may be inapplicable to the kubernetes cluster, use
   this feature with care
 
 * Encrypt file using `sops` and GCP KMS key:
@@ -257,7 +257,7 @@ metadata:
     "sopssecret/managed": "true"
 ...
 ```
-> previously unmanaged secret will be replaced by `SopsSecret` owned at the next rescheduled
+> previously not managed secret will be replaced by `SopsSecret` owned at the next rescheduled
   reconciliation event.
 
 ## Example procedure to upgrade from one `SopsSecret` API version to another
@@ -289,21 +289,23 @@ Projects and tools inspired development of `sops-secrets-operator`:
 
 * [sops](https://github.com/mozilla/sops)
   * [Configuring AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
-  * [helm secrets plugin](https://github.com/futuresimple/helm-secrets)
-* [kiam](https://github.com/uswitch/kiam)
+  * [helm secrets plugin](https://github.com/jkroepke/helm-secrets)
+* [kiam](https://github.com/uswitch/kiam) - in maintenance mode now
 * [kube2iam](https://github.com/jtblin/kube2iam)
 * [Weaveworks Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
   * [Flux github repositories](https://github.com/fluxcd)
+  * [Flux sops native integration documentation](https://fluxcd.io/flux/guides/mozilla-sops/)
 * [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
   * [Jenkins - Kubernetes Credentials Provider](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/)
   * [Jenkins Kubernetes Plugin](https://github.com/jenkinsci/kubernetes-plugin)
 * [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-secrets)
+  * [Using sealed secrets with Flux](https://fluxcd.io/flux/guides/sealed-secrets/)
 * [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
   * [operator-sdk](https://github.com/operator-framework/operator-sdk)
 
 ## Similar tools
 
-* [Kubernetes external secrets](https://github.com/godaddy/kubernetes-external-secrets)
+* [Kubernetes external secrets](https://github.com/external-secrets/external-secrets)
 * [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
 * [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
 * [Kamus](https://kamus.soluto.io/)
