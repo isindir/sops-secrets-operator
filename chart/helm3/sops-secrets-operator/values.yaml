@@ -13,7 +13,7 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.7.2
+  tag: 0.8.0
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -163,3 +163,7 @@ affinity: {}
 rbac:
   # -- Create and use RBAC resources
   enabled: true
+
+metrics:
+  # -- Enable prometheus metrics
+  enabled: false

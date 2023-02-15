@@ -64,11 +64,13 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if r.isSecretSuspended(encryptedSopsSecret, req) {
+		sopsSecretsReconciliationsSuspended.Inc()
 		return reconcile.Result{}, nil
 	}
 
 	plainTextSopsSecret, rescheduleReconcileLoop := r.decryptSopsSecret(encryptedSopsSecret)
 	if rescheduleReconcileLoop {
+		sopsSecretsReconciliationFailures.Inc()
 		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 	}
 
@@ -78,27 +80,32 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
 		if rescheduleReconcileLoop {
+			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		kubeSecretInCluster, rescheduleReconcileLoop := r.getSecretFromClusterOrCreateFromTemplate(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate)
 		if rescheduleReconcileLoop {
+			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		rescheduleReconcileLoop = r.isKubeSecretManagedOrAnnotatedToBeManaged(req, encryptedSopsSecret, kubeSecretInCluster)
 		if rescheduleReconcileLoop {
+			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		rescheduleReconcileLoop = r.refreshKubeSecretIfNeeded(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate, kubeSecretInCluster)
 		if rescheduleReconcileLoop {
+			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 	}
 
 	encryptedSopsSecret.Status.Message = "Healthy"
 	r.Status().Update(context.Background(), encryptedSopsSecret)
+	sopsSecretsReconciliations.Inc()
 
 	r.Log.Info("SopsSecret is Healthy", "sopssecret", req.NamespacedName)
 	return ctrl.Result{}, nil
