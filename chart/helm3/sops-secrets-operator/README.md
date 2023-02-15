@@ -134,7 +134,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.7.2"` | Operator image tag |
+| image.tag | string | `"0.8.0"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"ubuntu"` | Init container image name |
@@ -144,6 +144,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | logging.encoder | string | `"json"` | Zap log encoding (one of 'json' or 'console') |
 | logging.level | string | `"info"` | Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity |
 | logging.stacktraceLevel | string | `"error"` | Zap Level at and above which stacktraces are captured (one of 'info', 'error'). |
+| metrics.enabled | bool | `false` | Enable prometheus metrics |
 | nameOverride | string | `""` | Overrides auto-generated short resource name |
 | nodeSelector | object | `{}` | Node selector to use for pod configuration |
 | podAnnotations | object | `{}` | Annotations to be added to operator pod (can be used with kiam or kube2iam) |
