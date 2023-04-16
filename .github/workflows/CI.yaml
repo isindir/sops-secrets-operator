@@ -15,3 +15,8 @@ jobs:
 
       - name: Install asdf & tools
         uses: asdf-vm/actions/install@v2
+
+      - name: Install helm unittest plugin
+        run: |
+          HELM_UNITTEST_VERSION=$(awk -F':' '$0 ~ /HELM_UNITTEST_VERSION/ { print $3 }')
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
