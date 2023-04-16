@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    name: Build and Test operator
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install asdf & tools
+        uses: asdf-vm/actions/install@v2
