@@ -10,7 +10,7 @@ kustomize 5.0.1
 # https://github.com/rancher/k3d/releases
 k3d 5.4.9
 # https://github.com/kubernetes/kubernetes/releases
-kubectl 1.27.1
+kubectl 1.26.4
 # https://github.com/helm/helm/releases
 helm 3.11.3
 # https://github.com/norwoodj/helm-docs/releases

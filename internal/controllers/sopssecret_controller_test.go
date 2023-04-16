@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
-	controller "github.com/isindir/sops-secrets-operator/controllers"
+	controller "github.com/isindir/sops-secrets-operator/internal/controllers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 

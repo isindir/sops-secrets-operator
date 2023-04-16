@@ -11,10 +11,10 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	// https://github.com/mozilla/sops/releases
 	go.mozilla.org/sops/v3 v3.7.3
-	k8s.io/api v0.27.1
+	k8s.io/api v0.26.4
 	// https://github.com/kubernetes/apimachinery/tags
-	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.27.1
+	k8s.io/apimachinery v0.26.4
+	k8s.io/client-go v0.26.4
 	sigs.k8s.io/controller-runtime v0.14.6
 )
 
@@ -106,6 +106,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.mozilla.org/gopgagent v0.0.0-20170926210634-4d7ea76ff71a // indirect
