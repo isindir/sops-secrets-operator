@@ -1,4 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/isindir/sops-secrets-operator?)](https://goreportcard.com/report/github.com/isindir/sops-secrets-operator)
+[![github.com/isindir/sops-secrets-operator](/advisor/golang/github.com/isindir/sops-secrets-operator/badge.svg)](/advisor/golang/github.com/isindir/sops-secrets-operator)
 [![CircleCI](https://circleci.com/gh/isindir/sops-secrets-operator.svg?style=svg)](https://circleci.com/gh/isindir/sops-secrets-operator)
 [![GitHub release](https://img.shields.io/github/tag/isindir/sops-secrets-operator.svg)](https://github.com/isindir/sops-secrets-operator/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/isindir/sops-secrets-operator.svg)](https://hub.docker.com/r/isindir/sops-secrets-operator)
@@ -23,6 +24,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops | Chart | Operator |
 |---|---|---|---|
+| v1.27.x | v3.7.3 | 0.15.0 | 0.9.0 |
 | v1.26.x | v3.7.3 | 0.14.1 | 0.8.1 |
 | v1.25.x | v3.7.3 | 0.12.5 | 0.6.4 |
 | v1.24.x | v3.7.3 | 0.11.3 | 0.5.3 |
