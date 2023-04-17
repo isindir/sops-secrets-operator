@@ -48,7 +48,6 @@ jobs:
       # TODO: these need to be run in parallel
       - name: Unit tests and envtest integration tests
         run: |
-          go version
           make test
 
       - name: Test helm charts
