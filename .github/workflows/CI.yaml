@@ -38,3 +38,12 @@ jobs:
         with:
           version: latest
           platforms: linux/arm64,linux/arm/v6,linux/arm/v7,linux/amd64,linux/386,linux/s390x,linux/ppc64le
+
+      - name: Start kind cluster
+        run: |
+          kind create cluster --config .github/configs/kind.yaml
+          kubectl version
+
+      - name: Try k8s
+        run: |
+          kubectl version
