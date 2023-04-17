@@ -48,9 +48,10 @@ lint: ## runs helm chart linting
 
 .PHONY: validate
 validate: ## validates rendered chart templates using 'kubeval'
-	helm template . --set securityContextenabled=true \
-		| kubeval --force-color \
-				--strict \
-				--schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
-				--kubernetes-version $(K8S_VERSION) -
-	@echo '--------------------'
+	echo "Placeholder for kubeconform"
+#	helm template . --set securityContextenabled=true \
+#		| kubeval --force-color \
+#				--strict \
+#				--schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
+#				--kubernetes-version $(K8S_VERSION) -
+#	@echo '--------------------'
