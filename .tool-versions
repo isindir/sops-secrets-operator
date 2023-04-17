@@ -26,5 +26,8 @@ kustomize 5.0.1
 # https://github.com/yannh/kubeconform/releases
 kubeconform 0.6.1
 
+#
+hub v2.14.2
+
 # https://github.com/git-chglog/git-chglog/releases
 git-chglog 0.15.4

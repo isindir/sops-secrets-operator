@@ -4,6 +4,12 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  DOCKER_BUILDKIT: 1
+  KUBECONFIG: .kube/config
+  GO111MODULE: "on"
+  GO15VENDOREXPERIMENT: 1
+
 jobs:
   build-and-test:
     name: Build and Test operator
@@ -13,12 +19,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # https://github.com/asdf-vm/actions
       - name: Install asdf & tools
         uses: asdf-vm/actions/install@v2
 
       - name: Install helm unittest plugin
         run: |
-          echo "$(awk -F':' '$0 ~ /HELM_UNITTEST_VERSION/ { print $3 }')"
-          helm version
           helm plugin install https://github.com/helm-unittest/helm-unittest \
             --version "$(awk -F':' '$0 ~ /HELM_UNITTEST_VERSION/ { print $3 }')"
+
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU for Buildx
+        uses: docker/setup-qemu-action@v2
+
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          version: latest
+          platforms: linux/arm64,linux/arm/v6,linux/arm/v7,linux/amd64,linux/386,linux/s390x,linux/ppc64le
