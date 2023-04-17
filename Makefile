@@ -71,9 +71,9 @@ clean: ## Cleans dependency directories.
 	rm -fr ./bin
 	rm -f $(TMP_COVER_HTML_FILE) $(TMP_COVER_FILE)
 
+#$(GO) mod tidy
 .PHONY: tidy
 tidy: ## Fetches all go dependencies.
-	$(GO) mod tidy
 	$(GO) mod vendor
 
 .PHONY: pre-commit
@@ -240,6 +240,7 @@ define go-install-tool
 set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
+$(GO) version
 $(GO) mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
