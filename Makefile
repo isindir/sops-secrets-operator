@@ -74,6 +74,7 @@ clean: ## Cleans dependency directories.
 .PHONY: tidy
 tidy: ## Fetches all go dependencies.
 	$(GO) mod tidy
+	$(GO) clean -modcache
 	$(GO) mod vendor
 
 .PHONY: pre-commit
