@@ -103,7 +103,7 @@ tests:
   # image pull secrets
   - it: imagePullSecrets should be empty by default
     asserts:
-      - isNull:
+      - notExists:
           path: spec.template.spec.imagePullSecrets
 
   - it: should correctly render imagePullSecrets
@@ -146,7 +146,7 @@ tests:
   # GPG init container
   - it: should not create GPG init container by default
     asserts:
-      - isNull:
+      - notExists:
           path: spec.template.spec.initContainers
 
   - it: should create GPG init container if enabled
@@ -222,7 +222,7 @@ tests:
   # container volume mounts
   - it: should render empty set of volume mounts by default
     asserts:
-      - isNull:
+      - notExists:
           path: spec.template.spec.containers[0].volumeMounts
 
   - it: should render gcp volume mount if enabled
@@ -436,7 +436,7 @@ tests:
   # pod volumes
   - it: should not render pod volumes by default
     asserts:
-      - isNull:
+      - notExists:
           path: spec.template.spec.volumes
 
   # GCP volumes

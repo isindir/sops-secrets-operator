@@ -4,7 +4,6 @@ SOPS_SEC_OPERATOR_VERSION := 0.8.2
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION ?= v0.11.3
-#CONTROLLER_GEN_VERSION := "v0.11.3"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.14.6"
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -222,8 +221,6 @@ controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessar
 $(CONTROLLER_GEN): $(LOCALBIN)
 	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
-#controller-gen: ## Download controller-gen locally if necessary.
-#	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION})
 
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
@@ -235,9 +232,6 @@ $(KUSTOMIZE): $(LOCALBIN)
 		rm -rf $(LOCALBIN)/kustomize; \
 	fi
 	test -s $(LOCALBIN)/kustomize || { curl -Ss $(KUSTOMIZE_INSTALL_SCRIPT) --output install_kustomize.sh && bash install_kustomize.sh $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); rm install_kustomize.sh; }
-#.PHONY: kustomize
-#kustomize: ## Download kustomize locally if necessary.
-#	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION})
 
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 .PHONY: envtest
@@ -245,41 +239,7 @@ $(ENVTEST): $(LOCALBIN)
 envtest: ## Download setup-envtest locally if necessary.
 	echo $(LOCALBIN)/setup-envtest
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
-#	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 .PHONY: envtest-list
 envtest-list: envtest ## List of the available setup-envtest versions.
 	$(ENVTEST) list
-
-#GINKGO = $(shell pwd)/ginkgo
-#setup-ginkgo: ## Download ginkgo locally
-#	$(call go-install-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
-
-## go-install-tool will 'go install' any package $2 and install it to $1
-#PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-#define go-install-tool
-#@[ -f $(1) ] || { \
-#set -e ;\
-#TMP_DIR=$$(mktemp -d) ;\
-#cd $$TMP_DIR ;\
-#$(GO) version ;\
-#$(GO) mod init tmp ;\
-#echo "Downloading $(2)" ;\
-#GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
-#rm -rf $$TMP_DIR ;\
-#}
-#endef
-#
-## go-get-tool will 'go get' any package $2 and install it to $1.
-#PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-#define go-get-tool
-#@[ -f $(1) ] || { \
-#set -e ;\
-#TMP_DIR=$$(mktemp -d) ;\
-#cd $$TMP_DIR ;\
-#go mod init tmp ;\
-#echo "Downloading $(2)" ;\
-#GOBIN=$(PROJECT_DIR)/bin $(GO) get $(2) ;\
-#rm -rf $$TMP_DIR ;\
-#}
-#endef
