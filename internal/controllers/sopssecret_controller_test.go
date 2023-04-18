@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
-	controller "github.com/isindir/sops-secrets-operator/controllers"
+	controller "github.com/isindir/sops-secrets-operator/internal/controllers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -27,7 +27,7 @@ var _ = Describe("SopssecretController", func() {
 	TestSecretObject02 := &isindirv1alpha3.SopsSecret{}
 	BeforeEach(func() {
 		// 00 secret
-		content, err := ioutil.ReadFile(filepath.Join("..", "config", "age-test-key", "00-test-secrets.yaml"))
+		content, err := ioutil.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "00-test-secrets.yaml"))
 		Expect(err).Should(BeNil())
 
 		obj, _, err := scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
@@ -35,7 +35,7 @@ var _ = Describe("SopssecretController", func() {
 		Expect(err).Should(BeNil())
 
 		// 01 secret
-		content, err = ioutil.ReadFile(filepath.Join("..", "config", "age-test-key", "01-test-secrets.yaml"))
+		content, err = ioutil.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "01-test-secrets.yaml"))
 		Expect(err).Should(BeNil())
 
 		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
@@ -43,7 +43,7 @@ var _ = Describe("SopssecretController", func() {
 		Expect(err).Should(BeNil())
 
 		// 02 secret
-		content, err = ioutil.ReadFile(filepath.Join("..", "config", "age-test-key", "02-test-secrets.yaml"))
+		content, err = ioutil.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "02-test-secrets.yaml"))
 		Expect(err).Should(BeNil())
 
 		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)

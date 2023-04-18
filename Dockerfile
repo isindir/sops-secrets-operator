@@ -2,7 +2,7 @@
 # Build the manager binary
 # https://www.debian.org/releases/
 # https://hub.docker.com/_/golang/tags?page=1&name=bullseye
-FROM golang:1.20.2-bullseye as builder
+FROM golang:1.20.3-bullseye as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -13,16 +13,16 @@ COPY go.sum go.sum
 RUN go mod download
 
 # Copy the go source
-COPY main.go main.go
+COPY cmd/ cmd/
 COPY api/ api/
-COPY controllers/ controllers/
+COPY internal/ internal/
 
 # Build (GOARCH=amd64)
-RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
+RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=jammy
-FROM ubuntu:jammy-20230301
+FROM ubuntu:jammy-20230308
 
 RUN apt-get -y update \
       && apt-get -y upgrade \

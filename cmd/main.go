@@ -24,7 +24,7 @@ import (
 	isindirv1alpha1 "github.com/isindir/sops-secrets-operator/api/v1alpha1"
 	isindirv1alpha2 "github.com/isindir/sops-secrets-operator/api/v1alpha2"
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
-	"github.com/isindir/sops-secrets-operator/controllers"
+	"github.com/isindir/sops-secrets-operator/internal/controllers"
 	//+kubebuilder:scaffold:imports
 )
 

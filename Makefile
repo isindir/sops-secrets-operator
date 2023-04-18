@@ -1,13 +1,13 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.8.1
+SOPS_SEC_OPERATOR_VERSION := 0.8.2
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.11.3"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.14.5"
+CONTROLLER_RUNTIME_VERSION := "v0.14.6"
 # https://github.com/kubernetes-sigs/kustomize/releases
-KUSTOMIZE_VERSION := "v5.0.0"
+KUSTOMIZE_VERSION := "v5.0.1"
 # use `setup-envtest list` to obtain the list of available versions
 # until fixed, can't use newer version, see:
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
@@ -128,7 +128,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: clean generate fmt vet envtest ## Run tests.
-	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" $(GO) test ./... -coverpkg=./controllers/... -coverprofile=$(TMP_COVER_FILE)
+	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" $(GO) test ./... -coverpkg=./internal/controllers/... -coverprofile=$(TMP_COVER_FILE)
 
 cover: test ## Run tests with coverage.
 	$(GO) tool cover -func=$(TMP_COVER_FILE)
@@ -138,11 +138,11 @@ cover: test ## Run tests with coverage.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	$(GO) build -o bin/manager main.go
+	$(GO) build -o bin/manager cmd/main.go
 
 .PHONY: run
 run: generate fmt vet ## Run a controller from your host.
-	$(GO) run ./main.go
+	$(GO) run ./cmd/main.go
 
 docker-login: ## Performs logging to dockerhub using DOCKERHUB_USERNAME and DOCKERHUB_PASS environment variables.
 	echo "${DOCKERHUB_PASS}" | base64 -d | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
