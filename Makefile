@@ -3,7 +3,8 @@ GO := GOPROXY=https://proxy.golang.org go
 SOPS_SEC_OPERATOR_VERSION := 0.8.2
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.11.3"
+CONTROLLER_TOOLS_VERSION ?= v0.11.3
+#CONTROLLER_GEN_VERSION := "v0.11.3"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.14.6"
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -71,9 +72,9 @@ clean: ## Cleans dependency directories.
 	rm -fr ./bin
 	rm -f $(TMP_COVER_HTML_FILE) $(TMP_COVER_FILE)
 
-#$(GO) mod tidy
 .PHONY: tidy
 tidy: ## Fetches all go dependencies.
+	$(GO) mod tidy
 	$(GO) mod vendor
 
 .PHONY: pre-commit
@@ -105,10 +106,6 @@ update-here: ## Helper target to start editing all occurances with UPDATE_HERE.
 	@echo "Update following files for release:"
 	@grep --color -nHR UPDATE_HERE .
 
-.PHONY: envtest-list
-envtest-list: envtest ## List of the available setup-envtest versions.
-	$(ENVTEST) list
-
 .PHONY: manifests
 manifests: tidy controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
@@ -128,7 +125,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: clean generate fmt vet envtest ## Run tests.
-	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" $(GO) test ./... -coverpkg=./internal/controllers/... -coverprofile=$(TMP_COVER_FILE)
+	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path --force)" $(GO) test ./... -coverpkg=./internal/controllers/... -coverprofile=$(TMP_COVER_FILE)
 
 cover: test ## Run tests with coverage.
 	$(GO) tool cover -func=$(TMP_COVER_FILE)
@@ -214,50 +211,75 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 ##@ Misc
 
-CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
+## Location to install dependencies to
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 .PHONY: controller-gen
-controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION})
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+#controller-gen: ## Download controller-gen locally if necessary.
+#	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION})
 
-KUSTOMIZE = $(shell pwd)/bin/kustomize
+KUSTOMIZE ?= $(LOCALBIN)/kustomize
+KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
-kustomize: ## Download kustomize locally if necessary.
-	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION})
+kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
+$(KUSTOMIZE): $(LOCALBIN)
+	@if test -x $(LOCALBIN)/kustomize && ! $(LOCALBIN)/kustomize version | grep -q $(KUSTOMIZE_VERSION); then \
+		echo "$(LOCALBIN)/kustomize version is not expected $(KUSTOMIZE_VERSION). Removing it before installing."; \
+		rm -rf $(LOCALBIN)/kustomize; \
+	fi
+	test -s $(LOCALBIN)/kustomize || { curl -Ss $(KUSTOMIZE_INSTALL_SCRIPT) --output install_kustomize.sh && bash install_kustomize.sh $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); rm install_kustomize.sh; }
+#.PHONY: kustomize
+#kustomize: ## Download kustomize locally if necessary.
+#	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION})
 
-ENVTEST = $(shell pwd)/bin/setup-envtest
+ENVTEST ?= $(LOCALBIN)/setup-envtest
 .PHONY: envtest
+$(ENVTEST): $(LOCALBIN)
 envtest: ## Download setup-envtest locally if necessary.
-	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+	echo $(LOCALBIN)/setup-envtest
+	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+#	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
-GINKGO = $(shell pwd)/ginkgo
-setup-ginkgo: ## Download ginkgo locally
-	$(call go-install-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
+.PHONY: envtest-list
+envtest-list: envtest ## List of the available setup-envtest versions.
+	$(ENVTEST) list
 
-# go-install-tool will 'go install' any package $2 and install it to $1
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-install-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-$(GO) version ;\
-$(GO) mod init tmp ;\
-echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
+#GINKGO = $(shell pwd)/ginkgo
+#setup-ginkgo: ## Download ginkgo locally
+#	$(call go-install-tool,$(GINKGO),github.com/onsi/ginkgo/ginkgo)
 
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-go mod init tmp ;\
-echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin $(GO) get $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
+## go-install-tool will 'go install' any package $2 and install it to $1
+#PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+#define go-install-tool
+#@[ -f $(1) ] || { \
+#set -e ;\
+#TMP_DIR=$$(mktemp -d) ;\
+#cd $$TMP_DIR ;\
+#$(GO) version ;\
+#$(GO) mod init tmp ;\
+#echo "Downloading $(2)" ;\
+#GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
+#rm -rf $$TMP_DIR ;\
+#}
+#endef
+#
+## go-get-tool will 'go get' any package $2 and install it to $1.
+#PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+#define go-get-tool
+#@[ -f $(1) ] || { \
+#set -e ;\
+#TMP_DIR=$$(mktemp -d) ;\
+#cd $$TMP_DIR ;\
+#go mod init tmp ;\
+#echo "Downloading $(2)" ;\
+#GOBIN=$(PROJECT_DIR)/bin $(GO) get $(2) ;\
+#rm -rf $$TMP_DIR ;\
+#}
+#endef
