@@ -1,5 +1,4 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/isindir/sops-secrets-operator?)](https://goreportcard.com/report/github.com/isindir/sops-secrets-operator)
-[![github.com/isindir/sops-secrets-operator](/advisor/golang/github.com/isindir/sops-secrets-operator/badge.svg)](/advisor/golang/github.com/isindir/sops-secrets-operator)
 [![CircleCI](https://circleci.com/gh/isindir/sops-secrets-operator.svg?style=svg)](https://circleci.com/gh/isindir/sops-secrets-operator)
 [![GitHub release](https://img.shields.io/github/tag/isindir/sops-secrets-operator.svg)](https://github.com/isindir/sops-secrets-operator/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/isindir/sops-secrets-operator.svg)](https://hub.docker.com/r/isindir/sops-secrets-operator)
