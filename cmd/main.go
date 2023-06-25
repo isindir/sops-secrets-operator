@@ -54,9 +54,11 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Int64Var(&requeueAfter, "requeue-decrypt-after", 5, "Requeue failed reconciliation in minutes (min 1).")
+
 	opts := zap.Options{
 		Development: true,
 	}
+
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
@@ -78,7 +80,8 @@ func main() {
 	if requeueAfter < 1 {
 		requeueAfter = 1
 	}
-	setupLog.Info(
+
+	setupLog.V(0).Info(
 		fmt.Sprintf(
 			"SopsSecret reconciliation will be requeued after %d minutes after decryption failures",
 			requeueAfter,

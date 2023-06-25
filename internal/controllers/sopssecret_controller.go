@@ -23,7 +23,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	//"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
@@ -58,7 +57,7 @@ type SopsSecretReconciler struct {
 func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = r.Log.WithValues("sopssecret", req.NamespacedName)
 
-	r.Log.Info("Reconciling", "sopssecret", req.NamespacedName)
+	r.Log.V(0).Info("Reconciling", "sopssecret", req.NamespacedName)
 
 	encryptedSopsSecret, finishReconcileLoop, err := r.getEncryptedSopsSecret(ctx, req)
 	if finishReconcileLoop {
@@ -77,7 +76,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Iterate over secret templates
-	r.Log.Info("Entering template data loop", "sopssecret", req.NamespacedName)
+	r.Log.V(1).Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
 
 		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
@@ -105,11 +104,11 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 	encryptedSopsSecret.Status.Message = "Healthy"
+	_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 	sopsSecretsReconciliations.Inc()
 
-	r.Log.Info("SopsSecret is Healthy", "sopssecret", req.NamespacedName)
+	r.Log.V(1).Info("SopsSecret is Healthy", "sopssecret", req.NamespacedName)
 	return ctrl.Result{}, nil
 }
 
@@ -138,7 +137,7 @@ func (r *SopsSecretReconciler) isKubeSecretManagedOrAnnotatedToBeManaged(
 		encryptedSopsSecret.Status.Message = "Child secret is not owned by controller error"
 		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"Child secret is not owned by controller or sopssecret Error",
 			"sopssecret", req.NamespacedName,
 			"error", fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
@@ -168,7 +167,7 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 	}
 
 	if !apiequality.Semantic.DeepEqual(kubeSecretInCluster, copyOfKubeSecretInCluster) {
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"Secret already exists and needs to be refreshed",
 			"secret", copyOfKubeSecretInCluster.Name,
 			"namespace", copyOfKubeSecretInCluster.Namespace,
@@ -177,14 +176,14 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 			encryptedSopsSecret.Status.Message = "Child secret update error"
 			_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
-			r.Log.Info(
+			r.Log.V(0).Info(
 				"Child secret update error",
 				"sopssecret", req.NamespacedName,
 				"error", err,
 			)
 			return true
 		}
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"Secret successfully refreshed",
 			"secret", copyOfKubeSecretInCluster.Name,
 			"namespace", copyOfKubeSecretInCluster.Namespace,
@@ -213,7 +212,7 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 
 	// No kubeSecretFromTemplate alike found - CREATE one
 	if errors.IsNotFound(err) {
-		r.Log.Info(
+		r.Log.V(1).Info(
 			"Creating a new Secret",
 			"sopssecret", req.NamespacedName,
 			"message", err,
@@ -227,7 +226,7 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 		encryptedSopsSecret.Status.Message = "Unknown Error"
 		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"Unknown Error",
 			"sopssecret", req.NamespacedName,
 			"error", err,
@@ -251,7 +250,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 		encryptedSopsSecret.Status.Message = "New child secret creation error"
 		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"New child secret creation error",
 			"sopssecret", req.NamespacedName,
 			"error", err,
@@ -265,7 +264,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 		encryptedSopsSecret.Status.Message = "Setting controller ownership of the child secret error"
 		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"Setting controller ownership of the child secret error",
 			"sopssecret", req.NamespacedName,
 			"error", err,
@@ -282,7 +281,7 @@ func (r *SopsSecretReconciler) isSecretSuspended(
 
 	// Return early if SopsSecret object is suspended.
 	if encryptedSopsSecret.Spec.Suspend {
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"Reconciliation is suspended for this object",
 			"sopssecret", req.NamespacedName,
 		)
@@ -307,7 +306,7 @@ func (r *SopsSecretReconciler) getEncryptedSopsSecret(
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
-			r.Log.Info(
+			r.Log.V(0).Info(
 				"Request object not found, could have been deleted after reconcile request",
 				"sopssecret",
 				req.NamespacedName,
@@ -316,7 +315,7 @@ func (r *SopsSecretReconciler) getEncryptedSopsSecret(
 		}
 
 		// Error reading the object - requeue the request.
-		r.Log.Info(
+		r.Log.V(0).Info(
 			"Error reading the object",
 			"sopssecret",
 			req.NamespacedName,
@@ -331,24 +330,6 @@ func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 	return secret.Annotations[isindirv1alpha3.SopsSecretManagedAnnotation] == "true"
 }
 
-/*
-func (r *SopsSecretReconciler) ignoreStatusUpdatePredicate() predicate.Predicate {
-	return predicate.Funcs{
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldInstance := e.ObjectOld.(*isindirv1alpha3.SopsSecret)
-			newInstance := e.ObjectNew.(*isindirv1alpha3.SopsSecret)
-
-			// Message cleanup does not trigger reconcile
-			if oldInstance.Status.Message != "" && newInstance.Status.Message == "" {
-				return false
-			}
-
-			return true
-		},
-	}
-}
-*/
-
 // SetupWithManager sets up the controller with the Manager.
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
@@ -360,10 +341,8 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		sopslogging.Loggers[k].Out = io.Discard
 	}
 
-	//WithEventFilter(r.ignoreStatusUpdatePredicate()).
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha3.SopsSecret{}).
-		//WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }
@@ -387,7 +366,7 @@ func createKubeSecretFromTemplate(
 	labels := cloneMap(sopsSecretTemplate.Labels)
 	annotations := cloneMap(sopsSecretTemplate.Annotations)
 
-	logger.Info("Processing",
+	logger.V(1).Info("Processing",
 		"sopssecret", fmt.Sprintf("%s.%s.%s", sopsSecret.Kind, sopsSecret.APIVersion, sopsSecret.Name),
 		"type", sopsSecretTemplate.Type,
 		"namespace", sopsSecret.Namespace,
@@ -462,7 +441,7 @@ func decryptSopsSecretInstance(
 ) (*isindirv1alpha3.SopsSecret, error) {
 	sopsSecretAsBytes, err := json.Marshal(encryptedSopsSecret)
 	if err != nil {
-		logger.Info(
+		logger.V(0).Info(
 			"Failed to convert encrypted sops secret to bytes[]",
 			"sopssecret", fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name),
 			"error", err,
@@ -472,7 +451,7 @@ func decryptSopsSecretInstance(
 
 	decryptedSopsSecretAsBytes, err := customDecryptData(sopsSecretAsBytes, "json")
 	if err != nil {
-		logger.Info(
+		logger.V(0).Info(
 			"Failed to Decrypt encrypted sops secret decryptedSopsSecret",
 			"sopssecret", fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name),
 			"error", err,
@@ -483,7 +462,7 @@ func decryptSopsSecretInstance(
 	decryptedSopsSecret := &isindirv1alpha3.SopsSecret{}
 	err = json.Unmarshal(decryptedSopsSecretAsBytes, &decryptedSopsSecret)
 	if err != nil {
-		logger.Info(
+		logger.V(0).Info(
 			"Failed to Unmarshal decrypted sops secret decryptedSopsSecret",
 			"sopssecret", fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name),
 			"error", err,

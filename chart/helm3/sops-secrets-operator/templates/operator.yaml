@@ -70,16 +70,18 @@ spec:
           - /usr/local/bin/manager
           args:
           # The address the metric endpoint binds to. (default ":8080")
-          #- "--metrics-bind-address=127.0.0.1:8080"
-          - "--health-probe-bind-address=:{{ .Values.healthProbes.port }}"
+          #- "-metrics-bind-address=127.0.0.1:8080"
+          - "-health-probe-bind-address=:{{ .Values.healthProbes.port }}"
           # Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.
-          - "--leader-elect"
-          - "--requeue-decrypt-after={{ .Values.requeueAfter }}"
-          - "--zap-encoder={{ .Values.logging.encoder }}"
-          - "--zap-log-level={{ .Values.logging.level }}"
-          - "--zap-stacktrace-level={{ .Values.logging.stacktraceLevel }}"
+          - "-leader-elect"
+          - "-requeue-decrypt-after={{ .Values.requeueAfter }}"
+          - "-zap-devel={{ .Values.logging.development }}"
+          - "-zap-encoder={{ .Values.logging.encoder }}"
+          - "-zap-log-level={{ .Values.logging.level }}"
+          - "-zap-stacktrace-level={{ .Values.logging.stacktraceLevel }}"
+          - "-zap-time-encoding={{ .Values.logging.timeEncoding }}"
           {{- if .Values.kubeconfig.enabled }}
-          - "--kubeconfig={{ .Values.kubeconfig.path | quote }}"
+          - "-kubeconfig={{ .Values.kubeconfig.path | quote }}"
           {{- end }}
           livenessProbe:
             httpGet:
