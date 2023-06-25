@@ -134,16 +134,18 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.9.0"` | Operator image tag |
+| image.tag | string | `"0.9.1"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"ubuntu"` | Init container image name |
-| initImage.tag | string | `"jammy-20230425"` | Init container image tag |
+| initImage.tag | string | `"jammy-20230605"` | Init container image tag |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
-| logging | object | `{"encoder":"json","level":"info","stacktraceLevel":"error"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
+| logging | object | `{"development":false,"encoder":"json","level":"info","stacktraceLevel":"error","timeEncoding":"iso8601"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
+| logging.development | bool | `false` | Zap Development Mode enabled |
 | logging.encoder | string | `"json"` | Zap log encoding (one of 'json' or 'console') |
 | logging.level | string | `"info"` | Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity |
 | logging.stacktraceLevel | string | `"error"` | Zap Level at and above which stacktraces are captured (one of 'info', 'error'). |
+| logging.timeEncoding | string | `"iso8601"` | Zap time encoding (one of 'epoch', 'millis', 'nano', 'iso8601', 'rfc3339' or 'rfc3339nano'). Defaults to 'epoch'. |
 | metrics.enabled | bool | `false` | Enable prometheus metrics |
 | nameOverride | string | `""` | Overrides auto-generated short resource name |
 | nodeSelector | object | `{}` | Node selector to use for pod configuration |

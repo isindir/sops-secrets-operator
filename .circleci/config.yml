@@ -19,17 +19,17 @@ jobs:
       image: ubuntu-2204:2023.02.1
     environment: &versions
       # https://github.com/kubernetes/kubernetes/releases
-      KUBECTL_VERSION: v1.27.2
+      KUBECTL_VERSION: v1.27.3
       # https://hub.docker.com/r/rancher/k3s/tags
       K3S_VERSION: v1.27.2-k3s1
       # https://github.com/rancher/k3d/releases
       K3D_VERSION: v5.5.1
       # https://github.com/helm/helm/releases
-      HELM_VERSION: v3.12.0
+      HELM_VERSION: v3.12.1
       # https://golang.org/dl/
-      GOLANG_VERSION: "1.20.4"
+      GOLANG_VERSION: "1.20.5"
       # https://github.com/kubernetes-sigs/kubebuilder/releases
-      KUBEBUILDER_VERSION: 3.10.0
+      KUBEBUILDER_VERSION: 3.11.0
       # https://github.com/mozilla/sops/releases
       SOPS_VERSION: v3.7.3
       # https://github.com/kubernetes-sigs/kustomize/releases
@@ -43,7 +43,7 @@ jobs:
       # https://github.com/git-chglog/git-chglog/releases
       GIT_CHGLOG_VERSION: 0.15.4
       # https://github.com/docker/buildx/releases
-      BUILDX_BINARY_VERSION: 0.10.5
+      BUILDX_BINARY_VERSION: 0.11.0
 
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64

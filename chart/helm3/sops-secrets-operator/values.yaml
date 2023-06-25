@@ -13,7 +13,7 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.9.0
+  tag: 0.9.1
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -22,10 +22,9 @@ initImage:
   # -- Init container image name
   repository: ubuntu
   # -- Init container image tag
-  tag: jammy-20230425
+  tag: jammy-20230605
   # -- Init container image pull policy
   pullPolicy: Always
-
 
 # -- Secrets to pull image from private docker repository
 imagePullSecrets: []
@@ -53,12 +52,16 @@ kubeconfig:
 # Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn).
 # Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default)
 logging:
+  # -- Zap Development Mode enabled
+  development: false
   # -- Zap log encoding (one of 'json' or 'console')
   encoder: json
   # -- Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity
   level: info
   # -- Zap Level at and above which stacktraces are captured (one of 'info', 'error').
   stacktraceLevel: error
+  # -- Zap time encoding (one of 'epoch', 'millis', 'nano', 'iso8601', 'rfc3339' or 'rfc3339nano'). Defaults to 'epoch'.
+  timeEncoding: iso8601
 
 healthProbes:
   # -- The address the probe endpoint binds to. (default ":8081")
