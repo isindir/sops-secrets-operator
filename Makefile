@@ -1,6 +1,6 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.9.0
+SOPS_SEC_OPERATOR_VERSION := 0.9.1
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.12.0"
@@ -99,6 +99,10 @@ test-helm: ## Tests helm chart.
 	}
 
 ##@ Development
+
+.PHONY: lint
+lint: ## Run golangci-lint
+	golangci-lint run --path-prefix=. --timeout 3m --verbose
 
 .PHONY: update-here
 update-here: ## Helper target to start editing all occurances with UPDATE_HERE.

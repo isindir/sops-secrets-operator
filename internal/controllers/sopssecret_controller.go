@@ -9,7 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -23,6 +23,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	//"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
@@ -104,8 +105,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
+	_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 	encryptedSopsSecret.Status.Message = "Healthy"
-	r.Status().Update(context.Background(), encryptedSopsSecret)
 	sopsSecretsReconciliations.Inc()
 
 	r.Log.Info("SopsSecret is Healthy", "sopssecret", req.NamespacedName)
@@ -120,8 +121,7 @@ func (r *SopsSecretReconciler) decryptSopsSecret(
 		encryptedSopsSecret.Status.Message = "Decryption error"
 
 		// will not process plainTextSopsSecret error as we are already in error mode here
-		r.Status().Update(context.Background(), encryptedSopsSecret)
-
+		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 		// Failed to decrypt, re-schedule reconciliation in 5 minutes
 		return nil, true
 	}
@@ -136,7 +136,7 @@ func (r *SopsSecretReconciler) isKubeSecretManagedOrAnnotatedToBeManaged(
 	// kubeSecretFromTemplate found - perform ownership check
 	if !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) && !isAnnotatedToBeManaged(kubeSecretInCluster) {
 		encryptedSopsSecret.Status.Message = "Child secret is not owned by controller error"
-		r.Status().Update(context.Background(), encryptedSopsSecret)
+		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
 		r.Log.Info(
 			"Child secret is not owned by controller or sopssecret Error",
@@ -175,7 +175,7 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 		)
 		if err := r.Update(ctx, copyOfKubeSecretInCluster); err != nil {
 			encryptedSopsSecret.Status.Message = "Child secret update error"
-			r.Status().Update(context.Background(), encryptedSopsSecret)
+			_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
 			r.Log.Info(
 				"Child secret update error",
@@ -225,7 +225,7 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 	// Unknown error while trying to find kubeSecretFromTemplate in cluster - reschedule reconciliation
 	if err != nil {
 		encryptedSopsSecret.Status.Message = "Unknown Error"
-		r.Status().Update(context.Background(), encryptedSopsSecret)
+		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
 		r.Log.Info(
 			"Unknown Error",
@@ -249,7 +249,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	kubeSecretFromTemplate, err := createKubeSecretFromTemplate(plainTextSopsSecret, secretTemplate, r.Log)
 	if err != nil {
 		encryptedSopsSecret.Status.Message = "New child secret creation error"
-		r.Status().Update(context.Background(), encryptedSopsSecret)
+		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
 		r.Log.Info(
 			"New child secret creation error",
@@ -263,7 +263,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	err = controllerutil.SetControllerReference(encryptedSopsSecret, kubeSecretFromTemplate, r.Scheme)
 	if err != nil {
 		encryptedSopsSecret.Status.Message = "Setting controller ownership of the child secret error"
-		r.Status().Update(context.Background(), encryptedSopsSecret)
+		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
 		r.Log.Info(
 			"Setting controller ownership of the child secret error",
@@ -288,7 +288,7 @@ func (r *SopsSecretReconciler) isSecretSuspended(
 		)
 
 		encryptedSopsSecret.Status.Message = "Reconciliation is suspended"
-		r.Status().Update(context.Background(), encryptedSopsSecret)
+		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
 
 		return true
 	}
@@ -331,6 +331,24 @@ func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 	return secret.Annotations[isindirv1alpha3.SopsSecretManagedAnnotation] == "true"
 }
 
+/*
+func (r *SopsSecretReconciler) ignoreStatusUpdatePredicate() predicate.Predicate {
+	return predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			oldInstance := e.ObjectOld.(*isindirv1alpha3.SopsSecret)
+			newInstance := e.ObjectNew.(*isindirv1alpha3.SopsSecret)
+
+			// Message cleanup does not trigger reconcile
+			if oldInstance.Status.Message != "" && newInstance.Status.Message == "" {
+				return false
+			}
+
+			return true
+		},
+	}
+}
+*/
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
@@ -339,11 +357,13 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	// Set logrus logs to be discarded
 	for k := range sopslogging.Loggers {
-		sopslogging.Loggers[k].Out = ioutil.Discard
+		sopslogging.Loggers[k].Out = io.Discard
 	}
 
+	//WithEventFilter(r.ignoreStatusUpdatePredicate()).
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha3.SopsSecret{}).
+		//WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }
