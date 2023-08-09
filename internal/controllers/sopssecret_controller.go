@@ -410,28 +410,10 @@ func cloneTemplateData(stringData map[string]string, data map[string]string) (ma
 }
 
 func getSecretType(templateSecretType string) corev1.SecretType {
-	var kubeSecretType corev1.SecretType
-
-	switch templateSecretType {
-	case "kubernetes.io/service-account-token":
-		kubeSecretType = corev1.SecretTypeServiceAccountToken
-	case "kubernetes.io/dockercfg":
-		kubeSecretType = corev1.SecretTypeDockercfg
-	case "kubernetes.io/dockerconfigjson":
-		kubeSecretType = corev1.SecretTypeDockerConfigJson
-	case "kubernetes.io/basic-auth":
-		kubeSecretType = corev1.SecretTypeBasicAuth
-	case "kubernetes.io/ssh-auth":
-		kubeSecretType = corev1.SecretTypeSSHAuth
-	case "kubernetes.io/tls":
-		kubeSecretType = corev1.SecretTypeTLS
-	case "bootstrap.kubernetes.io/token":
-		kubeSecretType = corev1.SecretTypeBootstrapToken
-	default:
-		kubeSecretType = corev1.SecretTypeOpaque
+	if templateSecretType == "" {
+		return corev1.SecretTypeOpaque
 	}
-
-	return kubeSecretType
+	return corev1.SecretType(templateSecretType)
 }
 
 // decryptSopsSecretInstance decrypts spec.secretTemplates
