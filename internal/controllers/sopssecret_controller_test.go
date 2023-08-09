@@ -107,8 +107,8 @@ var _ = Describe("SopssecretController", func() {
 			listCommandOptions := &client.ListOptions{Namespace: "default"}
 			secretsList := &corev1.SecretList{}
 			Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
-			// 4 from SopsSecret object + 1 for Service Account
-			Expect(len(secretsList.Items)).To(Equal(4))
+			// 5 from SopsSecret object + 1 for Service Account
+			Expect(len(secretsList.Items)).To(Equal(5))
 
 			By("By checking content of token stringdata test secret")
 			testSecret := &corev1.Secret{}
@@ -125,6 +125,11 @@ var _ = Describe("SopssecretController", func() {
 			tagrgetSecretNamespacedName = &types.NamespacedName{Namespace: "default", Name: "test-type-docker-login"}
 			Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
 			Expect(testSecret.Type).To(Equal(corev1.SecretTypeDockerConfigJson))
+
+			By("By checking custom secret type type")
+			tagrgetSecretNamespacedName = &types.NamespacedName{Namespace: "default", Name: "test-type-custom-secret-type"}
+			Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
+			Expect(testSecret.Type).To(Equal(corev1.SecretType("custom/type")))
 
 			By("By checking jenkins test secret contains 1 label and 1 annotation")
 			tagrgetSecretNamespacedName = &types.NamespacedName{Namespace: "default", Name: "test-labels-annotations-jenkins-secret"}
@@ -168,8 +173,8 @@ var _ = Describe("SopssecretController", func() {
 			secretsList = &corev1.SecretList{}
 			Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
 
-			// 3 from SopsSecret object + 1 for Service Account
-			Expect(len(secretsList.Items)).To(Equal(3))
+			// 4 from SopsSecret object + 1 for Service Account
+			Expect(len(secretsList.Items)).To(Equal(4))
 			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
 			Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
 
