@@ -116,6 +116,9 @@ var _ = Describe("SopssecretController", func() {
 			Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
 			Expect(string(testSecret.Data["token"])).To(Equal("Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj"))
 
+			By("By checking the secret type of test secret without an explicit type")
+			Expect(testSecret.Type).To(Equal(corev1.SecretTypeOpaque))
+
 			By("By checking content of token data test secret")
 			tagrgetSecretNamespacedName = &types.NamespacedName{Namespace: "default", Name: "test-data-token"}
 			Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
