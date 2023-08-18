@@ -155,9 +155,7 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 	kubeSecretInCluster *corev1.Secret,
 ) bool {
 	copyOfKubeSecretInCluster := kubeSecretInCluster.DeepCopy()
-
-	copyOfKubeSecretInCluster.StringData = kubeSecretFromTemplate.StringData
-	copyOfKubeSecretInCluster.Data = map[string][]byte{}
+	copyOfKubeSecretInCluster.Data = kubeSecretFromTemplate.Data
 	copyOfKubeSecretInCluster.Type = kubeSecretFromTemplate.Type
 	copyOfKubeSecretInCluster.ObjectMeta.Annotations = kubeSecretFromTemplate.ObjectMeta.Annotations
 	copyOfKubeSecretInCluster.ObjectMeta.Labels = kubeSecretFromTemplate.ObjectMeta.Labels
@@ -357,7 +355,7 @@ func createKubeSecretFromTemplate(
 		return nil, fmt.Errorf("createKubeSecretFromTemplate(): secret template name must be specified and not empty string")
 	}
 
-	strData, err := cloneTemplateData(sopsSecretTemplate.StringData, sopsSecretTemplate.Data)
+	Data, err := cloneTemplateData(sopsSecretTemplate.StringData, sopsSecretTemplate.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -381,8 +379,9 @@ func createKubeSecretFromTemplate(
 			Annotations: annotations,
 		},
 		Type:       kubeSecretType,
-		StringData: strData,
+		Data: Data,
 	}
+
 	return secret, nil
 }
 
@@ -397,16 +396,16 @@ func cloneMap(oldMap map[string]string) map[string]string {
 }
 
 // add both StringData and Data to strData
-func cloneTemplateData(stringData map[string]string, data map[string]string) (map[string]string, error) {
-	strData := cloneMap(stringData)
+func cloneTemplateData(stringData map[string]string, data map[string]string) (map[string][]byte, error) {
+	processedData := map[string][]byte{}
 	for key, value := range data {
-		decoded, err := base64.StdEncoding.DecodeString(value)
-		if err != nil {
-			return nil, fmt.Errorf("createKubeSecretFromTemplate(): data[%v] is not a valid base64 string", key)
-		}
-		strData[key] = string(decoded)
+		processedData[key] = []byte(value)
 	}
-	return strData, nil
+	for key, value := range stringData {
+		encoded := base64.StdEncoding.EncodeToString([]byte(value))
+		processedData[key] = []byte(encoded)
+	}
+	return processedData, nil
 }
 
 func getSecretType(templateSecretType string) corev1.SecretType {
