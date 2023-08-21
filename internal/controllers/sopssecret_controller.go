@@ -6,6 +6,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -377,7 +378,7 @@ func createKubeSecretFromTemplate(
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Type:       kubeSecretType,
+		Type: kubeSecretType,
 		Data: Data,
 	}
 
@@ -398,7 +399,11 @@ func cloneMap(oldMap map[string]string) map[string]string {
 func cloneTemplateData(stringData map[string]string, data map[string]string) (map[string][]byte, error) {
 	processedData := map[string][]byte{}
 	for key, value := range data {
-		processedData[key] = []byte(value)
+		decoded, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return nil, fmt.Errorf("createKubeSecretFromTemplate(): data[%v] is not a valid base64 string", key)
+		}
+		processedData[key] = []byte(decoded)
 	}
 	for key, value := range stringData {
 		processedData[key] = []byte(value)
