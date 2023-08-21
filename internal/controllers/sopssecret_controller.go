@@ -6,7 +6,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -402,8 +401,7 @@ func cloneTemplateData(stringData map[string]string, data map[string]string) (ma
 		processedData[key] = []byte(value)
 	}
 	for key, value := range stringData {
-		encoded := base64.StdEncoding.EncodeToString([]byte(value))
-		processedData[key] = []byte(encoded)
+		processedData[key] = []byte(value)
 	}
 	return processedData, nil
 }
