@@ -104,8 +104,10 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	encryptedSopsSecret.Status.Message = "Healthy"
-	_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+	if encryptedSopsSecret.Status.Message != "Healthy" {
+		encryptedSopsSecret.Status.Message = "Healthy"
+		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+	}
 	sopsSecretsReconciliations.Inc()
 
 	r.Log.V(1).Info("SopsSecret is Healthy", "sopssecret", req.NamespacedName)

@@ -21,8 +21,8 @@ COPY internal/ internal/
 RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 # https://wiki.ubuntu.com/Releases
-# https://hub.docker.com/_/ubuntu/tags?page=1&name=jammy
-FROM ubuntu:lunar-20230731
+# https://hub.docker.com/_/ubuntu/tags?page=1&name=lunar
+FROM ubuntu:lunar-20230816
 
 RUN apt-get -y update \
       && apt-get -y upgrade \
