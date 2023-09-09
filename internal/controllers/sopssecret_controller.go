@@ -35,6 +35,17 @@ import (
 	sopsyaml "go.mozilla.org/sops/v3/stores/yaml"
 )
 
+const (
+	STATUS_HEALTHY                 = "Healthy"
+	STATUS_DECRYPT_ERROR           = "Decryption error"
+	STATUS_CHILD_NOT_OWNED         = "Child secret is not owned by controller error"
+	STATUS_CHILD_UPDATE_ERROR      = "Child secret update error"
+	STATUS_CHILD_CREATION_ERROR    = "New child secret creation error"
+	STATUS_SETTING_OWNERSHIP_ERROR = "Setting controller ownership of the child secret error"
+	STATUS_RECONCILE_SUSPENDED     = "Reconciliation is suspended"
+	STATUS_UNKNOWN_ERROR           = "Unknown Error"
+)
+
 // SopsSecretReconciler reconciles a SopsSecret object
 type SopsSecretReconciler struct {
 	client.Client
@@ -64,12 +75,12 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, err
 	}
 
-	if r.isSecretSuspended(encryptedSopsSecret, req) {
+	if r.isSecretSuspended(ctx, encryptedSopsSecret, req) {
 		sopsSecretsReconciliationsSuspended.Inc()
 		return reconcile.Result{}, nil
 	}
 
-	plainTextSopsSecret, rescheduleReconcileLoop := r.decryptSopsSecret(encryptedSopsSecret)
+	plainTextSopsSecret, rescheduleReconcileLoop := r.decryptSopsSecret(ctx, encryptedSopsSecret)
 	if rescheduleReconcileLoop {
 		sopsSecretsReconciliationFailures.Inc()
 		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
@@ -79,7 +90,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	r.Log.V(1).Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
 
-		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
+		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(ctx, req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
 		if rescheduleReconcileLoop {
 			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
@@ -91,7 +102,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		rescheduleReconcileLoop = r.isKubeSecretManagedOrAnnotatedToBeManaged(req, encryptedSopsSecret, kubeSecretInCluster)
+		rescheduleReconcileLoop = r.isKubeSecretManagedOrAnnotatedToBeManaged(ctx, req, encryptedSopsSecret, kubeSecretInCluster)
 		if rescheduleReconcileLoop {
 			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
@@ -104,25 +115,29 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	if encryptedSopsSecret.Status.Message != "Healthy" {
-		encryptedSopsSecret.Status.Message = "Healthy"
-		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
-	}
+	r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_HEALTHY)
 	sopsSecretsReconciliations.Inc()
 
 	r.Log.V(1).Info("SopsSecret is Healthy", "sopssecret", req.NamespacedName)
 	return ctrl.Result{}, nil
 }
 
+func (r *SopsSecretReconciler) UpdateSopsSecretStatus(ctx context.Context, sopsSecret *isindirv1alpha3.SopsSecret, message string) {
+	if sopsSecret.Status.Message != message {
+		sopsSecret.Status.Message = message
+		_ = r.Status().Update(ctx, sopsSecret)
+	}
+}
+
 func (r *SopsSecretReconciler) decryptSopsSecret(
+	ctx context.Context,
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 ) (*isindirv1alpha3.SopsSecret, bool) {
 	decryptedSopsSecret, err := decryptSopsSecretInstance(encryptedSopsSecret, r.Log)
 	if err != nil {
-		encryptedSopsSecret.Status.Message = "Decryption error"
-
 		// will not process plainTextSopsSecret error as we are already in error mode here
-		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_DECRYPT_ERROR)
+
 		// Failed to decrypt, re-schedule reconciliation in 5 minutes
 		return nil, true
 	}
@@ -130,14 +145,14 @@ func (r *SopsSecretReconciler) decryptSopsSecret(
 }
 
 func (r *SopsSecretReconciler) isKubeSecretManagedOrAnnotatedToBeManaged(
+	ctx context.Context,
 	req ctrl.Request,
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	kubeSecretInCluster *corev1.Secret,
 ) bool {
 	// kubeSecretFromTemplate found - perform ownership check
 	if !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) && !isAnnotatedToBeManaged(kubeSecretInCluster) {
-		encryptedSopsSecret.Status.Message = "Child secret is not owned by controller error"
-		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_NOT_OWNED)
 
 		r.Log.V(0).Info(
 			"Child secret is not owned by controller or sopssecret Error",
@@ -175,8 +190,7 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 			"namespace", copyOfKubeSecretInCluster.Namespace,
 		)
 		if err := r.Update(ctx, copyOfKubeSecretInCluster); err != nil {
-			encryptedSopsSecret.Status.Message = "Child secret update error"
-			_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+			r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_UPDATE_ERROR)
 
 			r.Log.V(0).Info(
 				"Child secret update error",
@@ -225,8 +239,7 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 
 	// Unknown error while trying to find kubeSecretFromTemplate in cluster - reschedule reconciliation
 	if err != nil {
-		encryptedSopsSecret.Status.Message = "Unknown Error"
-		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_UNKNOWN_ERROR)
 
 		r.Log.V(0).Info(
 			"Unknown Error",
@@ -240,6 +253,7 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 }
 
 func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
+	ctx context.Context,
 	req ctrl.Request,
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	plainTextSopsSecret *isindirv1alpha3.SopsSecret,
@@ -249,8 +263,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	// Define a new secret object
 	kubeSecretFromTemplate, err := createKubeSecretFromTemplate(plainTextSopsSecret, secretTemplate, r.Log)
 	if err != nil {
-		encryptedSopsSecret.Status.Message = "New child secret creation error"
-		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_CREATION_ERROR)
 
 		r.Log.V(0).Info(
 			"New child secret creation error",
@@ -263,8 +276,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	// Set encryptedSopsSecret as the owner of kubeSecret
 	err = controllerutil.SetControllerReference(encryptedSopsSecret, kubeSecretFromTemplate, r.Scheme)
 	if err != nil {
-		encryptedSopsSecret.Status.Message = "Setting controller ownership of the child secret error"
-		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_SETTING_OWNERSHIP_ERROR)
 
 		r.Log.V(0).Info(
 			"Setting controller ownership of the child secret error",
@@ -279,7 +291,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 }
 
 func (r *SopsSecretReconciler) isSecretSuspended(
-	encryptedSopsSecret *isindirv1alpha3.SopsSecret, req ctrl.Request) bool {
+	ctx context.Context, encryptedSopsSecret *isindirv1alpha3.SopsSecret, req ctrl.Request) bool {
 
 	// Return early if SopsSecret object is suspended.
 	if encryptedSopsSecret.Spec.Suspend {
@@ -288,8 +300,7 @@ func (r *SopsSecretReconciler) isSecretSuspended(
 			"sopssecret", req.NamespacedName,
 		)
 
-		encryptedSopsSecret.Status.Message = "Reconciliation is suspended"
-		_ = r.Status().Update(context.Background(), encryptedSopsSecret)
+		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_RECONCILE_SUSPENDED)
 
 		return true
 	}
