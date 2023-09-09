@@ -15,21 +15,21 @@ var (
 	sopsSecretsReconciliations = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "sopssecrets_reconcilation_successes_total",
-			Help: "Number of SopsSecrets reconciliations",
+			Help: "Number of SopsSecrets reconcilations",
 		},
 	)
 
 	sopsSecretsReconciliationFailures = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "sopssecrets_reconcilation_failures_total",
-			Help: "Number of SopsSecrets reconcoliation failures",
+			Help: "Number of SopsSecrets reconcolation failures",
 		},
 	)
 
 	sopsSecretsReconciliationsSuspended = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "sopssecrets_reconcilation_suspends_total",
-			Help: "Number of SopsSecrets reconciliations suspends",
+			Help: "Number of SopsSecrets reconcilations suspends",
 		},
 	)
 )
