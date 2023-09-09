@@ -4,7 +4,7 @@ CHART_NAME?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^name:/ { gsub(
 VERSION_TAG?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^version/ { gsub(/['\'',]/, ""); print $$2; }')
 
 # UPDATE_HERE
-K8S_VERSION := "1.27.5"
+K8S_VERSION := "1.28.1"
 
 SHELL=/bin/bash
 

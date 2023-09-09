@@ -70,7 +70,6 @@ func main() {
 		Metrics: metricsserver.Options{
 			BindAddress: metricsAddr,
 		},
-		//Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "ca57d051.github.com",
