@@ -163,8 +163,6 @@ jobs:
             curl -sSLo sops https://github.com/getsops/sops/releases/download/${SOPS_VERSION}/sops-${SOPS_VERSION}.linux.amd64
             chmod +x sops
             sudo mv sops /usr/local/bin/
-            ls -l /usr/local/bin/sops
-            sops --version
           background: true
       - run:
           name: install kubebuilder
