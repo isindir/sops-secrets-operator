@@ -27,12 +27,12 @@ import (
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
 
-	"go.mozilla.org/sops/v3"
-	sopsaes "go.mozilla.org/sops/v3/aes"
-	sopslogging "go.mozilla.org/sops/v3/logging"
-	sopsdotenv "go.mozilla.org/sops/v3/stores/dotenv"
-	sopsjson "go.mozilla.org/sops/v3/stores/json"
-	sopsyaml "go.mozilla.org/sops/v3/stores/yaml"
+	"github.com/getsops/sops/v3"
+	sopsaes "github.com/getsops/sops/v3/aes"
+	sopslogging "github.com/getsops/sops/v3/logging"
+	sopsdotenv "github.com/getsops/sops/v3/stores/dotenv"
+	sopsjson "github.com/getsops/sops/v3/stores/json"
+	sopsyaml "github.com/getsops/sops/v3/stores/yaml"
 )
 
 const (
