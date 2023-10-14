@@ -134,11 +134,11 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.11.0"` | Operator image tag |
+| image.tag | string | `"0.11.1"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"ubuntu"` | Init container image name |
-| initImage.tag | string | `"lunar-20230816"` | Init container image tag |
+| initImage.tag | string | `"lunar-20231004"` | Init container image tag |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
 | logging | object | `{"development":false,"encoder":"json","level":"info","stacktraceLevel":"error","timeEncoding":"iso8601"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
 | logging.development | bool | `false` | Zap Development Mode enabled |
