@@ -6,12 +6,12 @@ golang 1.21.3
 # https://github.com/mozilla/sops/releases
 sops 3.8.1
 # https://github.com/kubernetes-sigs/kustomize/releases
-kustomize 5.1.1
+kustomize 5.2.1
 # 5.0.3
 # https://github.com/rancher/k3d/releases
 k3d 5.6.0
 # https://github.com/kubernetes/kubernetes/releases
-kubectl 1.28.2
+kubectl 1.28.3
 # https://github.com/helm/helm/releases
 helm 3.13.1
 # https://github.com/norwoodj/helm-docs/releases
@@ -21,4 +21,4 @@ kubeval v0.16.1
 # https://github.com/git-chglog/git-chglog/releases
 git-chglog 0.15.4
 # https://github.com/golangci/golangci-lint/releases
-golangci-lint 1.54.2
+golangci-lint 1.55.1
