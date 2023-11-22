@@ -13,7 +13,7 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.11.3
+  tag: 0.11.4
   # -- Operator image pull policy
   pullPolicy: Always
 
