@@ -71,10 +71,14 @@ helm upgrade --install sops sops/sops-secrets-operator --namespace sops
 ## Age
 
 * Create age reference `keys.txt` file, create kubernetes secret from it.
-* Deploy helm chart
-  - Use `secretsAsFiles` to specify the secret which contains the `keys.txt`. Example:
-  - Use `extraEnv` and specify mounted `keys.txt` path `SOPS_AGE_KEY_FILE` environment variable:
-```
+* Deploy helm chart:
+  * Use `secretsAsFiles` to specify the secret which contains the `keys.txt`.
+  * Use `extraEnv` and specify mounted `keys.txt` path `SOPS_AGE_KEY_FILE` environment variable.
+
+See example:
+
+```yaml
+...
 secretsAsFiles:
 - mountPath: /etc/sops-age-key-file
   name: sops-age-key-file
@@ -82,7 +86,9 @@ secretsAsFiles:
 extraEnv:
 - name: SOPS_AGE_KEY_FILE
   value: /etc/sops-age-key-file/key
+...
 ```
+
 * Also see: [Local testing using age](docs/age/README.md)
 
 References:
