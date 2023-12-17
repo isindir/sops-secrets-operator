@@ -62,8 +62,8 @@ jobs:
             kubectl describe node k3d-operator-server-0
             kubectl describe node k3d-operator-agent-0
 
-      - name: Unit tests and envtest integration tests
-        run: make test
-      # helm tests
       - name: Test helm charts
         run: make test-helm
+
+      - name: Unit tests and envtest integration tests
+        run: make test
