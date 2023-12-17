@@ -19,6 +19,10 @@ jobs:
       K3S_VERSION: v1.28.4-k3s2
       # https://github.com/helm-unittest/helm-unittest/releases
       HELM_UNITTEST_VERSION: 0.3.6
+      # https://github.com/kubernetes-sigs/controller-tools/releases
+      CONTROLLER_GEN_VERSION: "v0.13.0"
+      # https://github.com/kubernetes-sigs/controller-runtime/releases
+      CONTROLLER_RUNTIME_VERSION: "v0.16.3"
     steps:
 
       - uses: actions/checkout@v2
@@ -50,9 +54,15 @@ jobs:
             sudo apt-get install qemu-user-static -y
       - name: install helm unittest plugin
         run: |
-          # install helm-unittest plugin
-          helm plugin install https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
-          helm unittest --help
+            # install helm-unittest plugin
+            helm plugin install https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
+            helm unittest --help
+      - name: other tools installation
+        run: |
+            go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+            go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+            asdf reshim golang
+
       - name: start k3d
         run: |
             docker version
