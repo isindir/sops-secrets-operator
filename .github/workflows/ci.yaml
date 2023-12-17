@@ -10,6 +10,13 @@ jobs:
 
     name: Release
     runs-on: ubuntu-20.04
+    env:
+      # https://github.com/github/hub/releases
+      HUB_VERSION: 2.14.2
+      # https://github.com/docker/buildx/releases
+      BUILDX_BINARY_VERSION: 0.12.0
+      # https://hub.docker.com/r/rancher/k3s/tags
+      K3S_VERSION: v1.28.4-k3s2
     steps:
 
       - uses: actions/checkout@v2
@@ -17,3 +24,40 @@ jobs:
 
       - name: Install tools
         uses: asdf-vm/actions/install@v2
+
+      - name: install buildx
+        run: |
+            mkdir -p ~/.docker/cli-plugins
+            curl -sSLo docker-buildx https://github.com/docker/buildx/releases/download/v${BUILDX_BINARY_VERSION}/buildx-v${BUILDX_BINARY_VERSION}.linux-amd64
+            chmod a+x docker-buildx
+            mv docker-buildx ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "linux/amd64,linux/arm64"
+      - name: install hub
+        run: |
+            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
+            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
+            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
+            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
+      - name: install gpg2
+        run: |
+            sudo apt update
+            sudo apt install -f
+            sudo apt-get install gnupg2 -y
+            sudo apt-get install qemu-user-static -y
+      - name: start k3d
+        run: |
+            docker version
+            k3d cluster create operator --agents 1 --image rancher/k3s:${K3S_VERSION}
+            JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
+            until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
+              sleep 1;
+            done
+
+            # Dump cluster info
+            kubectl cluster-info
+            which kubectl
+            kubectl version
+            kubectl describe node k3d-operator-server-0
+            kubectl describe node k3d-operator-agent-0
