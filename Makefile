@@ -1,6 +1,5 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-CONTROLLER_GEN := controller-gen
 SOPS_SEC_OPERATOR_VERSION := 0.12.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
@@ -112,7 +111,7 @@ update-here: ## Helper target to start editing all occurances with UPDATE_HERE.
 
 .PHONY: envtest-list
 envtest-list: envtest ## List of the available setup-envtest versions.
-	$(ENVTEST) list
+	PATH="$(shell pwd)/bin:$$PATH"; $(shell which setup-envtest 2>/dev/null) list
 
 .PHONY: manifests
 manifests: tidy ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
@@ -222,20 +221,31 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 ##@ Misc
 
-#CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
-#.PHONY: controller-gen
-#controller-gen: ## Download controller-gen locally if necessary.
-#	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION})
+CONTROLLER_GEN := $(shell command -v controller-gen 2>/dev/null)
+.PHONY: controller-gen
+controller-gen: ## Download controller-gen locally if necessary.
+	@command -v controller-gen >/dev/null 2>&1 || { \
+		echo "controller-gen is not installed. Installing..."; \
+    CONTROLLER_GEN = $(shell pwd)/bin/controller-gen ; \
+		$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}) ; \
+	}
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
 	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION})
 
-ENVTEST = $(shell pwd)/bin/setup-envtest
+ENVTEST = $(shell which setup-envtest 2>/dev/null)
 .PHONY: envtest
 envtest: ## Download setup-envtest locally if necessary.
-	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
+	@if [ -z "$(ENVTEST)" ]; then \
+		echo "setup-envtest is not installed. Installing..."; \
+		ENVTEST=$(shell pwd)/bin/setup-envtest ; \
+		$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest) ; \
+		echo "ENVTEST=$(ENVTEST)"; \
+	else \
+		echo "setup-envtest is already installed at $(ENVTEST)"; \
+	fi
 
 GINKGO = $(shell pwd)/ginkgo
 setup-ginkgo: ## Download ginkgo locally

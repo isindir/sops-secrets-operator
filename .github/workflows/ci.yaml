@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v2
         name: Check out code
 
-      - name: Install tools
+      - name: Install asdf tools
         uses: asdf-vm/actions/install@v2
 
       - name: install gpg2
@@ -54,10 +54,9 @@ jobs:
             sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
       - name: install helm unittest plugin
         run: |
-            # install helm-unittest plugin
             helm plugin install https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
             helm unittest --help
-      - name: other tools installation
+      - name: Install setup-envtest
         run: |
             go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
             asdf reshim golang
