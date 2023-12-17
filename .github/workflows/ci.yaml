@@ -1,0 +1,19 @@
+name: release-development
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    name: Release
+    runs-on: ubuntu-20.04
+    steps:
+
+      - uses: actions/checkout@v2
+        name: Check out code
+
+      - name: Install tools
+        uses: asdf-vm/actions/install@v2
