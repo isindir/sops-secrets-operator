@@ -17,6 +17,8 @@ jobs:
       BUILDX_BINARY_VERSION: 0.12.0
       # https://hub.docker.com/r/rancher/k3s/tags
       K3S_VERSION: v1.28.4-k3s2
+      # https://github.com/helm-unittest/helm-unittest/releases
+      HELM_UNITTEST_VERSION: 0.3.6
     steps:
 
       - uses: actions/checkout@v2
@@ -46,6 +48,11 @@ jobs:
             sudo apt install -f
             sudo apt-get install gnupg2 -y
             sudo apt-get install qemu-user-static -y
+      - name: install helm unittest plugin
+        run: |
+          # install helm-unittest plugin
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
+          helm unittest --help
       - name: start k3d
         run: |
             docker version
