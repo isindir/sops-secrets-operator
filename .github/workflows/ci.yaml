@@ -59,7 +59,6 @@ jobs:
             helm unittest --help
       - name: other tools installation
         run: |
-            go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
             go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
             asdf reshim golang
 

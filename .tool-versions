@@ -22,3 +22,5 @@ kubeval v0.16.1
 git-chglog 0.15.4
 # https://github.com/golangci/golangci-lint/releases
 golangci-lint 1.55.2
+# https://github.com/kubernetes-sigs/controller-tools/releases
+kube-controller-tools 0.13.0
