@@ -31,6 +31,12 @@ jobs:
       - name: Install tools
         uses: asdf-vm/actions/install@v2
 
+      - name: install gpg2
+        run: |
+            sudo apt update
+            sudo apt install -f
+            sudo apt-get install gnupg2 -y
+            sudo apt-get install qemu-user-static -y
       - name: install buildx
         run: |
             mkdir -p ~/.docker/cli-plugins
@@ -46,12 +52,6 @@ jobs:
             tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
             chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
             sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
-      - name: install gpg2
-        run: |
-            sudo apt update
-            sudo apt install -f
-            sudo apt-get install gnupg2 -y
-            sudo apt-get install qemu-user-static -y
       - name: install helm unittest plugin
         run: |
             # install helm-unittest plugin
