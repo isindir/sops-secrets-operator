@@ -111,10 +111,10 @@ update-here: ## Helper target to start editing all occurances with UPDATE_HERE.
 
 .PHONY: envtest-list
 envtest-list: envtest ## List of the available setup-envtest versions.
-	PATH="$(shell pwd)/bin:$$PATH"; $(shell which setup-envtest 2>/dev/null) list
+	$(ENVTEST) list
 
 .PHONY: manifests
-manifests: tidy ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+manifests: tidy controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
@@ -132,10 +132,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: clean generate fmt vet envtest ## Run tests.
-	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" \
-	SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" \
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" \
-	  $(GO) test ./... -coverpkg=./internal/controllers/... -coverprofile=$(TMP_COVER_FILE)
+	SOPS_AGE_RECIPIENTS="age1pnmp2nq5qx9z4lpmachyn2ld07xjumn98hpeq77e4glddu96zvms9nn7c8" SOPS_AGE_KEY_FILE="${PWD}/config/age-test-key/key-file.txt" KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path --force)" $(GO) test ./... -coverpkg=./internal/controllers/... -coverprofile=$(TMP_COVER_FILE)
 
 cover: test ## Run tests with coverage.
 	$(GO) tool cover -func=$(TMP_COVER_FILE)
@@ -221,31 +218,20 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 
 ##@ Misc
 
-CONTROLLER_GEN := $(shell command -v controller-gen 2>/dev/null)
+CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	@command -v controller-gen >/dev/null 2>&1 || { \
-		echo "controller-gen is not installed. Installing..."; \
-    CONTROLLER_GEN = $(shell pwd)/bin/controller-gen ; \
-		$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}) ; \
-	}
+	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION})
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
 	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION})
 
-ENVTEST = $(shell which setup-envtest 2>/dev/null)
+ENVTEST = $(shell pwd)/bin/setup-envtest
 .PHONY: envtest
 envtest: ## Download setup-envtest locally if necessary.
-	@if [ -z "$(ENVTEST)" ]; then \
-		echo "setup-envtest is not installed. Installing..."; \
-		ENVTEST=$(shell pwd)/bin/setup-envtest ; \
-		$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest) ; \
-		echo "ENVTEST=$(ENVTEST)"; \
-	else \
-		echo "setup-envtest is already installed at $(ENVTEST)"; \
-	fi
+	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 GINKGO = $(shell pwd)/ginkgo
 setup-ginkgo: ## Download ginkgo locally
