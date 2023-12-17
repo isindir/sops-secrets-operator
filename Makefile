@@ -247,6 +247,7 @@ cd $$TMP_DIR ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
+chmod +x $(1) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
