@@ -9,6 +9,7 @@ jobs:
   build:
 
     name: Release
+    environment: ci-cd
     runs-on: ubuntu-20.04
     env:
       # https://github.com/github/hub/releases
