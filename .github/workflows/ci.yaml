@@ -16,9 +16,9 @@ jobs:
       # https://github.com/docker/buildx/releases
       BUILDX_BINARY_VERSION: 0.12.0
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.28.4-k3s2
+      K3S_VERSION: v1.28.5-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.3.6
+      HELM_UNITTEST_VERSION: 0.4.1
       # https://github.com/kubernetes-sigs/controller-tools/releases
       CONTROLLER_GEN_VERSION: "v0.13.0"
       # https://github.com/kubernetes-sigs/controller-runtime/releases
