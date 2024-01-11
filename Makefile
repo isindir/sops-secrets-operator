@@ -242,6 +242,8 @@ PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 define go-install-tool
 [ -f $(1) ] || { \
 set -ex ;\
+echo $$PWD ;\
+ls -lart ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
 which go ;\
