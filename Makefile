@@ -242,14 +242,11 @@ PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 define go-install-tool
 [ -f $(1) ] || { \
 set -ex ;\
-echo $$PWD ;\
-ls -lart ;\
 TMP_DIR=$$(mktemp -d) ;\
+cp -p .tool-versions $$TMP_DIR ;\
 cd $$TMP_DIR ;\
-which go ;\
-asdf reshim golang ;\
-echo $$PATH ;\
 asdf current golang ;\
+ls -lart ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
