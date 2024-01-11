@@ -244,9 +244,9 @@ define go-install-tool
 set -ex ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
-$(GO) mod init tmp ;\
+go mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
+GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
 chmod +x $(1) ;\
 rm -rf $$TMP_DIR ;\
 }
