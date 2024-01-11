@@ -3,7 +3,7 @@ GO := GOPROXY=https://proxy.golang.org go
 SOPS_SEC_OPERATOR_VERSION := 0.12.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := v0.13.0
+CONTROLLER_GEN_VERSION := v0.13.1
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.16.3"
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -241,10 +241,10 @@ setup-ginkgo: ## Download ginkgo locally
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 define go-install-tool
 [ -f $(1) ] || { \
-set -e ;\
+set -ex ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
-go mod init tmp ;\
+$(GO) mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
 chmod +x $(1) ;\
