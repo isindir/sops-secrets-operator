@@ -7,7 +7,7 @@ CONTROLLER_GEN_VERSION := "v0.14.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.16.3"
 # https://github.com/kubernetes-sigs/kustomize/releases
-KUSTOMIZE_VERSION := "v5.2.1"
+KUSTOMIZE_VERSION := "v5.3.0"
 # use `setup-envtest list` to obtain the list of available versions
 # until fixed, can't use newer version, see:
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
@@ -240,8 +240,8 @@ setup-ginkgo: ## Download ginkgo locally
 # go-install-tool will 'go install' any package $2 and install it to $1
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 define go-install-tool
-[ -f $(1) ] || { \
-set -ex ;\
+@[ -f $(1) ] || { \
+set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
 cp -p .tool-versions $$TMP_DIR ;\
 cd $$TMP_DIR ;\
@@ -259,8 +259,9 @@ define go-get-tool
 @[ -f $(1) ] || { \
 set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
+cp -p .tool-versions $$TMP_DIR ;\
 cd $$TMP_DIR ;\
-go mod init tmp ;\
+$(GO) mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin $(GO) get $(2) ;\
 rm -rf $$TMP_DIR ;\
