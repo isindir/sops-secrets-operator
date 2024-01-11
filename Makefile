@@ -245,6 +245,8 @@ set -ex ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
 which go ;\
+asdf reshim golang ;\
+echo $$PATH ;\
 asdf current golang ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
