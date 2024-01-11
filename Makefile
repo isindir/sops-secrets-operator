@@ -245,7 +245,7 @@ set -ex ;\
 TMP_DIR=$$(mktemp -d) ;\
 cd $$TMP_DIR ;\
 which go ;\
-go version ;\
+/home/runner/.asdf/shims/go version ;\
 go mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
