@@ -3,7 +3,7 @@ GO := GOPROXY=https://proxy.golang.org go
 SOPS_SEC_OPERATOR_VERSION := 0.12.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := v0.13.1
+CONTROLLER_GEN_VERSION := "v0.14.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.16.3"
 # https://github.com/kubernetes-sigs/kustomize/releases
@@ -245,11 +245,9 @@ set -ex ;\
 TMP_DIR=$$(mktemp -d) ;\
 cp -p .tool-versions $$TMP_DIR ;\
 cd $$TMP_DIR ;\
-asdf current golang ;\
-ls -lart ;\
-go mod init tmp ;\
+$(GO) mod init tmp ;\
 echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
+GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
 chmod +x $(1) ;\
 rm -rf $$TMP_DIR ;\
 }
