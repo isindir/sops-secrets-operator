@@ -155,6 +155,9 @@ docker-login: ## Performs logging to dockerhub using DOCKERHUB_USERNAME and DOCK
 docker-cross-build: ## Build multi-arch docker image.
 	docker buildx build --cache-from=${IMG_CACHE} --cache-to=${IMG_CACHE} --platform ${BUILDX_PLATFORMS} -t ${IMG} .
 
+docker-cross-build-no-cache: ## Build multi-arch docker image without using cache.
+	docker buildx build --platform ${BUILDX_PLATFORMS} -t ${IMG} .
+
 docker-build-dont-test: generate fmt vet ## Build the docker image without running tests.
 	docker build -t ${IMG} .
 	docker tag ${IMG} ${IMG_LATEST}
