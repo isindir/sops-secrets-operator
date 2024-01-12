@@ -181,4 +181,4 @@ jobs:
           tags: ${{ env.IMAGE_LATEST_NAME }},${{ env.IMAGE_FULL_NAME }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=${{ env.IMAGE_CACHE_NAME }}
-          cache-to: type=registry,ref=${{ env.IMAGE_FULL_NAME }},mode=max
+          cache-to: type=registry,ref=${{ env.IMAGE_CACHE_NAME }},mode=max
