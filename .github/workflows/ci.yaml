@@ -5,7 +5,6 @@ on:
     branches:
       - '**'
       - '!master'
-      - '!main'
 
 jobs:
   build:
@@ -160,6 +159,7 @@ jobs:
         run: |
             echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
             echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
+            echo "IMAGE_CACHE_NAME=$(make image_cache_name)" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -180,5 +180,5 @@ jobs:
           push: false
           tags: ${{ steps.set_variable.outputs.IMAGE_LATEST_NAME }},${{ steps.set_variable.outputs.IMAGE_FULL_NAME }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=isindir/sops-secrets-operator:cache
-          cache-to: type=registry,ref=isindir/sops-secrets-operator:cache,mode=max
+          cache-from: type=registry,ref=${{ steps.set_variable.outputs.IMAGE_CACHE_NAME }}
+          cache-to: type=registry,ref=${{ steps.set_variable.outputs.IMAGE_FULL_NAME }}:cache,mode=max

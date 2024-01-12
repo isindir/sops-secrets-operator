@@ -50,6 +50,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASS }}
 
       - name: Tag and release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
             set +e
             git tag "${SOPS_SEC_OPERATOR_VERSION}"

@@ -88,6 +88,10 @@ image_full_name: ## Prints out image full name set in Makefile
 image_latest_name: ## Prints out image latest name set in Makefile
 	@echo ${IMG_LATEST}
 
+.PHONY: image_cache_name
+image_cache_name: ## Prints out image cache name set in Makefile
+	@echo ${IMG_CACHE}
+
 .PHONY: tidy
 tidy: ## Fetches all go dependencies.
 	$(GO) mod tidy
