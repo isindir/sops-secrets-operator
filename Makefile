@@ -1,13 +1,13 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.11.4
+SOPS_SEC_OPERATOR_VERSION := 0.12.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.13.0"
+CONTROLLER_GEN_VERSION := "v0.14.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
 CONTROLLER_RUNTIME_VERSION := "v0.16.3"
 # https://github.com/kubernetes-sigs/kustomize/releases
-KUSTOMIZE_VERSION := "v5.2.1"
+KUSTOMIZE_VERSION := "v5.3.0"
 # use `setup-envtest list` to obtain the list of available versions
 # until fixed, can't use newer version, see:
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
@@ -70,6 +70,23 @@ clean: ## Cleans dependency directories.
 	rm -fr ./testbin
 	rm -fr ./bin
 	rm -f $(TMP_COVER_HTML_FILE) $(TMP_COVER_FILE)
+
+
+.PHONY: image_tag
+image_tag: ## Prints out image tag set in Makefile
+	@echo ${SOPS_SEC_OPERATOR_VERSION}
+
+.PHONY: image_name
+image_name: ## Prints out image name set in Makefile
+	@echo ${IMG_NAME}
+
+.PHONY: image_full_name
+image_full_name: ## Prints out image full name set in Makefile
+	@echo ${IMG}
+
+.PHONY: image_latest_name
+image_latest_name: ## Prints out image latest name set in Makefile
+	@echo ${IMG_LATEST}
 
 .PHONY: tidy
 tidy: ## Fetches all go dependencies.
@@ -243,10 +260,12 @@ define go-install-tool
 @[ -f $(1) ] || { \
 set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
+cp -p .tool-versions $$TMP_DIR ;\
 cd $$TMP_DIR ;\
-go mod init tmp ;\
+$(GO) mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin $(GO) install $(2) ;\
+chmod +x $(1) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
@@ -257,8 +276,9 @@ define go-get-tool
 @[ -f $(1) ] || { \
 set -e ;\
 TMP_DIR=$$(mktemp -d) ;\
+cp -p .tool-versions $$TMP_DIR ;\
 cd $$TMP_DIR ;\
-go mod init tmp ;\
+$(GO) mod init tmp ;\
 echo "Downloading $(2)" ;\
 GOBIN=$(PROJECT_DIR)/bin $(GO) get $(2) ;\
 rm -rf $$TMP_DIR ;\

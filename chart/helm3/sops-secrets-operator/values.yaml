@@ -13,7 +13,7 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.11.4
+  tag: 0.12.0
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -22,7 +22,7 @@ initImage:
   # -- Init container image name
   repository: ubuntu
   # -- Init container image tag
-  tag: lunar-20231004
+  tag: noble-20231221
   # -- Init container image pull policy
   pullPolicy: Always
 

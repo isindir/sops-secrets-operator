@@ -1,0 +1,184 @@
+name: ci-development
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+      - '!master'
+      - '!main'
+
+jobs:
+  build:
+
+    name: CI
+    environment: ci-cd
+    runs-on: ubuntu-20.04
+    env:
+      # https://hub.docker.com/r/rancher/k3s/tags
+      K3S_VERSION: v1.28.5-k3s1
+      # https://github.com/helm-unittest/helm-unittest/releases
+      HELM_UNITTEST_VERSION: 0.4.1
+
+    steps:
+
+      - uses: actions/checkout@v2
+        name: Check out code
+
+      - name: Install asdf tools
+        uses: asdf-vm/actions/install@v2
+
+      - name: install gpg2
+        run: |
+            sudo apt update
+            sudo apt install -f
+            sudo apt-get install gnupg2 -y
+            sudo apt-get install qemu-user-static -y
+
+      - name: install helm unittest plugin
+        run: |
+            helm plugin install https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
+            helm unittest --help
+
+      - name: Test helm charts
+        run: make test-helm
+
+      - name: Unit tests and envtest integration tests
+        run: make test
+
+      - name: start k3d
+        run: |
+            docker version
+            k3d cluster create operator --agents 1 --image rancher/k3s:${K3S_VERSION}
+            JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}';
+            until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do
+              sleep 1;
+            done
+
+            # Dump cluster info
+            kubectl cluster-info
+            which kubectl
+            kubectl version
+            kubectl describe node k3d-operator-server-0
+            kubectl describe node k3d-operator-agent-0
+
+
+      # k3d integration tests
+      - name: In cluster integration tests
+        run: |
+            export GNUPGHOME="$(mktemp -d)"
+            cat >$GNUPGHOME/foo <<EOF
+                %echo Generating a basic OpenPGP key
+                Key-Type: DSA
+                Key-Length: 1024
+                Subkey-Type: ELG-E
+                Subkey-Length: 1024
+                Name-Real: Joe Tester
+                Name-Comment: with stupid passphrase
+                Name-Email: joe@foo.bar
+                Expire-Date: 0
+                Passphrase: abc
+                %no-protection
+                %commit
+                %echo done
+            EOF
+            gpg2 --batch --gen-key $GNUPGHOME/foo
+            export SOPS_GPG_EXEC=$( which gpg2 )
+            export FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
+            echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
+
+            # Run k8s related commands
+            kubectl create namespace sops
+            make install
+            sleep 3
+            sops -e -p $FP \
+              --encrypted-suffix='Templates' \
+              config/samples/isindir_v1alpha3_sopssecret.yaml \
+              > config/samples/isindir_v1alpha3_sopssecret.enc.yaml
+            file config/samples/isindir_v1alpha3_sopssecret.enc.yaml
+            echo "====================================="
+            cat config/samples/isindir_v1alpha3_sopssecret.enc.yaml
+            echo "====================================="
+            kubectl apply -f config/samples/isindir_v1alpha3_sopssecret.enc.yaml --namespace sops
+            sleep 3
+            nohup make run &
+            sleep 150
+            kubectl get sops --namespace sops
+            echo
+            kubectl get secrets --namespace sops
+            echo
+            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops --no-headers \
+              | awk '$0 !~ /default-token/ { print $1; }' \
+              | wc -l )
+            if [[ $SECRETS_NUMBER -ne 5 ]]; then
+              echo "Expected number of secrets in sops namespace is 5 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
+            # Check specific k8s for amount of data entries
+            ## my-secret-name-0
+            export DATA_ENTRIES=$( kubectl get secrets my-secret-name-0 --namespace sops --no-headers \
+              | awk '{print $3}' )
+            if [[ $DATA_ENTRIES -ne 2 ]]; then
+              echo "Expected number of data entries in my-secret-name-0 is 2 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
+            ## my-secret-name-1
+            export DATA_ENTRIES=$( kubectl get secrets my-secret-name-1 --namespace sops --no-headers \
+              | awk '{print $3}' )
+            if [[ $DATA_ENTRIES -ne 3 ]]; then
+              echo "Expected number of data entries in my-secret-name-1 is 3 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
+            ## my-secret-name-2
+            export DATA_ENTRIES=$( kubectl get secrets my-secret-name-2 --namespace sops --no-headers \
+              | awk '{print $3}' )
+            if [[ $DATA_ENTRIES -ne 2 ]]; then
+              echo "Expected number of data entries in my-secret-name-2 is 2 - Failed"
+              tail -40 nohup.out
+              exit 1
+            fi
+            # Delete to check GC works
+            kubectl delete -f config/samples/isindir_v1alpha3_sopssecret.enc.yaml --namespace sops
+            sleep 15
+            kubectl get sops --namespace sops
+            echo
+            kubectl get secrets --namespace sops
+            echo
+            export SECRETS_NUMBER=$( kubectl get secrets --namespace sops \
+              | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
+              | wc -l )
+            if [[ $SECRETS_NUMBER -ne 0 ]]; then
+              echo "Expected number of secrets in sops namespace is 0 - Failed"
+              exit 1
+            fi
+            rm -fr $GNUPGHOME
+
+      - name: Set up Docker variables
+        id: set_variable
+        run: |
+            echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
+            echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+
+      - name: Docker build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ steps.set_variable.outputs.IMAGE_LATEST_NAME }},${{ steps.set_variable.outputs.IMAGE_FULL_NAME }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=isindir/sops-secrets-operator:cache
+          cache-to: type=registry,ref=isindir/sops-secrets-operator:cache,mode=max
