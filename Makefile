@@ -71,6 +71,23 @@ clean: ## Cleans dependency directories.
 	rm -fr ./bin
 	rm -f $(TMP_COVER_HTML_FILE) $(TMP_COVER_FILE)
 
+
+.PHONY: image_tag
+image_tag: ## Prints out image tag set in Makefile
+	@echo ${SOPS_SEC_OPERATOR_VERSION}
+
+.PHONY: image_name
+image_name: ## Prints out image name set in Makefile
+	@echo ${IMG_NAME}
+
+.PHONY: image_full_name
+image_full_name: ## Prints out image full name set in Makefile
+	@echo ${IMG}
+
+.PHONY: image_latest_name
+image_latest_name: ## Prints out image latest name set in Makefile
+	@echo ${IMG_LATEST}
+
 .PHONY: tidy
 tidy: ## Fetches all go dependencies.
 	$(GO) mod tidy

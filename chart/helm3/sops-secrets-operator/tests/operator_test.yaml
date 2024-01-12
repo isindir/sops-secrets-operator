@@ -198,7 +198,7 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].image
           # UPDATE_HERE
-          value: ubuntu:lunar-20231128
+          value: ubuntu:noble-20231221
       - equal:
           path: spec.template.spec.initContainers[0].imagePullPolicy
           value: Always

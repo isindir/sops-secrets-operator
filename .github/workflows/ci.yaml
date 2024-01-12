@@ -1,4 +1,4 @@
-name: release-development
+name: ci-development
 on:
   workflow_dispatch:
   push:
@@ -8,7 +8,7 @@ on:
 jobs:
   build:
 
-    name: Release
+    name: CI
     environment: ci-cd
     runs-on: ubuntu-20.04
     env:
@@ -38,15 +38,6 @@ jobs:
       #      sudo apt install -f
       #      sudo apt-get install gnupg2 -y
       #      sudo apt-get install qemu-user-static -y
-      #- name: install buildx
-      #  run: |
-      #      mkdir -p ~/.docker/cli-plugins
-      #      curl -sSLo docker-buildx https://github.com/docker/buildx/releases/download/v${BUILDX_BINARY_VERSION}/buildx-v${BUILDX_BINARY_VERSION}.linux-amd64
-      #      chmod a+x docker-buildx
-      #      mv docker-buildx ~/.docker/cli-plugins/docker-buildx
-      #      docker buildx install
-      #      # Run binfmt
-      #      docker run --rm --privileged tonistiigi/binfmt:latest --install "linux/amd64,linux/arm64"
       #- name: install hub
       #  run: |
       #      curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
@@ -176,6 +167,16 @@ jobs:
       #        exit 1
       #      fi
       #      rm -fr $GNUPGHOME
+      - name: Set Variable
+        id: set_variable
+        run: |
+            echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
+            echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
+
+      - name: Display Variable
+        run: |
+            echo "Value from Set Variable step: $IMAGE_FULL_NAME"
+            echo "Value from Set Variable step: $IMAGE_LATEST_NAME"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -192,6 +193,9 @@ jobs:
       - name: Docker build
         uses: docker/build-push-action@v5
         with:
-          tags: isindir/sops-secrets-operator:latest
-          platforms: linux/amd64,linux/arm64
+          context: .
           push: false
+          tags: ${{ steps.set_variable.outputs.IMAGE_LATEST_NAME }},${{ steps.set_variable.outputs.IMAGE_FULL_NAME }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=isindir/sops-secrets-operator:cache
+          cache-to: type=registry,ref=isindir/sops-secrets-operator:cache,mode=max
