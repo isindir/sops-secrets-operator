@@ -1,0 +1,74 @@
+name: release
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  build:
+
+    name: Release
+    environment: ci-cd
+    runs-on: ubuntu-20.04
+    env:
+      # https://github.com/github/hub/releases
+      HUB_VERSION: 2.14.2
+
+    steps:
+
+      - uses: actions/checkout@v2
+        name: Check out code
+
+      - name: Install asdf tools
+        uses: asdf-vm/actions/install@v2
+
+      - name: install hub
+        run: |
+            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
+            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
+            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
+            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
+
+      - name: Set Variable
+        id: set_variable
+        run: |
+            echo "SOPS_SEC_OPERATOR_VERSION=$(make image_tag)" >> $GITHUB_ENV
+            echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
+            echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+
+      - name: Tag and release
+        run: |
+            set +e
+            git tag "${SOPS_SEC_OPERATOR_VERSION}"
+            tagResult=$?
+            if [[ $tagResult -ne 0 ]]; then
+              echo "Release '${SOPS_SEC_OPERATOR_VERSION}' exists - skipping"
+              exit 1
+            else
+              set -e
+              git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp
+              hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}"
+            fi
+
+      - name: Docker build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.set_variable.outputs.IMAGE_LATEST_NAME }},${{ steps.set_variable.outputs.IMAGE_FULL_NAME }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=isindir/sops-secrets-operator:cache
+          cache-to: type=registry,ref=isindir/sops-secrets-operator:cache,mode=max

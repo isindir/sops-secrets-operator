@@ -52,7 +52,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:lunar-20231128
+FROM ubuntu:noble-20231221
 
 # Install build tools
 RUN apt-get -y update \
