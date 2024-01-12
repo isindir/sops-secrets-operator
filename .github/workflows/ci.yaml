@@ -155,16 +155,11 @@ jobs:
             fi
             rm -fr $GNUPGHOME
 
-      - name: Set Variable
+      - name: Set up Docker variables
         id: set_variable
         run: |
             echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
             echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
-
-      - name: Display Variable
-        run: |
-            echo "Value from Set Variable step: $IMAGE_FULL_NAME"
-            echo "Value from Set Variable step: $IMAGE_LATEST_NAME"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

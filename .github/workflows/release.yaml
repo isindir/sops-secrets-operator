@@ -30,8 +30,8 @@ jobs:
             chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
             sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
 
-      - name: Set Variable
-        id: set_variable
+      - name: Set up Docker variables
+        id: set_variables
         run: |
             echo "SOPS_SEC_OPERATOR_VERSION=$(make image_tag)" >> $GITHUB_ENV
             echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
@@ -68,7 +68,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.set_variable.outputs.IMAGE_LATEST_NAME }},${{ steps.set_variable.outputs.IMAGE_FULL_NAME }}
+          tags: ${{ steps.set_variables.outputs.IMAGE_LATEST_NAME }},${{ steps.set_variables.outputs.IMAGE_FULL_NAME }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=isindir/sops-secrets-operator:cache
           cache-to: type=registry,ref=isindir/sops-secrets-operator:cache,mode=max
