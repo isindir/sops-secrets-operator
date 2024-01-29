@@ -34,6 +34,12 @@ spec:
           image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
           imagePullPolicy: {{ .Values.initImage.pullPolicy }}
           command: ['/bin/sh', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
+          {{- if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
+          securityContext:
+            capabilities:
+              drop: {{ .Values.securityContext.container.capabilities.drop }}
+              add: {{ .Values.securityContext.container.capabilities.add }}
+          {{- end }}
           volumeMounts:
           - mountPath: /var/secrets/gpg
             name: sops-gpg
@@ -46,6 +52,12 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
+          securityContext:
+            capabilities:
+              drop: {{ .Values.securityContext.container.capabilities.drop }}
+              add: {{ .Values.securityContext.container.capabilities.add }}
+          {{- end }}
           {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles }}
           volumeMounts:
           {{- end }}
@@ -180,6 +192,12 @@ spec:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
+        runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
+        seccompProfile:
+          type: {{ .Values.securityContext.seccompProfileType }}
+          {{- if  eq .Values.securityContext.seccompProfileType "Localhost" }}
+          localhostProfile: {{ .Values.securityContext.seccompProfileName }}
+          {{- end }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:

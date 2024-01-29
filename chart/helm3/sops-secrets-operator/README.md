@@ -134,7 +134,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.12.0"` | Operator image tag |
+| image.tag | string | `"0.12.1"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"ubuntu"` | Init container image name |
@@ -156,10 +156,16 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | resources | object | `{}` | Operator container resources |
 | secretsAsEnvVars | list | `[]` | configure custom secrets to be used as environment variables at runtime, see values.yaml |
 | secretsAsFiles | list | `[]` | configure custom secrets to be mounted at runtime, see values.yaml |
+| securityContext.container | object | `{"capabilities":{"add":["NET_BIND_SERVICE"],"drop":["all"]},"enabled":false}` | container/initContainer |
+| securityContext.container.capabilities | object | `{"add":["NET_BIND_SERVICE"],"drop":["all"]}` | capabilities |
+| securityContext.container.enabled | bool | `false` | enables securityContext capabilities feature in containers |
 | securityContext.enabled | bool | `false` | Enable securityContext |
 | securityContext.fsGroup | int | `13001` | fs group |
 | securityContext.runAsGroup | int | `13001` | GID to run as |
+| securityContext.runAsNonRoot | bool | `true` | Enable kubelet validation for using root user to run container |
 | securityContext.runAsUser | int | `13001` | UID to run as |
+| securityContext.seccompProfileName | string | `""` | if seccompProfile.type is set to Localhost, set localhostProfile to value of seccompProfileName (user must specify value) |
+| securityContext.seccompProfileType | string | `"RuntimeDefault"` | seccompProfile.type |
 | serviceAccount.annotations | object | `{}` | Annotations to be added to the service account |
 | tolerations | list | `[]` | Tolerations to be applied to operator pod |
 
