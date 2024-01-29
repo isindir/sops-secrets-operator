@@ -13,7 +13,7 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.12.0
+  tag: 0.12.1
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -154,8 +154,24 @@ securityContext:
   runAsUser: 13001
   # -- GID to run as
   runAsGroup: 13001
+  # -- Enable kubelet validation for using root user to run container
+  runAsNonRoot: true
   # -- fs group
   fsGroup: 13001
+  # -- seccompProfile.type
+  seccompProfileType: RuntimeDefault
+  # -- if seccompProfile.type is set to Localhost, set localhostProfile to value of seccompProfileName (user must specify value)
+  seccompProfileName: ""
+  # -- container/initContainer
+  container:
+    # -- enables securityContext capabilities feature in containers
+    enabled: false
+    # -- capabilities
+    capabilities:
+      drop:
+        - all
+      add:
+        - NET_BIND_SERVICE
 
 # -- Tolerations to be applied to operator pod
 tolerations: []
