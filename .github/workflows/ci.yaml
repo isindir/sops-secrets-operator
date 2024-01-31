@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.29.0-k3s1
+      K3S_VERSION: v1.29.1-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
       HELM_UNITTEST_VERSION: 0.4.1
 
