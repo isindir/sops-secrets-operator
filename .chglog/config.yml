@@ -7,28 +7,26 @@ options:
   commits:
     filters:
       Type:
-        - doc
+        - build
+        - ci
         - docs
         - feat
         - fix
         - perf
-        - pipe
         - refactor
-        - up
-        - update
-        - upgrade
+        - style
+        - test
   commit_groups:
     title_maps:
-      doc: Documentation Update
-      docs: Documentation Update
-      feat: Features
-      fix: Bug Fixes
-      perf: Performance Improvements
-      pipe: Pipeline changes
-      refactor: Code Refactoring
-      up: Component Upgrade
-      update: Component Upgrade
-      upgrade: Component Upgrade
+      build: Build system and external dependency changes
+      ci: CI configuration changes
+      docs: Documentation changes
+      feat: New features
+      fix: Bug fixes
+      perf: Performance improvements
+      refactor: Code refactoring
+      style: Cosmetic changes
+      test: Changes to the tests
   header:
     pattern: "^(\\w*)\\:\\s(.*)$"
     pattern_maps:
