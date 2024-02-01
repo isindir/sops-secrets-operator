@@ -23,16 +23,6 @@ jobs:
           fetch-tags: 'true'
           fetch-depth: 0
 
-      - name: Install asdf tools
-        uses: asdf-vm/actions/install@v2
-
-      - name: install hub
-        run: |
-            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
-            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
-            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
-            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
-
       - name: Set up Docker variables
         id: set_variables
         run: |
@@ -43,6 +33,18 @@ jobs:
             echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
             echo "IMAGE_CACHE_NAME=$(make image_cache_name)" >> $GITHUB_ENV
             echo "SKIP_RELEASE=$SKIP_RELEASE" >> $GITHUB_ENV
+
+      - name: Install asdf tools
+        if: env.SKIP_RELEASE != ''
+        uses: asdf-vm/actions/install@v2
+
+      - name: install hub
+        if: env.SKIP_RELEASE != ''
+        run: |
+            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
+            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
+            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
+            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
 
       - name: Set up QEMU
         if: env.SKIP_RELEASE != ''
