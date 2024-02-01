@@ -19,6 +19,9 @@ jobs:
 
       - uses: actions/checkout@v4
         name: Check out code
+        with:
+          fetch-tags: 'true'
+          fetch-depth: 0
 
       - name: Install asdf tools
         uses: asdf-vm/actions/install@v2
@@ -33,40 +36,40 @@ jobs:
       - name: Set up Docker variables
         id: set_variables
         run: |
-            echo "SOPS_SEC_OPERATOR_VERSION=$(make image_tag)" >> $GITHUB_ENV
+            VERSION=$(make image_tag)
+            echo "SOPS_SEC_OPERATOR_VERSION=$VERSION" >> $GITHUB_ENV
+            SKIP_RELEASE=$(git tag -l "${SOPS_SEC_OPERATOR_VERSION}")
             echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
             echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
             echo "IMAGE_CACHE_NAME=$(make image_cache_name)" >> $GITHUB_ENV
+            echo "SKIP_RELEASE=$SKIP_RELEASE" >> $GITHUB_ENV
 
       - name: Set up QEMU
+        if: env.SKIP_RELEASE != ''
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        if: env.SKIP_RELEASE != ''
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
+        if: env.SKIP_RELEASE != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASS }}
 
       - name: Tag and release
+        if: env.SKIP_RELEASE != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-            set +e
             git tag "${SOPS_SEC_OPERATOR_VERSION}"
-            tagResult=$?
-            if [[ $tagResult -ne 0 ]]; then
-              echo "Release '${SOPS_SEC_OPERATOR_VERSION}' exists - skipping"
-              exit 1
-            else
-              set -e
-              git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp
-              hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}"
-            fi
+            git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp
+            hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}"
 
       - name: Docker build
+        if: env.SKIP_RELEASE != ''
         uses: docker/build-push-action@v5
         with:
           context: .
