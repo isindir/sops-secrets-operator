@@ -1,11 +1,11 @@
 ############################################################
 # https://wiki.ubuntu.com/Releases
-# https://hub.docker.com/_/ubuntu/tags?page=1&name=lunar
+# https://hub.docker.com/_/ubuntu/tags?page=1&name=noble
 # UPDATE_HERE
-FROM ubuntu:lunar-20231128 as asdf-builder
+FROM ubuntu:noble-20240114 as asdf-builder
 
 # UPDATE_HERE
-ARG ASDF_VERSION=v0.13.1
+ARG ASDF_VERSION=v0.14.0
 
 # Install build tools
 RUN apt-get -y update \
@@ -52,7 +52,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:noble-20231221
+FROM ubuntu:noble-20240114
 
 # Install build tools
 RUN apt-get -y update \
