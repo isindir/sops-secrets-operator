@@ -62,26 +62,6 @@ entries:
     - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.17.4.tgz
     version: 0.17.4
   - apiVersion: v2
-    appVersion: 0.11.3
-    created: "2024-01-29T09:07:28.941134Z"
-    description: Helm chart deploys sops-secrets-operator
-    digest: 4fe59f1ee29996d16023e744a8c4e7074d9651af3dede2fb36ed545936e7af17
-    keywords:
-    - gitops
-    - sops
-    - kms
-    - encryption
-    maintainers:
-    - email: isindir@users.sf.net
-      name: isindir
-    name: sops-secrets-operator
-    sources:
-    - https://github.com/isindir/sops-secrets-operator.git
-    type: application
-    urls:
-    - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.17.3.tgz
-    version: 0.17.3
-  - apiVersion: v2
     appVersion: 0.11.2
     created: "2024-01-29T09:07:28.94075Z"
     description: Helm chart deploys sops-secrets-operator
