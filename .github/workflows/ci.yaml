@@ -11,8 +11,11 @@ jobs:
 
     name: CI
     environment: ci-cd
+    # UPDATE_HERE
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
     runs-on: ubuntu-20.04
     env:
+      # UPDATE_HERE
       # https://hub.docker.com/r/rancher/k3s/tags
       K3S_VERSION: v1.29.1-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
@@ -20,11 +23,13 @@ jobs:
 
     steps:
 
+      # UPDATE_HERE
       - uses: actions/checkout@v4
         name: Check out code
 
+      # UPDATE_HERE
       - name: Install asdf tools
-        uses: asdf-vm/actions/install@v2
+        uses: asdf-vm/actions/install@v3
 
       - name: install gpg2
         run: |
@@ -161,18 +166,22 @@ jobs:
             echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
             echo "IMAGE_CACHE_NAME=$(make image_cache_name)" >> $GITHUB_ENV
 
+      # UPDATE_HERE
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
+      # UPDATE_HERE
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # UPDATE_HERE
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASS }}
 
+      # UPDATE_HERE
       - name: Docker build
         uses: docker/build-push-action@v5
         with:

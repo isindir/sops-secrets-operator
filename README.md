@@ -310,9 +310,9 @@ Projects and tools inspired development of `sops-secrets-operator`:
 * [sops](https://github.com/mozilla/sops)
   * [Configuring AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
   * [helm secrets plugin](https://github.com/jkroepke/helm-secrets)
-* [kiam](https://github.com/uswitch/kiam) - in maintenance mode now
 * [kube2iam](https://github.com/jtblin/kube2iam)
-* [Weaveworks Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
+  * [kiam](https://github.com/uswitch/kiam) - in ABANDONED mode now
+* ---Weaveworks--- 😭 [Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
   * [Flux github repositories](https://github.com/fluxcd)
   * [Flux sops native integration documentation](https://fluxcd.io/flux/guides/mozilla-sops/)
 * [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
@@ -323,12 +323,12 @@ Projects and tools inspired development of `sops-secrets-operator`:
 * [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
   * [operator-sdk](https://github.com/operator-framework/operator-sdk)
 
-## Similar tools
+## Alternative tools
 
 * [Kubernetes external secrets](https://github.com/external-secrets/external-secrets)
+* [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
 * [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
 * [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
 * [Kamus](https://kamus.soluto.io/)
-* [Sops Operator](https://github.com/craftypath/sops-operator)
 * [Tesoro](https://github.com/kapicorp/tesoro)
-* [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
+* [Sops Operator](https://github.com/craftypath/sops-operator)

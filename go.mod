@@ -6,17 +6,22 @@ go 1.21
 require (
 	// https://github.com/mozilla/sops/releases
 	github.com/getsops/sops/v3 v3.8.1
+	// https://github.com/go-logr/logr/releases
 	github.com/go-logr/logr v1.4.1
 	// https://github.com/onsi/ginkgo/releases
 	github.com/onsi/ginkgo/v2 v2.15.0
+	// https://github.com/onsi/gomega/releases
 	github.com/onsi/gomega v1.31.1
+	// https://github.com/prometheus/client_golang/releases
 	github.com/prometheus/client_golang v1.18.0
+	// https://github.com/sirupsen/logrus/releases
 	github.com/sirupsen/logrus v1.9.3
-	k8s.io/api v0.29.1
 	// https://github.com/kubernetes/apimachinery/tags
+	k8s.io/api v0.29.1
 	k8s.io/apimachinery v0.29.1
 	k8s.io/client-go v0.29.1
-	sigs.k8s.io/controller-runtime v0.17.0
+	// https://github.com/kubernetes-sigs/controller-runtime/releases
+	sigs.k8s.io/controller-runtime v0.17.1
 )
 
 require (

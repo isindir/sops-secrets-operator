@@ -5,7 +5,7 @@ SOPS_SEC_OPERATOR_VERSION := 0.12.2
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.14.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.17.0"
+CONTROLLER_RUNTIME_VERSION := "v0.17.1"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v5.3.0"
 # use `setup-envtest list` to obtain the list of available versions
@@ -13,7 +13,7 @@ KUSTOMIZE_VERSION := "v5.3.0"
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # https://storage.googleapis.com/kubebuilder-tools
-ENVTEST_K8S_VERSION := "1.29.0"
+ENVTEST_K8S_VERSION := "1.29.1"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
@@ -128,7 +128,7 @@ lint: ## Run golangci-lint
 .PHONY: update-here
 update-here: ## Helper target to start editing all occurances with UPDATE_HERE.
 	@echo "Update following files for release:"
-	@grep --color -nHR UPDATE_HERE .
+	@git grep --color -H UPDATE_HERE | sed -e 's/:.*//' | sort -u
 
 .PHONY: envtest-list
 envtest-list: envtest ## List of the available setup-envtest versions.
