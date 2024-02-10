@@ -7,10 +7,12 @@ FROM ubuntu:noble-20240114 as asdf-builder
 # UPDATE_HERE
 ARG ASDF_VERSION=v0.14.0
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Install build tools
 RUN apt-get -y update \
-      && apt-get -y install build-essential \
-      && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl \
+      && apt-get -y install --no-install-recommends build-essential \
+      && apt-get -y install --no-install-recommends autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl \
       && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install asdf
