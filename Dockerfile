@@ -29,7 +29,7 @@ RUN git config --global user.email "you@example.com" \
 WORKDIR /root
 COPY .tool-versions .
 
-RUN awk '$0 !~ /^#/ {print $1}' .tool-versions|xargs -i asdf plugin add  {} \
+RUN awk '$0 !~ /^#/ {print $1}' .tool-versions|xargs -I{} asdf plugin add  {} \
       && asdf install && asdf reshim
 ENV PATH "/root/.asdf/shims:/root/.asdf/bin:$PATH"
 
