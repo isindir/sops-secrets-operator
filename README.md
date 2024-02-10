@@ -312,7 +312,7 @@ Projects and tools inspired development of `sops-secrets-operator`:
   * [helm secrets plugin](https://github.com/jkroepke/helm-secrets)
 * [kube2iam](https://github.com/jtblin/kube2iam)
   * [kiam](https://github.com/uswitch/kiam) - in ABANDONED mode now
-* ---Weaveworks--- 😭 [Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
+* ~~Weaveworks~~ 😭 [Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
   * [Flux github repositories](https://github.com/fluxcd)
   * [Flux sops native integration documentation](https://fluxcd.io/flux/guides/mozilla-sops/)
 * [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
