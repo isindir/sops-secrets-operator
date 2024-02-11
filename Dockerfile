@@ -7,10 +7,12 @@ FROM ubuntu:noble-20240114 as asdf-builder
 # UPDATE_HERE
 ARG ASDF_VERSION=v0.14.0
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Install build tools
 RUN apt-get -y update \
       && apt-get -y install build-essential \
-      && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl \
+      && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget \
       && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install asdf
@@ -29,7 +31,7 @@ RUN git config --global user.email "you@example.com" \
 WORKDIR /root
 COPY .tool-versions .
 
-RUN awk '$0 !~ /^#/ {print $1}' ~/.tool-versions|xargs -i asdf plugin add  {} \
+RUN awk '$0 !~ /^#/ {print $1}' .tool-versions|xargs -I{} asdf plugin add  {} \
       && asdf install && asdf reshim
 ENV PATH "/root/.asdf/shims:/root/.asdf/bin:$PATH"
 

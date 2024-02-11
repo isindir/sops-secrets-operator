@@ -22,14 +22,7 @@ versions: ## shows currently installed tool versions
 	helm version ; echo
 	helm plugin list | grep unittest ; echo
 	@echo '--------------------'
-	@asdf current kubebuilder
-	@asdf current golang
-	@asdf current sops
-	@asdf current kustomize
-	@asdf current k3d
-	@asdf current kubectl
-	@asdf current helm
-	@asdf current kubeval
+	@asdf current 2>/dev/null | grep sops-secrets-operator
 	@echo '--------------------'
 
 .PHONY: echo
@@ -47,10 +40,17 @@ lint: ## runs helm chart linting
 	@echo '--------------------'
 
 .PHONY: validate
-validate: ## validates rendered chart templates using 'kubeval'
-	helm template . --set securityContextenabled=true \
-		| kubeval --force-color \
-				--strict \
-				--schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
-				--kubernetes-version $(K8S_VERSION) -
+validate: ## validates rendered chart templates using 'kubeconform'
+	helm template . \
+		--set securityContextenabled=true \
+		--set metrics.enabled=true \
+		--set gcp.enabled=true \
+		--set azure.enabled=true \
+		| kubeconform  -summary \
+				-verbose \
+				-strict \
+				-output pretty \
+				-schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
+				-schema-location https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/monitoring.coreos.com/servicemonitor_v1.json \
+				-kubernetes-version $(K8S_VERSION) -
 	@echo '--------------------'
