@@ -67,6 +67,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+            git tag "${SOPS_SEC_OPERATOR_VERSION}"
             git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp
             gh release create "${SOPS_SEC_OPERATOR_VERSION}" -F chglog.tmp
 
