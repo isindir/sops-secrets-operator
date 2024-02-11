@@ -12,7 +12,7 @@ CRs, inspired by [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-
 [sops](https://github.com/mozilla/sops). SopsSecret CR defines multiple
 kubernetes Secret resources. It supports managing kubernetes Secrets with
 annotations and labels, that allows using these kubernetes secrets as [Jenkins Credentials](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/).
-The SopsSecret resources can be deployed by [Weaveworks Flux GitOps CD](https://fluxcd.io/) and
+The SopsSecret resources can be deployed by [Flux GitOps CD](https://fluxcd.io/) and
 encrypted using [sops](https://github.com/mozilla/sops) for AWS, GCP, Azure or
 on-prem hosted kubernetes clusters. Using `sops` greatly simplifies changing
 encrypted files stored in `git` repository.
@@ -312,7 +312,7 @@ Projects and tools inspired development of `sops-secrets-operator`:
   * [helm secrets plugin](https://github.com/jkroepke/helm-secrets)
 * [kube2iam](https://github.com/jtblin/kube2iam)
   * [kiam](https://github.com/uswitch/kiam) - in ABANDONED mode now
-* ~~Weaveworks~~ 😭 [Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
+* [Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
   * [Flux github repositories](https://github.com/fluxcd)
   * [Flux sops native integration documentation](https://fluxcd.io/flux/guides/mozilla-sops/)
 * [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
