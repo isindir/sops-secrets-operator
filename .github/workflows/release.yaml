@@ -13,10 +13,6 @@ jobs:
     # UPDATE_HERE
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
     runs-on: ubuntu-22.04
-    env:
-      # UPDATE_HERE
-      # https://github.com/github/hub/releases
-      HUB_VERSION: 2.14.2
 
     steps:
 
@@ -48,14 +44,6 @@ jobs:
         if: env.SKIP_RELEASE == ''
         uses: asdf-vm/actions/install@v3
 
-      - name: install hub
-        if: env.SKIP_RELEASE == ''
-        run: |
-            curl -sSLO https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz
-            tar -xzf hub-linux-amd64-${HUB_VERSION}.tgz
-            chmod +x hub-linux-amd64-${HUB_VERSION}/bin/hub
-            sudo mv hub-linux-amd64-${HUB_VERSION}/bin/hub /usr/local/bin/
-
       # UPDATE_HERE
       - name: Set up QEMU
         if: env.SKIP_RELEASE == ''
@@ -79,9 +67,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-            git tag "${SOPS_SEC_OPERATOR_VERSION}"
             git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp
-            hub release create -F chglog.tmp "${SOPS_SEC_OPERATOR_VERSION}"
+            gh release create "${SOPS_SEC_OPERATOR_VERSION}" -F chglog.tmp
 
       # UPDATE_HERE
       - name: Docker build
