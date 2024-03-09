@@ -17,6 +17,7 @@ jobs:
     steps:
 
       # UPDATE_HERE
+      # https://github.com/actions/checkout/releases
       - uses: actions/checkout@v4
         name: Check out code
         with:
@@ -40,21 +41,25 @@ jobs:
             echo "Skip release, tag found for ${VERSION}"
 
       # UPDATE_HERE
+      # https://github.com/asdf-vm/actions/releases
       - name: Install asdf tools
         if: env.SKIP_RELEASE == ''
         uses: asdf-vm/actions/install@v3
 
       # UPDATE_HERE
+      # https://github.com/docker/setup-qemu-action/releases
       - name: Set up QEMU
         if: env.SKIP_RELEASE == ''
         uses: docker/setup-qemu-action@v3
 
       # UPDATE_HERE
+      # https://github.com/docker/setup-buildx-action/releases
       - name: Set up Docker Buildx
         if: env.SKIP_RELEASE == ''
         uses: docker/setup-buildx-action@v3
 
       # UPDATE_HERE
+      # https://github.com/docker/login-action/releases
       - name: Log in to Docker Hub
         if: env.SKIP_RELEASE == ''
         uses: docker/login-action@v3
@@ -73,6 +78,7 @@ jobs:
             gh release create "${SOPS_SEC_OPERATOR_VERSION}" -F chglog.tmp
 
       # UPDATE_HERE
+      # https://github.com/docker/build-push-action/releases
       - name: Docker build
         if: env.SKIP_RELEASE == ''
         uses: docker/build-push-action@v5

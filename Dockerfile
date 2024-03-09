@@ -2,9 +2,10 @@
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=noble
 # UPDATE_HERE
-FROM ubuntu:noble-20240114 as asdf-builder
+FROM ubuntu:noble-20240225 as asdf-builder
 
 # UPDATE_HERE
+# https://github.com/asdf-vm/asdf/releases
 ARG ASDF_VERSION=v0.14.0
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -54,7 +55,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:noble-20240114
+FROM ubuntu:noble-20240225
 
 # Install build tools
 RUN apt-get -y update \
