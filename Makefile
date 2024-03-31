@@ -1,5 +1,5 @@
 # UPDATE_HERE
-GO := GOPROXY=https://proxy.golang.org go
+GO := GOPROXY=https://proxy.golang.org GOEXPERIMENT=nocoverageredesign go
 SOPS_SEC_OPERATOR_VERSION := 0.12.5
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
