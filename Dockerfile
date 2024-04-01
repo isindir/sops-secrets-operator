@@ -64,7 +64,7 @@ FROM ubuntu:noble-20240225
 RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get -y install ca-certificates
-RUN apt-get -y install gnupg2
+RUN apt-get --no-install-recommends -y install gnupg2
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
