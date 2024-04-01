@@ -60,9 +60,10 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 FROM ubuntu:noble-20240225
 
 # Install build tools
+# --no-install-recommends
 RUN apt-get -y update \
       && apt-get -y upgrade \
-      && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
+      && apt-get -y install gnupg2 ca-certificates \
       && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
