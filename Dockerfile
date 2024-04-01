@@ -13,7 +13,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install build tools
 RUN apt-get -y update \
       && apt-get -y install build-essential \
-      && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget \
+      && apt-get -y install autoconf automake gdb git \
+      && apt-get -y install libffi-dev zlib1g-dev libssl-dev \
+      && apt-get -y install curl wget \
       && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install asdf
