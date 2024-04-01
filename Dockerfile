@@ -61,10 +61,12 @@ FROM ubuntu:noble-20240225
 
 # Install build tools
 # --no-install-recommends
-RUN apt-get -y update \
-      && apt-get -y upgrade \
-      && apt-get -y install gnupg2 ca-certificates \
-      && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get -y install gnupg2
+RUN apt-get -y install ca-certificates
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 COPY --from=asdf-builder /workspace/manager .
