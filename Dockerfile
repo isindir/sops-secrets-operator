@@ -2,7 +2,6 @@
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=noble
 # UPDATE_HERE
-#FROM ubuntu:noble-20240225 as asdf-builder
 FROM ubuntu:mantic-20240216 as asdf-builder
 
 # UPDATE_HERE
@@ -14,9 +13,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install build tools
 RUN apt-get -y update \
       && apt-get -y install build-essential \
-      && apt-get -y install autoconf automake gdb git \
-      && apt-get -y install libffi-dev zlib1g-dev libssl-dev \
-      && apt-get -y install curl wget \
+      && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget \
       && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install asdf
@@ -58,17 +55,13 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-#FROM ubuntu:noble-20240225
 FROM ubuntu:mantic-20240216
 
 # Install build tools
-# --no-install-recommends
-RUN apt-get -y update
-#RUN apt-get -y upgrade
-RUN apt-get -y install ca-certificates
-RUN apt-get -V --no-install-recommends -y install gnupg2
-RUN apt-get clean
-RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get -y update \
+      && apt-get -y upgrade \
+      && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
+      && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 COPY --from=asdf-builder /workspace/manager .
