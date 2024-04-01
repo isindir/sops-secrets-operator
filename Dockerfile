@@ -62,7 +62,7 @@ FROM ubuntu:noble-20240225
 # Install build tools
 # --no-install-recommends
 RUN apt-get -y update
-RUN apt-get -y upgrade
+#RUN apt-get -y upgrade
 RUN apt-get -y install ca-certificates
 RUN apt-get -V --no-install-recommends -y install gnupg2
 RUN apt-get clean
