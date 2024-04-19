@@ -22,7 +22,7 @@ initImage:
   # -- Init container image name
   repository: ubuntu
   # -- Init container image tag
-  tag: noble-20240407.1
+  tag: mantic-20240405
   # -- Init container image pull policy
   pullPolicy: Always
 

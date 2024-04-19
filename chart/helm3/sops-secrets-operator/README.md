@@ -138,7 +138,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"ubuntu"` | Init container image name |
-| initImage.tag | string | `"noble-20240407.1"` | Init container image tag |
+| initImage.tag | string | `"mantic-20240405"` | Init container image tag |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
 | logging | object | `{"development":false,"encoder":"json","level":"info","stacktraceLevel":"error","timeEncoding":"iso8601"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
 | logging.development | bool | `false` | Zap Development Mode enabled |

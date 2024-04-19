@@ -198,7 +198,7 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].image
           # UPDATE_HERE
-          value: ubuntu:noble-20240407.1
+          value: ubuntu:mantic-20240405
       - equal:
           path: spec.template.spec.initContainers[0].imagePullPolicy
           value: Always
