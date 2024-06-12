@@ -88,7 +88,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Iterate over secret templates
 	r.Log.V(1).Info("Entering template data loop", "sopssecret", req.NamespacedName)
-	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
+	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretTemplates {
 
 		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(ctx, req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
 		if rescheduleReconcileLoop {
@@ -262,7 +262,7 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	plainTextSopsSecret *isindirv1alpha3.SopsSecret,
 	secretTemplate *isindirv1alpha3.SopsSecretTemplate,
-) (*corev1.Secret, bool) {
+) (secret *corev1.Secret, reschedule bool) {
 
 	// Define a new secret object
 	kubeSecretFromTemplate, err := createKubeSecretFromTemplate(plainTextSopsSecret, secretTemplate, r.Log)
@@ -374,7 +374,7 @@ func createKubeSecretFromTemplate(
 		return nil, fmt.Errorf("createKubeSecretFromTemplate(): secret template name must be specified and not empty string")
 	}
 
-	if sopsSecret.Spec.EnforceNamespace && sopsSecret.Spec.Namespace != sopsSecret.Namespace {
+	if sopsSecret.Spec.EnforceNamespace && sopsSecret.Spec.SecretTemplatesEnforcedNamespace != sopsSecret.Namespace {
 		return nil, fmt.Errorf("createKubeSecretFromTemplate(): secret template enforced namespace must be the same as the sopssecret namespace")
 	}
 
