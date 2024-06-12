@@ -27,6 +27,15 @@ type SopsSecretSpec struct {
 	// This flag tells the controller to suspend the reconciliation of this source.
 	//+optional
 	Suspend bool `json:"suspend,omitempty"`
+
+	// EnforceNamespace can be used to enforce the creation of the secrets in the same namespace as the SopsSecret resource.
+	// Must be used together with Spec.Namespace
+	EnforceNamespace bool `json:"enforce_namespace,omitempty"`
+
+	// Namespace can be used to enforce the creation of the secrets in the same namespace as the SopsSecret resource.
+	// Must have same value as the SopsSecret resource namespace and EnforceNamespace must be set to true.
+	//+optional
+	Namespace string `json:"namespace,omitempty"`
 }
 
 // SopsSecretTemplate defines the map of secrets to create

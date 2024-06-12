@@ -122,7 +122,11 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
-func (r *SopsSecretReconciler) UpdateSopsSecretStatus(ctx context.Context, sopsSecret *isindirv1alpha3.SopsSecret, message string) {
+func (r *SopsSecretReconciler) UpdateSopsSecretStatus(
+	ctx context.Context,
+	sopsSecret *isindirv1alpha3.SopsSecret,
+	message string,
+) {
 	if sopsSecret.Status.Message != message {
 		sopsSecret.Status.Message = message
 		_ = r.Status().Update(ctx, sopsSecret)
@@ -368,6 +372,10 @@ func createKubeSecretFromTemplate(
 ) (*corev1.Secret, error) {
 	if sopsSecretTemplate.Name == "" {
 		return nil, fmt.Errorf("createKubeSecretFromTemplate(): secret template name must be specified and not empty string")
+	}
+
+	if sopsSecret.Spec.EnforceNamespace && sopsSecret.Spec.Namespace != sopsSecret.Namespace {
+		return nil, fmt.Errorf("createKubeSecretFromTemplate(): secret template enforced namespace must be the same as the sopssecret namespace")
 	}
 
 	strData, err := cloneTemplateData(sopsSecretTemplate.StringData, sopsSecretTemplate.Data)
