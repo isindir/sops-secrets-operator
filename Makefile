@@ -1,7 +1,7 @@
 # UPDATE_HERE
 # !!!!!!! NOTE: GOEXPERIMENT=nocoverageredesign is temp until 1.23.x
 GO := GOEXPERIMENT=nocoverageredesign GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.13.0
+SOPS_SEC_OPERATOR_VERSION := 0.13.1
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.15.0"

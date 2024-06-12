@@ -22,11 +22,21 @@ type SopsSecretSpec struct {
 	// Secrets template is a list of definitions to create Kubernetes Secrets
 	//+kubebuilder:validation:MinItems=1
 	//+required
-	SecretsTemplate []SopsSecretTemplate `json:"secretTemplates"`
+	SecretTemplates []SopsSecretTemplate `json:"secretTemplates"`
 
 	// This flag tells the controller to suspend the reconciliation of this source.
 	//+optional
 	Suspend bool `json:"suspend,omitempty"`
+
+	// EnforceNamespace can be used to enforce the creation of the secrets in the same namespace as the SopsSecret resource.
+	// Must be used together with Spec.SecretTemplatesEnforcedNamespace
+	//+optional
+	EnforceNamespace bool `json:"enforceNamespace,omitempty"`
+
+	// SecretTemplatesEnforcedNamespace can be used to enforce the creation of the secrets in the same namespace as the SopsSecret resource.
+	// Must have same value as the SopsSecret resource namespace and EnforceNamespace must be set to true.
+	//+optional
+	SecretTemplatesEnforcedNamespace string `json:"secretTemplatesEnforcedNamespace,omitempty"`
 }
 
 // SopsSecretTemplate defines the map of secrets to create
