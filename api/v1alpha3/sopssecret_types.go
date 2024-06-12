@@ -45,11 +45,6 @@ type SopsSecretTemplate struct {
 	//+required
 	Name string `json:"name"`
 
-	// EnforceNamespace can be used to enforce the creation of the secrets in the same namespace as the SopsSecret resource.
-	// Must be used together with Spec.Namespace
-	//+optional
-	Namespace string `json:"namespace,omitempty"`
-
 	// Annotations to apply to Kubernetes secret
 	//+optional
 	Annotations map[string]string `json:"annotations,omitempty"`
