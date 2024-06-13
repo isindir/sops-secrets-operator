@@ -23,7 +23,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops | Chart | Operator |
 |---|---|---|---|
-| v1.30.x | v3.8.1 | 0.19.1 | 0.13.1 |
+| v1.30.x | v3.8.1 | 0.19.0 | 0.13.0 |
 | v1.29.x | v3.8.1 | 0.18.6 | 0.12.6 |
 | v1.28.x | v3.8.1 | 0.17.4 | 0.11.4 |
 | v1.27.x | v3.7.3 | 0.15.5 | 0.9.5 |
@@ -280,69 +280,6 @@ metadata:
 ```
 > previously not managed secret will be replaced by `SopsSecret` owned at the next rescheduled
   reconciliation event.
-
-## Enforcing decryption to one namespace
-
-To enforce decryption and kubernetes `Secrets` creation only to specific `Namespace`, it is possible to
-configure two additional parameters and encrypt in a specific way `SopsSecret` resource, example snippet of
-the raw `SopsSecret` resource:
-
-```yaml
-apiVersion: isindir.github.com/v1alpha3
-kind: SopsSecret
-metadata:
-  name: example-sopssecret
-  namespace: "cicd"
-spec:
-  enforceNamespace: true                   # must be set to true for enforcement to work
-  secretTemplatesEnforcedNamespace: "cicd" # must match to in cluster namespace of the sops.metadata.namespace
-  suspend: false
-  secretTemplates:
-    - name: jenkins-secret
-      labels:
-...
-```
-
-encrypt this file using example command:
-
-```sh
-sops -e --age ${SOPS_AGE_RECIPIENTS} --encrypted-regex secretTemplates jenkins-secrets.yaml > jenkins-secrets.enc.yaml
-```
-> it will encrypt all the fields which contain `secretTemplates` and as both - `secretTemplates` and `secretTemplatesEnforcedNamespace`
-  contain it, bot will be encrypted. The rest of the spec stays untouched - significantly both boolean fields.
-
-Resulting file snippet must look similar to example below:
-
-```yaml
-apiVersion: isindir.github.com/v1alpha3
-kind: SopsSecret
-metadata:
-    name: example-sopssecret
-    namespace: "cicd"
-spec:
-    enforceNamespace: true
-    secretTemplatesEnforcedNamespace: ENC[AES256_GCM,data:AwmSftNeUA==,iv:JtfLsw++XnhS0pHzbuCS9Bi1AY87yDQ+NTZchzYe/Q0=,tag:n2ve4QExIGww0rTNbEdhvQ==,type:str]
-    suspend: false
-    secretTemplates:
-        - name: ENC[AES256_GCM,data:tYU/qdyidyc2/B97nEI=,iv:UQHAVxRWvcBSwGU88ZNF++BbAIpGESsyRvJvCG6VQBA=,tag:Rep2dhnzEYT3+ZWrQpqENQ==,type:str]
-          labels:
-...
-```
-
-if there was attempt to copy secret to another namespace, following log message can be observered:
-
-```
-INFO    controllers.SopsSecret  New child secret creation error {"sopssecret": {"name":"example-sopssecret","namespace":"abc"}, "error": "createKubeSecretFromTemplate(): secret template enforced namespace must be the same as the sopssecret namespace"}
-```
-
-and the status will be as follows:
-
-```
-% kc get sops -A
-NAMESPACE   NAME                 STATUS
-abc         example-sopssecret   New child secret creation error
-cicd        example-sopssecret   Healthy
-```
 
 ## Example procedure to upgrade from one `SopsSecret` API version to another
 
