@@ -291,18 +291,27 @@ Mozilla Public License Version 2.0
 
 # Known Issues
 
+* `sops-secrets-operator` is not using standard `sops` library decryption
+  interface function, modified upstream function is used to decrypt data which
+  ignores `enc` signature field in `sops` metadata. This means if some encrypted
+  fields are removed or changed to plain text - it still will be able to decrypt
+  the resource.This is due to the fact that when Kubernetes resource is applied
+  it is always mutated by Kubernetes, for example resource version is generated
+  and added to the resource. But any mutation invalidates `sops` metadata `enc`
+  field and standard decryption function fails.
+* `sops-secrets-operator` by design is not wrapping encrypted object to some
+  field, in spec. This was deliberate decision for the simplicity of the
+  operations - ability to directly encrypt the whole `SopsSecret` resource using
+  `sops` cli. This causes side effects like: if the user of the k8s cluster
+  (which runs `sops-secrets-operator`) has RBAC access to read secrets in some
+  namespace - it allows directly applying encrypted `SopsSecret` resource to
+  that namespaces and getting access to the secret material. This operator was
+  only designed to protect access to the secret material from git repository.
 * `sops-secrets-operator` is not strictly following
   [Kubernetes OpenAPI naming conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#naming-conventions).
   This is due to the fact that `sops` generates substructures in encrypted file
   with incompatible to OpenAPI names (containing underscore symbols, where it
   should be `lowerCamelCase` for OpenAPI compatibility).
-* `sops-secrets-operator` is not using standard `sops` library decryption
-  interface function, modified upstream function is used to decrypt data which
-  ignores `enc` signature field in `sops` metadata. This is due to the fact that
-  when Kubernetes resource is applied it is always mutated by Kubernetes, for
-  example resource version is generated and added to the resource. But any
-  mutation invalidates `sops` metadata `enc` field and standard decryption
-  function fails.
 
 # Links
 
