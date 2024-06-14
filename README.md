@@ -300,7 +300,7 @@ Mozilla Public License Version 2.0
   and added to the resource. But any mutation invalidates `sops` metadata `enc`
   field and standard decryption function fails.
 * `sops-secrets-operator` by design is not wrapping encrypted object to some
-  field, in spec. This was deliberate decision for the simplicity of the
+  field in spec. This was deliberate decision for the simplicity of the
   operations - ability to directly encrypt the whole `SopsSecret` resource using
   `sops` cli. This causes side effects like: if the user of the k8s cluster
   (which runs `sops-secrets-operator`) has RBAC access to read secrets in some
