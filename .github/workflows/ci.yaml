@@ -73,7 +73,7 @@ jobs:
         run: |
             GNUPGHOME="$(mktemp -d)"
             export GNUPGHOME
-            cat >$GNUPGHOME/foo <<EOF
+            cat >${GNUPGHOME}/foo <<EOF
                 %echo Generating a basic OpenPGP key
                 Key-Type: DSA
                 Key-Length: 1024
@@ -88,12 +88,12 @@ jobs:
                 %commit
                 %echo done
             EOF
-            gpg2 --batch --gen-key $GNUPGHOME/foo
+            gpg2 --batch --gen-key ${GNUPGHOME}/foo
             SOPS_GPG_EXEC=$( which gpg2 )
             export SOPS_GPG_EXEC
             FP=$( gpg2 --with-colons --fingerprint | awk -F: '$1 == "fpr" {print $10; exit}' )
             export FP
-            echo "Fingreprint: $FP ; gpg executable: $SOPS_GPG_EXEC"
+            echo "Fingreprint: ${FP} ; gpg executable: ${SOPS_GPG_EXEC}"
 
             # Run k8s related commands
             kubectl create namespace sops
@@ -119,7 +119,7 @@ jobs:
               | awk '$0 !~ /default-token/ { print $1; }' \
               | wc -l )
             export SECRETS_NUMBER
-            if [[ $SECRETS_NUMBER -ne 5 ]]; then
+            if [[ ${SECRETS_NUMBER} -ne 5 ]]; then
               echo "Expected number of secrets in sops namespace is 5 - Failed"
               tail -40 nohup.out
               exit 1
@@ -129,7 +129,7 @@ jobs:
             DATA_ENTRIES=$( kubectl get secrets my-secret-name-0 --namespace sops --no-headers \
               | awk '{print $3}' )
             export DATA_ENTRIES
-            if [[ $DATA_ENTRIES -ne 2 ]]; then
+            if [[ ${DATA_ENTRIES} -ne 2 ]]; then
               echo "Expected number of data entries in my-secret-name-0 is 2 - Failed"
               tail -40 nohup.out
               exit 1
@@ -138,7 +138,7 @@ jobs:
             DATA_ENTRIES=$( kubectl get secrets my-secret-name-1 --namespace sops --no-headers \
               | awk '{print $3}' )
             export DATA_ENTRIES
-            if [[ $DATA_ENTRIES -ne 3 ]]; then
+            if [[ ${DATA_ENTRIES} -ne 3 ]]; then
               echo "Expected number of data entries in my-secret-name-1 is 3 - Failed"
               tail -40 nohup.out
               exit 1
@@ -147,7 +147,7 @@ jobs:
             DATA_ENTRIES=$( kubectl get secrets my-secret-name-2 --namespace sops --no-headers \
               | awk '{print $3}' )
             export DATA_ENTRIES
-            if [[ $DATA_ENTRIES -ne 2 ]]; then
+            if [[ ${DATA_ENTRIES} -ne 2 ]]; then
               echo "Expected number of data entries in my-secret-name-2 is 2 - Failed"
               tail -40 nohup.out
               exit 1
@@ -163,11 +163,11 @@ jobs:
               | awk '$0!~/default-token/ && $0!~/NAME/ { print $1; }' \
               | wc -l )
             export SECRETS_NUMBER
-            if [[ $SECRETS_NUMBER -ne 0 ]]; then
+            if [[ ${SECRETS_NUMBER} -ne 0 ]]; then
               echo "Expected number of secrets in sops namespace is 0 - Failed"
               exit 1
             fi
-            rm -fr $GNUPGHOME
+            rm -fr ${GNUPGHOME}
 
       - name: Set up Docker variables
         id: set_variable
