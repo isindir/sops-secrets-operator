@@ -51,6 +51,7 @@ jobs:
       - name: Unit tests and envtest integration tests
         run: make test
 
+      # shellcheck disable=SC2086
       - name: start k3d
         run: |
             docker version
