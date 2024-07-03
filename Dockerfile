@@ -2,7 +2,7 @@
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=noble
 # UPDATE_HERE
-FROM ubuntu:mantic-20240427 as asdf-builder
+FROM ubuntu:mantic-20240530 as asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
@@ -55,7 +55,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:mantic-20240427
+FROM ubuntu:mantic-20240530
 
 # Install build tools
 RUN apt-get -y update \
