@@ -8,6 +8,8 @@
 # -- Deployment replica count - should not be modified
 replicaCount: 1
 
+namespaced: false
+
 # UPDATE_HERE
 image:
   # -- Operator image name
