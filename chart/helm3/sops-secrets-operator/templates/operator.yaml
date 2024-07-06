@@ -92,6 +92,9 @@ spec:
           - "-zap-log-level={{ .Values.logging.level }}"
           - "-zap-stacktrace-level={{ .Values.logging.stacktraceLevel }}"
           - "-zap-time-encoding={{ .Values.logging.timeEncoding }}"
+          {{- if .Values.namespaced }}
+          - "-watch-namespace={{ .Release.Namespace }}"
+          {{- end -}}
           {{- if .Values.kubeconfig.enabled }}
           - "-kubeconfig={{ .Values.kubeconfig.path | quote }}"
           {{- end }}

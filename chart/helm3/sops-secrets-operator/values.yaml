@@ -8,12 +8,15 @@
 # -- Deployment replica count - should not be modified
 replicaCount: 1
 
+# -- If set - operator will watch SopsSecret resources only in operator namespace
+namespaced: false
+
 # UPDATE_HERE
 image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.13.1
+  tag: 0.13.2
   # -- Operator image pull policy
   pullPolicy: Always
 

@@ -8,6 +8,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -48,6 +50,7 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var requeueAfter int64
+	var watchNamespace string
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -55,6 +58,7 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Int64Var(&requeueAfter, "requeue-decrypt-after", 5, "Requeue failed reconciliation in minutes (min 1).")
+	flag.StringVar(&watchNamespace, "watch-namespace", "", "Namespace to watch for SopsSecret objects (default: all namespaces).")
 
 	opts := zap.Options{
 		Development: true,
@@ -65,15 +69,29 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme: scheme,
-		Metrics: metricsserver.Options{
-			BindAddress: metricsAddr,
+	cacheOptions := cache.Options{}
+	if watchNamespace != "" {
+		cacheOptions.DefaultNamespaces = map[string]cache.Config{
+			watchNamespace: {},
+		}
+		setupLog.V(0).Info(fmt.Sprintf("Watching SopsSecret objects in namespace %s", watchNamespace))
+	} else {
+		setupLog.V(0).Info("Watching SopsSecret objects in all namespaces")
+	}
+
+	mgr, err := ctrl.NewManager(
+		ctrl.GetConfigOrDie(),
+		ctrl.Options{
+			Scheme: scheme,
+			Cache:  cacheOptions,
+			Metrics: metricsserver.Options{
+				BindAddress: metricsAddr,
+			},
+			HealthProbeBindAddress: probeAddr,
+			LeaderElection:         enableLeaderElection,
+			LeaderElectionID:       "ca57d051.github.com",
 		},
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "ca57d051.github.com",
-	})
+	)
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
