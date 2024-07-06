@@ -95,6 +95,9 @@ spec:
           {{- if .Values.kubeconfig.enabled }}
           - "-kubeconfig={{ .Values.kubeconfig.path | quote }}"
           {{- end }}
+          {{- if .Values.namespaced }}
+          - "-watch-namespace={{ .Release.Namespace }}"
+          {{- end -}}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -112,12 +115,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-            {{- if .Values.namespaced }}
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            {{- end }}
             {{- if .Values.gcp.enabled }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /var/secrets/google/key.json

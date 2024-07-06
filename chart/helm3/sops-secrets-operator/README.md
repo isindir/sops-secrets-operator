@@ -148,6 +148,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | logging.timeEncoding | string | `"iso8601"` | Zap time encoding (one of 'epoch', 'millis', 'nano', 'iso8601', 'rfc3339' or 'rfc3339nano'). Defaults to 'epoch'. |
 | metrics.enabled | bool | `false` | Enable prometheus metrics |
 | nameOverride | string | `""` | Overrides auto-generated short resource name |
+| namespaced | bool | `false` |  |
 | nodeSelector | object | `{}` | Node selector to use for pod configuration |
 | podAnnotations | object | `{}` | Annotations to be added to operator pod (can be used with kiam or kube2iam) |
 | rbac.enabled | bool | `true` | Create and use RBAC resources |
