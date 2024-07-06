@@ -1,6 +1,6 @@
 domain: github.com
 layout:
-- go.kubebuilder.io/v3
+- go.kubebuilder.io/v4
 projectName: sops-secrets-operator
 repo: github.com/isindir/sops-secrets-operator
 # UPDATE_HERE
