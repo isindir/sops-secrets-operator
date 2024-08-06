@@ -189,3 +189,5 @@ rbac:
 metrics:
   # -- Enable prometheus metrics
   enabled: false
+  # -- Additional labels for ServiceMonitor
+  additionalLabels: {}

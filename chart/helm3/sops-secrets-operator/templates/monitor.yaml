@@ -2,9 +2,12 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "sops-secrets-operator.fullname" . }}-mentrics-monitor
+  name: {{ include "sops-secrets-operator.fullname" . }}-metrics-monitor
   labels:
-{{ include "sops-secrets-operator.labels" . | indent 4 }}
+    {{- include "sops-secrets-operator.labels" . | nindent 4 }}
+    {{- with .Values.metrics.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   endpoints:
     - path: /metrics
