@@ -2,7 +2,7 @@
 repos:
 - repo: https://github.com/norwoodj/helm-docs
   # https://github.com/norwoodj/helm-docs/releases
-  rev: v1.13.1
+  rev: v1.14.2
   hooks:
   - id: helm-docs
     args:
