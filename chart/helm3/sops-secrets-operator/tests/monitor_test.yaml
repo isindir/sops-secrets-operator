@@ -31,3 +31,29 @@ tests:
           value:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/name: sops-secrets-operator
+
+  - it: should include additional labels when set
+    release:
+      name: sops
+      namespace: sops
+    set:
+      metrics:
+        enabled: true
+        additionalLabels:
+          custom-label: custom-value
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ServiceMonitor
+      - isAPIVersion:
+          of: monitoring.coreos.com/v1
+      - equal:
+          path: metadata.labels
+          value:
+            app.kubernetes.io/instance: sops
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: sops-secrets-operator
+            app.kubernetes.io/version: "0.13.2"
+            helm.sh/chart: sops-secrets-operator-0.19.3
+            custom-label: custom-value
