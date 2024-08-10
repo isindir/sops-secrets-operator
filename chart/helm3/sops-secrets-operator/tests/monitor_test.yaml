@@ -50,10 +50,11 @@ tests:
           of: monitoring.coreos.com/v1
       - equal:
           path: metadata.labels
+          # UPDATE_HERE
           value:
             app.kubernetes.io/instance: sops
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: sops-secrets-operator
-            app.kubernetes.io/version: "0.13.2"
-            helm.sh/chart: sops-secrets-operator-0.19.3
+            app.kubernetes.io/version: "0.13.3"
+            helm.sh/chart: sops-secrets-operator-0.19.4
             custom-label: custom-value
