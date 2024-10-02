@@ -2,7 +2,7 @@
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=oracular
 # UPDATE_HERE
-FROM ubuntu:oracular-20240918 as asdf-builder
+FROM ubuntu:oracular-20240918 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
@@ -34,7 +34,7 @@ COPY .tool-versions .
 
 RUN awk '$0 !~ /^#/ {print $1}' .tool-versions|xargs -I{} asdf plugin add  {} \
       && asdf install && asdf reshim
-ENV PATH "/root/.asdf/shims:/root/.asdf/bin:$PATH"
+ENV PATH="/root/.asdf/shims:/root/.asdf/bin:$PATH"
 
 # Compile source code
 WORKDIR /workspace
