@@ -4,9 +4,9 @@ GO := GOEXPERIMENT=nocoverageredesign GOPROXY=https://proxy.golang.org go
 SOPS_SEC_OPERATOR_VERSION := 0.13.3
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.15.0"
+CONTROLLER_GEN_VERSION := "v0.16.3"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.18.4"
+CONTROLLER_RUNTIME_VERSION := "v0.19.0"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v5.4.3"
 # use `setup-envtest list` to obtain the list of available versions
