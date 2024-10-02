@@ -1,12 +1,12 @@
 ############################################################
 # https://wiki.ubuntu.com/Releases
-# https://hub.docker.com/_/ubuntu/tags?page=1&name=noble
+# https://hub.docker.com/_/ubuntu/tags?page=1&name=oracular
 # UPDATE_HERE
-FROM ubuntu:mantic-20240530 as asdf-builder
+FROM ubuntu:oracular-20240918 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
-ARG ASDF_VERSION=v0.14.0
+ARG ASDF_VERSION=v0.14.1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -34,7 +34,7 @@ COPY .tool-versions .
 
 RUN awk '$0 !~ /^#/ {print $1}' .tool-versions|xargs -I{} asdf plugin add  {} \
       && asdf install && asdf reshim
-ENV PATH "/root/.asdf/shims:/root/.asdf/bin:$PATH"
+ENV PATH="/root/.asdf/shims:/root/.asdf/bin:$PATH"
 
 # Compile source code
 WORKDIR /workspace
@@ -55,7 +55,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:mantic-20240530
+FROM ubuntu:oracular-20240918
 
 # Install build tools
 RUN apt-get -y update \

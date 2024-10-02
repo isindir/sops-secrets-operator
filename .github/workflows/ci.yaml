@@ -17,9 +17,9 @@ jobs:
     env:
       # UPDATE_HERE
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.30.3-k3s1
+      K3S_VERSION: v1.31.1-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.5.2
+      HELM_UNITTEST_VERSION: 0.6.2
 
     steps:
 
