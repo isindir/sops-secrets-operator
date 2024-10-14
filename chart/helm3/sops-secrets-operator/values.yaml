@@ -16,7 +16,7 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.14.0
+  tag: 0.14.1
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -25,7 +25,7 @@ initImage:
   # -- Init container image name
   repository: ubuntu
   # -- Init container image tag
-  tag: oracular-20240918
+  tag: oracular-20241009
 
   # -- Init container image pull policy
   pullPolicy: Always
