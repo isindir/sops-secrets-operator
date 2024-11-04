@@ -31,7 +31,7 @@ tests:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: sops-secrets-operator
         app.kubernetes.io/version: 0.14.1
-        helm.sh/chart: sops-secrets-operator-0.20.1
+        helm.sh/chart: sops-secrets-operator-0.20.2
 
 # custom name
 - it: should correctly render custome name
@@ -528,3 +528,34 @@ tests:
       - name: foo
         secret:
           secretName: mysecret
+
+# pod labels
+- it: pod labels should be empty by default
+  release:
+    name: sops
+    namespace: sops
+  asserts:
+  - equal:
+      path: spec.template.metadata.labels
+      value:
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/name: sops-secrets-operator
+        control-plane: controller-sops-secrets-operator
+
+- it: should render pod annotations if set in values
+  release:
+    name: sops
+    namespace: sops
+  set:
+    podLabels:
+      abc: qqq
+      cde: zzz
+  asserts:
+  - equal:
+      path: spec.template.metadata.labels
+      value:
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/name: sops-secrets-operator
+        control-plane: controller-sops-secrets-operator
+        abc: qqq
+        cde: zzz

@@ -37,8 +37,10 @@ nameOverride: ""
 # -- Overrides auto-generated long resource name
 fullnameOverride: ""
 
-# -- Annotations to be added to operator pod (can be used with kiam or kube2iam)
+# -- Annotations to be added to operator pod
 podAnnotations: {}
+# -- Labels to be added to operator pod
+podLabels: {}
 
 serviceAccount:
   # -- Annotations to be added to the service account
@@ -52,9 +54,9 @@ kubeconfig:
   enabled: false
   path:
 
-# -- Logging configuration section suggested values
-# Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn).
-# Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default)
+    # -- Logging configuration section suggested values
+    # Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn).
+    # Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default)
 logging:
   # -- Zap Development Mode enabled
   development: false
@@ -98,7 +100,6 @@ gcp:
   svcAccSecret: ''
   # -- Name of a pre-existing secret containing GCP service account secret json payload
   existingSecretName: ''
-
 
 # -- Azure KeyVault configuration section
 azure:

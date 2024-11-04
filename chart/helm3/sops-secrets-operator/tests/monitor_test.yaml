@@ -1,60 +1,60 @@
 suite: operator prometheus monitor tests
 templates:
-  - monitor.yaml
+- monitor.yaml
 
 tests:
 
-  - it: should not render any ServiceMonitor documents
-    release:
-      name: sops
-      namespace: sops
-    asserts:
-      - hasDocuments:
-          count: 0
+- it: should not render any ServiceMonitor documents
+  release:
+    name: sops
+    namespace: sops
+  asserts:
+  - hasDocuments:
+      count: 0
 
-  - it: should set correct kind and apiVersion, one document and selector
-    release:
-      name: sops
-      namespace: sops
-    set:
-      metrics:
-        enabled: true
-    asserts:
-      - isKind:
-          of: ServiceMonitor
-      - isAPIVersion:
-          of: monitoring.coreos.com/v1
-      - hasDocuments:
-          count: 1
-      - equal:
-          path: spec.selector.matchLabels
-          value:
-            app.kubernetes.io/instance: sops
-            app.kubernetes.io/name: sops-secrets-operator
+- it: should set correct kind and apiVersion, one document and selector
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+  asserts:
+  - isKind:
+      of: ServiceMonitor
+  - isAPIVersion:
+      of: monitoring.coreos.com/v1
+  - hasDocuments:
+      count: 1
+  - equal:
+      path: spec.selector.matchLabels
+      value:
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/name: sops-secrets-operator
 
-  - it: should include additional labels when set
-    release:
-      name: sops
-      namespace: sops
-    set:
-      metrics:
-        enabled: true
-        additionalLabels:
-          custom-label: custom-value
-    asserts:
-      - hasDocuments:
-          count: 1
-      - isKind:
-          of: ServiceMonitor
-      - isAPIVersion:
-          of: monitoring.coreos.com/v1
-      - equal:
-          path: metadata.labels
-          # UPDATE_HERE
-          value:
-            app.kubernetes.io/instance: sops
-            app.kubernetes.io/managed-by: Helm
-            app.kubernetes.io/name: sops-secrets-operator
-            app.kubernetes.io/version: "0.14.1"
-            helm.sh/chart: sops-secrets-operator-0.20.1
-            custom-label: custom-value
+- it: should include additional labels when set
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+      additionalLabels:
+        custom-label: custom-value
+  asserts:
+  - hasDocuments:
+      count: 1
+  - isKind:
+      of: ServiceMonitor
+  - isAPIVersion:
+      of: monitoring.coreos.com/v1
+  - equal:
+      path: metadata.labels
+      # UPDATE_HERE
+      value:
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: sops-secrets-operator
+        app.kubernetes.io/version: "0.14.1"
+        helm.sh/chart: sops-secrets-operator-0.20.2
+        custom-label: custom-value
