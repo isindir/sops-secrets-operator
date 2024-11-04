@@ -140,7 +140,6 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | initImage.repository | string | `"ubuntu"` | Init container image name |
 | initImage.tag | string | `"oracular-20241009"` | Init container image tag |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
-| logging | object | `{"development":false,"encoder":"json","level":"info","stacktraceLevel":"error","timeEncoding":"iso8601"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
 | logging.development | bool | `false` | Zap Development Mode enabled |
 | logging.encoder | string | `"json"` | Zap log encoding (one of 'json' or 'console') |
 | logging.level | string | `"info"` | Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity |
@@ -151,7 +150,8 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | nameOverride | string | `""` | Overrides auto-generated short resource name |
 | namespaced | bool | `false` | If set - operator will watch SopsSecret resources only in operator namespace |
 | nodeSelector | object | `{}` | Node selector to use for pod configuration |
-| podAnnotations | object | `{}` | Annotations to be added to operator pod (can be used with kiam or kube2iam) |
+| podAnnotations | object | `{}` | Annotations to be added to operator pod |
+| podLabels | object | `{}` | Labels to be added to operator pod |
 | rbac.enabled | bool | `true` | Create and use RBAC resources |
 | replicaCount | int | `1` | Deployment replica count - should not be modified |
 | requeueAfter | int | `5` | Requeue failed reconciliation in minutes (min 1). (default 5) |
