@@ -43,6 +43,9 @@ podAnnotations: {}
 podLabels: {}
 
 serviceAccount:
+  enabled: true
+  # -- Custom service account name to use instead of automatically generated name (if enabled - chart will generate SA, if not enabled - will use preconfigured)
+  name: ""
   # -- Annotations to be added to the service account
   annotations: {}
 

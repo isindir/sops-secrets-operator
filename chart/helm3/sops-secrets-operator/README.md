@@ -169,6 +169,8 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | securityContext.seccompProfileName | string | `""` | if seccompProfile.type is set to Localhost, set localhostProfile to value of seccompProfileName (user must specify value) |
 | securityContext.seccompProfileType | string | `"RuntimeDefault"` | seccompProfile.type |
 | serviceAccount.annotations | object | `{}` | Annotations to be added to the service account |
+| serviceAccount.enabled | bool | `true` |  |
+| serviceAccount.name | string | `""` | Custom service account name to use instead of automatically generated name (if enabled - chart will generate SA, if not enabled - will use preconfigured) |
 | tolerations | list | `[]` | Tolerations to be applied to operator pod |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
