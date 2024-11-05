@@ -1,0 +1,30 @@
+suite: "Validation Tests"
+
+templates:
+  - "templates/validation.yaml"
+
+tests:
+  - it: "should succeed if '.serviceAccount.enabled' is true (default case)"
+    set:
+      serviceAccount:
+        enabled: true
+        name:
+    asserts:
+    - notFailedTemplate: {}
+
+  - it: "should succeed if '.serviceAccount.enabled' is false and 'name' is set"
+    set:
+      serviceAccount:
+        enabled: false
+        name: "AzureSA"
+    asserts:
+      - notFailedTemplate: {}
+
+  - it: "should fail if '.serviceAccount.enabled' is false and '.serviceAccount.name' is not set"
+    set:
+      serviceAccount:
+        enabled: false
+        name: ""
+    asserts:
+    - failedTemplate:
+        errorMessage: "Error: serviceAccount 'name' must be set if serviceAccount 'enabled' is set to false"

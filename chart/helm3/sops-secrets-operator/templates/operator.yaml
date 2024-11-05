@@ -29,7 +29,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "sops-secrets-operator.fullname" . }}
+      serviceAccountName: {{ .Values.serviceAccount.name | default (tpl ( include "sops-secrets-operator.fullname" . ) .) }}
       {{- if .Values.gpg.enabled }}
       initContainers:
         - name: init-myservice

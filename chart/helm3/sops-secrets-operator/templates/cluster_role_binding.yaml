@@ -11,7 +11,7 @@ metadata:
 {{ include "sops-secrets-operator.labels" . | indent 4 }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "sops-secrets-operator.fullname" . }}
+  name: {{ .Values.serviceAccount.name | default (tpl ( include "sops-secrets-operator.fullname" . ) .) }}
   namespace: {{ .Release.Namespace }}
 roleRef:
 {{- if .Values.namespaced }}
