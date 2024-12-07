@@ -13,13 +13,13 @@ jobs:
     environment: ci-cd
     # UPDATE_HERE
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       # UPDATE_HERE
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.31.2-k3s1
+      K3S_VERSION: v1.31.3-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.6.3
+      HELM_UNITTEST_VERSION: 0.7.0
 
     steps:
 
