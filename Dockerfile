@@ -2,7 +2,7 @@
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=oracular
 # UPDATE_HERE
-FROM ubuntu:oracular-20241009 AS asdf-builder
+FROM ubuntu:oracular-20241120 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
@@ -55,7 +55,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:oracular-20241009
+FROM ubuntu:oracular-20241120
 
 # Install build tools
 RUN apt-get -y update \

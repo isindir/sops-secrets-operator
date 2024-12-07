@@ -6,7 +6,7 @@ jobs:
     name: runner / golangci-lint
     # UPDATE_HERE
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       # UPDATE_HERE
       # https://github.com/actions/checkout/releases

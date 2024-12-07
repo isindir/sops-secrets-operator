@@ -214,7 +214,6 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	kubeSecretFromTemplate *corev1.Secret,
 ) (*corev1.Secret, bool) {
-
 	// Check if kubeSecretFromTemplate already exists in the cluster store
 	kubeSecretToFindAndCompare := &corev1.Secret{}
 	err := r.Get(
@@ -259,7 +258,6 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	plainTextSopsSecret *isindirv1alpha3.SopsSecret,
 	secretTemplate *isindirv1alpha3.SopsSecretTemplate,
 ) (*corev1.Secret, bool) {
-
 	// Define a new secret object
 	kubeSecretFromTemplate, err := createKubeSecretFromTemplate(plainTextSopsSecret, secretTemplate, r.Log)
 	if err != nil {
@@ -291,8 +289,8 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 }
 
 func (r *SopsSecretReconciler) isSecretSuspended(
-	ctx context.Context, encryptedSopsSecret *isindirv1alpha3.SopsSecret, req ctrl.Request) bool {
-
+	ctx context.Context, encryptedSopsSecret *isindirv1alpha3.SopsSecret, req ctrl.Request,
+) bool {
 	// Return early if SopsSecret object is suspended.
 	if encryptedSopsSecret.Spec.Suspend {
 		r.Log.V(0).Info(
@@ -309,8 +307,8 @@ func (r *SopsSecretReconciler) isSecretSuspended(
 }
 
 func (r *SopsSecretReconciler) getEncryptedSopsSecret(
-	ctx context.Context, req ctrl.Request) (*isindirv1alpha3.SopsSecret, bool, error) {
-
+	ctx context.Context, req ctrl.Request,
+) (*isindirv1alpha3.SopsSecret, bool, error) {
 	encryptedSopsSecret := &isindirv1alpha3.SopsSecret{}
 
 	err := r.Get(ctx, req.NamespacedName, encryptedSopsSecret)
@@ -345,7 +343,6 @@ func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
-
 	// Set logging level
 	sopslogging.SetLevel(logrus.InfoLevel)
 
@@ -497,7 +494,7 @@ func customDecryptData(data []byte, format string) (cleartext []byte, err error)
 	}
 	key, err := tree.Metadata.GetDataKey()
 	if userErr, ok := err.(sops.UserError); ok {
-		err = fmt.Errorf(userErr.UserError())
+		err = fmt.Errorf("sops user error: %s", userErr.UserError())
 	}
 	if err != nil {
 		return nil, err
