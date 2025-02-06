@@ -1,12 +1,12 @@
 ############################################################
 # https://wiki.ubuntu.com/Releases
-# https://hub.docker.com/_/ubuntu/tags?page=1&name=oracular
+# https://hub.docker.com/_/ubuntu/tags?page=1&name=plucky
 # UPDATE_HERE
-FROM ubuntu:oracular-20241120 AS asdf-builder
+FROM ubuntu:plucky-20241213 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
-ARG ASDF_VERSION=v0.14.1
+ARG ASDF_VERSION=v0.16.1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -55,7 +55,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:oracular-20241120
+FROM ubuntu:plucky-20241213
 
 # Install build tools
 RUN apt-get -y update \
