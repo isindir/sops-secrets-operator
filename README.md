@@ -343,3 +343,7 @@ Projects and tools inspired development of `sops-secrets-operator`:
 * [Kamus](https://kamus.soluto.io/)
 * [Tesoro](https://github.com/kapicorp/tesoro)
 * [Sops Operator](https://github.com/craftypath/sops-operator)
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/isindir/sops-secrets-operator.svg?variant=light)](https://starchart.cc/isindir/sops-secrets-operator)
