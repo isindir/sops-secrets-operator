@@ -21,8 +21,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
@@ -123,10 +125,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *SopsSecretReconciler) UpdateSopsSecretStatus(ctx context.Context, sopsSecret *isindirv1alpha3.SopsSecret, message string) {
-	if sopsSecret.Status.Message != message {
-		sopsSecret.Status.Message = message
-		_ = r.Status().Update(ctx, sopsSecret)
-	}
+	sopsSecret.Status.Message = message
+	_ = r.Status().Update(ctx, sopsSecret)
 }
 
 func (r *SopsSecretReconciler) decryptSopsSecret(
@@ -343,6 +343,13 @@ func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	sopsPredicates := builder.WithPredicates(
+		predicate.Or(
+			predicate.GenerationChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+		),
+	)
 	// Set logging level
 	sopslogging.SetLevel(logrus.InfoLevel)
 
@@ -352,7 +359,7 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&isindirv1alpha3.SopsSecret{}).
+		For(&isindirv1alpha3.SopsSecret{}, sopsPredicates).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }

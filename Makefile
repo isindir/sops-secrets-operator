@@ -1,12 +1,12 @@
 # UPDATE_HERE
 # !!!!!!! NOTE: GOEXPERIMENT=nocoverageredesign is temp until 1.23.x
 GO := GOEXPERIMENT=nocoverageredesign GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.14.3
+SOPS_SEC_OPERATOR_VERSION := 0.15.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_GEN_VERSION := "v0.17.1"
+CONTROLLER_GEN_VERSION := "v0.17.2"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.20.1"
+CONTROLLER_RUNTIME_VERSION := "v0.20.3"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v5.6.0"
 # use `setup-envtest list` to obtain the list of available versions
@@ -14,7 +14,7 @@ KUSTOMIZE_VERSION := "v5.6.0"
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # https://storage.googleapis.com/kubebuilder-tools
-ENVTEST_K8S_VERSION := "1.30.0"
+ENVTEST_K8S_VERSION := "1.30.2"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
