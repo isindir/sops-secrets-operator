@@ -88,6 +88,11 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 	}
 
+	err = r.garbageCollectOrphanedSecrets(ctx, req, encryptedSopsSecret, plainTextSopsSecret)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
 	// Iterate over secret templates
 	r.Log.V(1).Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
@@ -336,6 +341,48 @@ func (r *SopsSecretReconciler) getEncryptedSopsSecret(
 	return encryptedSopsSecret, false, nil
 }
 
+func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
+	ctx context.Context,
+	req ctrl.Request,
+	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
+	sopsSecret *isindirv1alpha3.SopsSecret,
+) error {
+	r.Log.V(0).Info("Orphan secret cleanup started", "sopssecret", req.NamespacedName)
+	var namespaceSecrets corev1.SecretList
+	if err := r.List(ctx, &namespaceSecrets, client.InNamespace(req.Namespace)); err != nil {
+		return err
+	}
+
+	expectedSecrets := make(map[string]bool)
+	for _, s := range sopsSecret.Spec.SecretsTemplate {
+		expectedSecrets[s.Name] = true
+	}
+
+	for _, secret := range namespaceSecrets.Items {
+		if metav1.IsControlledBy(&secret, encryptedSopsSecret) && !expectedSecrets[secret.Name] {
+			if err := r.Delete(ctx, &secret); err != nil {
+				r.Log.V(0).Info("Failed to delete orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+			}
+			r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+		}
+	}
+	r.Log.V(0).Info("Orphan secret cleanup finished", "sopssecret", req.NamespacedName)
+
+	return nil
+}
+
+func (r *SopsSecretReconciler) getNamespaceSecrets(
+	ctx context.Context, req ctrl.Request,
+) (*corev1.SecretList, error) {
+	var existingSecrets corev1.SecretList
+	if err := r.List(ctx, &existingSecrets, client.InNamespace(req.Namespace)); err != nil {
+		return nil, err
+	}
+	r.Log.V(0).Info("Fetching list of objects")
+
+	return &existingSecrets, nil
+}
+
 // checks if the annotation equals to "true", and it's case sensitive
 func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 	return secret.Annotations[isindirv1alpha3.SopsSecretManagedAnnotation] == "true"
@@ -350,6 +397,15 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			predicate.LabelChangedPredicate{},
 		),
 	)
+	secretPredicates := builder.WithPredicates(
+		predicate.Or(
+			SecretDataTypeChangedPredicate{},
+			predicate.GenerationChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+		),
+	)
+
 	// Set logging level
 	sopslogging.SetLevel(logrus.InfoLevel)
 
@@ -360,7 +416,7 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha3.SopsSecret{}, sopsPredicates).
-		Owns(&corev1.Secret{}).
+		Owns(&corev1.Secret{}, secretPredicates).
 		Complete(r)
 }
 

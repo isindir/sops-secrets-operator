@@ -1,7 +1,10 @@
 package controllers_test
 
 import (
+	"context"
 	"os"
+	"path/filepath"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -14,10 +17,6 @@ import (
 	controller "github.com/isindir/sops-secrets-operator/internal/controllers"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-
-	"context"
-	"path/filepath"
-	"time"
 )
 
 var _ = Describe("SopssecretController", func() {
@@ -238,4 +237,5 @@ var _ = Describe("SopssecretController", func() {
 	// TODO: check the error message is "createKubeSecretFromTemplate(): secret template name must be specified and not empty string".
 	//       when child secret template name is empty
 	// TODO: check all types of secret - BasicAuth, SSHAuth, BootstrapToken, TLS, Dockercfg, ServiceAccountToken???
+	// TODO: check garbage collection works fine when one of the templates is removed - secret is removed as well
 })
