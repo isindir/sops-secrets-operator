@@ -371,18 +371,6 @@ func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
 	return nil
 }
 
-func (r *SopsSecretReconciler) getNamespaceSecrets(
-	ctx context.Context, req ctrl.Request,
-) (*corev1.SecretList, error) {
-	var existingSecrets corev1.SecretList
-	if err := r.List(ctx, &existingSecrets, client.InNamespace(req.Namespace)); err != nil {
-		return nil, err
-	}
-	r.Log.V(0).Info("Fetching list of objects")
-
-	return &existingSecrets, nil
-}
-
 // checks if the annotation equals to "true", and it's case sensitive
 func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 	return secret.Annotations[isindirv1alpha3.SopsSecretManagedAnnotation] == "true"
