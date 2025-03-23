@@ -163,14 +163,9 @@ var _ = Describe("SopssecretController", func() {
 
 			By("By removing secret template from SopsSecret must remove managed k8s secret")
 			// Delete template from SopsSecret and update
-			// Delete target secret (envtest will not perform garbage collection)
 			copy(sourceSopsSecret.Spec.SecretsTemplate[0:], sourceSopsSecret.Spec.SecretsTemplate[1:])
 			sourceSopsSecret.Spec.SecretsTemplate = sourceSopsSecret.Spec.SecretsTemplate[:len(sourceSopsSecret.Spec.SecretsTemplate)-1]
 			Expect(controller.K8sClient.Update(ctx, sourceSopsSecret)).To(Succeed())
-			testSecret = &corev1.Secret{}
-			tagrgetSecretNamespacedName = &types.NamespacedName{Namespace: "default", Name: "test-stringdata-token"}
-			Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
-			Expect(controller.K8sClient.Delete(ctx, testSecret)).To(Succeed())
 			time.Sleep(10 * time.Second)
 			secretsList = &corev1.SecretList{}
 			Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
