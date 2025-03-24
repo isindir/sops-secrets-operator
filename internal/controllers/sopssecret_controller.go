@@ -21,8 +21,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
@@ -86,6 +88,11 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 	}
 
+	err = r.garbageCollectOrphanedSecrets(ctx, req, encryptedSopsSecret, plainTextSopsSecret)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
 	// Iterate over secret templates
 	r.Log.V(1).Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
@@ -123,10 +130,8 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *SopsSecretReconciler) UpdateSopsSecretStatus(ctx context.Context, sopsSecret *isindirv1alpha3.SopsSecret, message string) {
-	if sopsSecret.Status.Message != message {
-		sopsSecret.Status.Message = message
-		_ = r.Status().Update(ctx, sopsSecret)
-	}
+	sopsSecret.Status.Message = message
+	_ = r.Status().Update(ctx, sopsSecret)
 }
 
 func (r *SopsSecretReconciler) decryptSopsSecret(
@@ -336,6 +341,36 @@ func (r *SopsSecretReconciler) getEncryptedSopsSecret(
 	return encryptedSopsSecret, false, nil
 }
 
+func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
+	ctx context.Context,
+	req ctrl.Request,
+	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
+	sopsSecret *isindirv1alpha3.SopsSecret,
+) error {
+	r.Log.V(0).Info("Orphan secret cleanup started", "sopssecret", req.NamespacedName)
+	var namespaceSecrets corev1.SecretList
+	if err := r.List(ctx, &namespaceSecrets, client.InNamespace(req.Namespace)); err != nil {
+		return err
+	}
+
+	expectedSecrets := make(map[string]bool)
+	for _, s := range sopsSecret.Spec.SecretsTemplate {
+		expectedSecrets[s.Name] = true
+	}
+
+	for _, secret := range namespaceSecrets.Items {
+		if metav1.IsControlledBy(&secret, encryptedSopsSecret) && !expectedSecrets[secret.Name] {
+			if err := r.Delete(ctx, &secret); err != nil {
+				r.Log.V(0).Info("Failed to delete orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+			}
+			r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+		}
+	}
+	r.Log.V(0).Info("Orphan secret cleanup finished", "sopssecret", req.NamespacedName)
+
+	return nil
+}
+
 // checks if the annotation equals to "true", and it's case sensitive
 func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 	return secret.Annotations[isindirv1alpha3.SopsSecretManagedAnnotation] == "true"
@@ -343,6 +378,22 @@ func isAnnotatedToBeManaged(secret *corev1.Secret) bool {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	sopsPredicates := builder.WithPredicates(
+		predicate.Or(
+			predicate.GenerationChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+		),
+	)
+	secretPredicates := builder.WithPredicates(
+		predicate.Or(
+			SecretDataTypeChangedPredicate{},
+			predicate.GenerationChangedPredicate{},
+			predicate.AnnotationChangedPredicate{},
+			predicate.LabelChangedPredicate{},
+		),
+	)
+
 	// Set logging level
 	sopslogging.SetLevel(logrus.InfoLevel)
 
@@ -352,8 +403,8 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&isindirv1alpha3.SopsSecret{}).
-		Owns(&corev1.Secret{}).
+		For(&isindirv1alpha3.SopsSecret{}, sopsPredicates).
+		Owns(&corev1.Secret{}, secretPredicates).
 		Complete(r)
 }
 
