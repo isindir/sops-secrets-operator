@@ -232,5 +232,4 @@ var _ = Describe("SopssecretController", func() {
 	// TODO: check the error message is "createKubeSecretFromTemplate(): secret template name must be specified and not empty string".
 	//       when child secret template name is empty
 	// TODO: check all types of secret - BasicAuth, SSHAuth, BootstrapToken, TLS, Dockercfg, ServiceAccountToken???
-	// TODO: check garbage collection works fine when one of the templates is removed - secret is removed as well
 })
