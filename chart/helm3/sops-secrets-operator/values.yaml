@@ -16,7 +16,7 @@ image:
   # -- Operator image name
   repository: isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.15.0
+  tag: 0.16.0
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -25,7 +25,7 @@ initImage:
   # -- Init container image name
   repository: ubuntu
   # -- Init container image tag
-  tag: plucky-20241213
+  tag: plucky-20250415
   # -- Init container image pull policy
   pullPolicy: Always
 
