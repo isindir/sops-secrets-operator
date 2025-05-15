@@ -17,9 +17,9 @@ jobs:
     env:
       # UPDATE_HERE
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.32.2-k3s1
+      K3S_VERSION: v1.33.0-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 0.8.0
+      HELM_UNITTEST_VERSION: 0.8.2
 
     steps:
 
@@ -30,8 +30,12 @@ jobs:
 
       # UPDATE_HERE
       # https://github.com/asdf-vm/actions/releases
+      # https://github.com/asdf-vm/actions/issues/594
       - name: Install asdf tools
-        uses: asdf-vm/actions/install@v3
+        # uses: asdf-vm/actions/install@v3
+        uses: asdf-vm/actions/install@9cd779f40fe38688dd19505ccbc4eaaf018b44e7
+        with:
+          asdf_version: 0.16.7
 
       - name: install gpg2
         run: |
