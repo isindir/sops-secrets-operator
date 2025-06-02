@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt install -y tree curl vim gnupg2 make
 cd /usr/local/bin
