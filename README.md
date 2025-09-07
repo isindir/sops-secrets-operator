@@ -23,6 +23,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops | Chart | Operator |
 |---|---|---|---|
+| v1.34.x | v3.10.2 | 0.23.0 | 0.17.0 |
 | v1.33.x | v3.10.2 | 0.22.0 | 0.16.0 |
 | v1.32.x | v3.9.4 | 0.21.0 | 0.15.0 |
 | v1.31.x | v3.9.4 | 0.20.5 | 0.14.3 |
@@ -338,13 +339,14 @@ Projects and tools inspired development of `sops-secrets-operator`:
 
 ## Alternative tools
 
+* [Sops Operator](https://github.com/peak-scale/sops-operator) (Peak Scale)
 * [Kubernetes external secrets](https://github.com/external-secrets/external-secrets)
 * [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
 * [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
 * [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
 * [Kamus](https://kamus.soluto.io/)
 * [Tesoro](https://github.com/kapicorp/tesoro)
-* [Sops Operator](https://github.com/craftypath/sops-operator)
+* [Sops Operator](https://github.com/craftypath/sops-operator) (Craftypath)
 
 ## Stargazers over time
 

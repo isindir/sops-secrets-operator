@@ -12,7 +12,7 @@ repos:
       - --template-files=./README.md.gotmpl
 - repo: https://github.com/pre-commit/pre-commit-hooks
   # https://github.com/pre-commit/pre-commit-hooks/releases
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
   - id: check-symlinks
   - id: check-merge-conflict
