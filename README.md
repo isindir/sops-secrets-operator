@@ -339,14 +339,14 @@ Projects and tools inspired development of `sops-secrets-operator`:
 
 ## Alternative tools
 
-* [Sops Operator](https://github.com/peak-scale/sops-operator)
+* [Sops Operator](https://github.com/peak-scale/sops-operator) (Peak Scale)
 * [Kubernetes external secrets](https://github.com/external-secrets/external-secrets)
 * [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
 * [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
 * [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
 * [Kamus](https://kamus.soluto.io/)
 * [Tesoro](https://github.com/kapicorp/tesoro)
-* [Sops Operator](https://github.com/craftypath/sops-operator)
+* [Sops Operator](https://github.com/craftypath/sops-operator) (Craftypath)
 
 ## Stargazers over time
 
