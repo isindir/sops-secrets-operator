@@ -2,11 +2,11 @@
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=plucky
 # UPDATE_HERE
-FROM ubuntu:plucky-20250415 AS asdf-builder
+FROM ubuntu:plucky-20250730 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
-ARG ASDF_VERSION=v0.16.7
+ARG ASDF_VERSION=v0.18.0
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -55,7 +55,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:plucky-20250415
+FROM ubuntu:plucky-20250730
 
 # Install build tools
 RUN apt-get -y update \
