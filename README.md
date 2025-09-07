@@ -339,6 +339,7 @@ Projects and tools inspired development of `sops-secrets-operator`:
 
 ## Alternative tools
 
+* [Sops Operator](https://github.com/peak-scale/sops-operator)
 * [Kubernetes external secrets](https://github.com/external-secrets/external-secrets)
 * [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
 * [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)

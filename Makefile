@@ -12,7 +12,7 @@ KUSTOMIZE_VERSION := "v5.7.1"
 # until fixed, can't use newer version, see:
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-# https://storage.googleapis.com/kubebuilder-tools
+# https://raw.githubusercontent.com/kubernetes-sigs/controller-tools/master/envtest-releases.yaml
 ENVTEST_K8S_VERSION := "1.34.0"
 
 # Use existing cluster instead of starting processes
