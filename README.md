@@ -19,24 +19,24 @@ encrypted files stored in `git` repository.
 
 # Versioning
 
-[//]: # (UPDATE_HERE)
+[//]: # "UPDATE_HERE"
 
-| Kubernetes | Sops | Chart | Operator |
-|---|---|---|---|
-| v1.34.x | v3.10.2 | 0.23.0 | 0.17.0 |
-| v1.33.x | v3.10.2 | 0.22.0 | 0.16.0 |
-| v1.32.x | v3.9.4 | 0.21.0 | 0.15.0 |
-| v1.31.x | v3.9.4 | 0.20.5 | 0.14.3 |
-| v1.30.x | v3.9.0 | 0.19.4 | 0.13.3 |
-| v1.29.x | v3.8.1 | 0.18.6 | 0.12.6 |
-| v1.28.x | v3.8.1 | 0.17.4 | 0.11.4 |
-| v1.27.x | v3.7.3 | 0.15.5 | 0.9.5 |
-| v1.26.x | v3.7.3 | 0.14.2 | 0.8.2 |
-| v1.25.x | v3.7.3 | 0.12.5 | 0.6.4 |
-| v1.24.x | v3.7.3 | 0.11.3 | 0.5.3 |
-| v1.23.x | v3.7.2 | 0.10.8 | 0.4.8 |
-| v1.22.x | v3.7.1 | 0.9.7 | 0.3.7 |
-| v1.21.x | v3.7.1 | 0.9.6 | 0.3.6 |
+| Kubernetes | Sops    | Chart  | Operator |
+| ---------- | ------- | ------ | -------- |
+| v1.34.x    | v3.11.0 | 0.23.1 | 0.17.1   |
+| v1.33.x    | v3.10.2 | 0.22.0 | 0.16.0   |
+| v1.32.x    | v3.9.4  | 0.21.0 | 0.15.0   |
+| v1.31.x    | v3.9.4  | 0.20.5 | 0.14.3   |
+| v1.30.x    | v3.9.0  | 0.19.4 | 0.13.3   |
+| v1.29.x    | v3.8.1  | 0.18.6 | 0.12.6   |
+| v1.28.x    | v3.8.1  | 0.17.4 | 0.11.4   |
+| v1.27.x    | v3.7.3  | 0.15.5 | 0.9.5    |
+| v1.26.x    | v3.7.3  | 0.14.2 | 0.8.2    |
+| v1.25.x    | v3.7.3  | 0.12.5 | 0.6.4    |
+| v1.24.x    | v3.7.3  | 0.11.3 | 0.5.3    |
+| v1.23.x    | v3.7.2  | 0.10.8 | 0.4.8    |
+| v1.22.x    | v3.7.1  | 0.9.7  | 0.3.7    |
+| v1.21.x    | v3.7.1  | 0.9.6  | 0.3.6    |
 
 # Requirements for building operator from source code
 
@@ -54,18 +54,19 @@ helm repo add sops https://isindir.github.io/sops-secrets-operator/
 
 ## AWS
 
-* Create KMS key
-* Create AWS Role which can be used by operator to decrypt CR data structure,
+- Create KMS key
+- Create AWS Role which can be used by operator to decrypt CR data structure,
   follow [sops documentation](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
-* Deploy CRD:
+- Deploy CRD:
 
 ```bash
 kubectl apply -f config/crd/bases/isindir.github.com_sopssecrets.yaml
 ```
+
 > **NOTE:** to grant access to aws for `sops-secret-operator` -
 > [kiam](https://github.com/uswitch/kiam), [kube2iam](https://github.com/jtblin/kube2iam) or [IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html) can be used.
 
-* Deploy helm chart:
+- Deploy helm chart:
 
 ```bash
 kubectl create namespace sops
@@ -76,31 +77,31 @@ helm upgrade --install sops sops/sops-secrets-operator --namespace sops
 
 ## Age
 
-* Create age reference `keys.txt` file, create kubernetes secret from it.
-* Deploy helm chart:
-  * Use `secretsAsFiles` to specify the secret which contains the `keys.txt`.
-  * Use `extraEnv` and specify mounted `keys.txt` path `SOPS_AGE_KEY_FILE` environment variable.
+- Create age reference `keys.txt` file, create kubernetes secret from it.
+- Deploy helm chart:
+  - Use `secretsAsFiles` to specify the secret which contains the `keys.txt`.
+  - Use `extraEnv` and specify mounted `keys.txt` path `SOPS_AGE_KEY_FILE` environment variable.
 
 See example:
 
 ```yaml
-...
+
+---
 secretsAsFiles:
-- mountPath: /etc/sops-age-key-file
-  name: sops-age-key-file
-  secretName: sops-age-key-file
+  - mountPath: /etc/sops-age-key-file
+    name: sops-age-key-file
+    secretName: sops-age-key-file
 extraEnv:
-- name: SOPS_AGE_KEY_FILE
-  value: /etc/sops-age-key-file/key
-...
+  - name: SOPS_AGE_KEY_FILE
+    value: /etc/sops-age-key-file/key
 ```
 
-* Also see: [Local testing using age](docs/age/README.md)
+- Also see: [Local testing using age](docs/age/README.md)
 
 References:
 
-* [Age git repository](https://github.com/FiloSottile/age)
-* [SOPS Age documentation](https://github.com/mozilla/sops#22encrypting-using-age)
+- [Age git repository](https://github.com/FiloSottile/age)
+- [SOPS Age documentation](https://github.com/mozilla/sops#22encrypting-using-age)
 
 ## PGP
 
@@ -124,11 +125,12 @@ helm upgrade --install sops sops/sops-secrets-operator \
 ## Azure
 
 ### Outline
-* Create a KeyVault if you don't have one already
-* Create a Key in that KeyVault
-* Create Service principal with permissions to use the key for Encryption/Decryption
-  * follow the [SOPS documentation](https://github.com/mozilla/sops#encrypting-using-azure-key-vault)
-* Either put Tenant ID, Client ID and Client Secret for the Service Principal in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable Azure in the Helm Chart by setting `azure.enabled: true` in values.yaml.
+
+- Create a KeyVault if you don't have one already
+- Create a Key in that KeyVault
+- Create Service principal with permissions to use the key for Encryption/Decryption
+  - follow the [SOPS documentation](https://github.com/mozilla/sops#encrypting-using-azure-key-vault)
+- Either put Tenant ID, Client ID and Client Secret for the Service Principal in your custom values.yaml file or create a Kubernetes Secret with the same information and put the name of that secret in your values.yaml. Enable Azure in the Helm Chart by setting `azure.enabled: true` in values.yaml.
 
 ### Login info in values.yaml
 
@@ -179,7 +181,7 @@ helm upgrade --install sops sops/sops-secrets-operator \
 
 ## SopsSecret Custom Resource File creation
 
-* create SopsSecret file, for example:
+- create SopsSecret file, for example:
 
 ```yaml
 cat >jenkins-secrets.yaml <<EOF
@@ -218,7 +220,7 @@ spec:
 EOF
 ```
 
-* Encrypt file using `sops` and AWS kms key:
+- Encrypt file using `sops` and AWS kms key:
 
 ```bash
 sops --encrypt \
@@ -237,9 +239,9 @@ sops --encrypt \
 ```
 
 > **NOTE:** after using regex `sops --encrypted-regex` resulting file may be inapplicable to the kubernetes cluster, use
-  this feature with care
+> this feature with care
 
-* Encrypt file using `sops` and GCP KMS key:
+- Encrypt file using `sops` and GCP KMS key:
 
 ```bash
 sops --encrypt \
@@ -248,7 +250,7 @@ sops --encrypt \
   > jenkins-secrets.enc.yaml
 ```
 
-* Encrypt file using `sops` and Azure Keyvault key:
+- Encrypt file using `sops` and Azure Keyvault key:
 
 ```bash
 sops --encrypt \
@@ -257,7 +259,7 @@ sops --encrypt \
   > jenkins-secrets.enc.yaml
 ```
 
-* Encrypt file using `sops` and PGP key:
+- Encrypt file using `sops` and PGP key:
 
 ```bash
 sops --encrypt \
@@ -276,14 +278,15 @@ If there is a need to re-own existing `Secrets` by `SopsSecret`, following annot
 be added to the target kubernetes native secret:
 
 ```yaml
-...
+
+---
 metadata:
   annotations:
     "sopssecret/managed": "true"
-...
 ```
+
 > previously not managed secret will be replaced by `SopsSecret` owned at the next rescheduled
-  reconciliation event.
+> reconciliation event.
 
 ## Example procedure to upgrade from one `SopsSecret` API version to another
 
@@ -295,7 +298,7 @@ Mozilla Public License Version 2.0
 
 # Known Issues
 
-* `sops-secrets-operator` is not using standard `sops` library decryption
+- `sops-secrets-operator` is not using standard `sops` library decryption
   interface function, modified upstream function is used to decrypt data which
   ignores `enc` signature field in `sops` metadata. This means if some encrypted
   fields are removed or changed to plain text - it still will be able to decrypt
@@ -303,7 +306,7 @@ Mozilla Public License Version 2.0
   it is always mutated by Kubernetes, for example resource version is generated
   and added to the resource. But any mutation invalidates `sops` metadata `enc`
   field and standard decryption function fails.
-* `sops-secrets-operator` by design is not wrapping encrypted object to some
+- `sops-secrets-operator` by design is not wrapping encrypted object to some
   field in spec. This was deliberate decision for the simplicity of the
   operations - ability to directly encrypt the whole `SopsSecret` resource using
   `sops` cli. This causes side effects like: if the user of the k8s cluster
@@ -311,7 +314,7 @@ Mozilla Public License Version 2.0
   namespace - it allows directly applying encrypted `SopsSecret` resource to
   that namespaces and getting access to the secret material. This operator was
   only designed to protect access to the secret material from git repository.
-* `sops-secrets-operator` is not strictly following
+- `sops-secrets-operator` is not strictly following
   [Kubernetes OpenAPI naming conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#naming-conventions).
   This is due to the fact that `sops` generates substructures in encrypted file
   with incompatible to OpenAPI names (containing underscore symbols, where it
@@ -321,32 +324,32 @@ Mozilla Public License Version 2.0
 
 Projects and tools inspired development of `sops-secrets-operator`:
 
-* [sops](https://github.com/mozilla/sops)
-  * [Configuring AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
-  * [helm secrets plugin](https://github.com/jkroepke/helm-secrets)
-* [kube2iam](https://github.com/jtblin/kube2iam)
-  * [kiam](https://github.com/uswitch/kiam) - in ABANDONED mode now
-* [Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
-  * [Flux github repositories](https://github.com/fluxcd)
-  * [Flux sops native integration documentation](https://fluxcd.io/flux/guides/mozilla-sops/)
-* [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
-  * [Jenkins - Kubernetes Credentials Provider](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/)
-  * [Jenkins Kubernetes Plugin](https://github.com/jenkinsci/kubernetes-plugin)
-* [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-secrets)
-  * [Using sealed secrets with Flux](https://fluxcd.io/flux/guides/sealed-secrets/)
-* [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
-  * [operator-sdk](https://github.com/operator-framework/operator-sdk)
+- [sops](https://github.com/mozilla/sops)
+  - [Configuring AWS KMS for use with sops](https://github.com/mozilla/sops#26assuming-roles-and-using-kms-in-various-aws-accounts)
+  - [helm secrets plugin](https://github.com/jkroepke/helm-secrets)
+- [kube2iam](https://github.com/jtblin/kube2iam)
+  - [kiam](https://github.com/uswitch/kiam) - in ABANDONED mode now
+- [Flux GitOps CD](https://fluxcd.io/) - flux supports `sops` out of the box
+  - [Flux github repositories](https://github.com/fluxcd)
+  - [Flux sops native integration documentation](https://fluxcd.io/flux/guides/mozilla-sops/)
+- [Jenkins Configuration as Code](https://jenkins.io/projects/jcasc/)
+  - [Jenkins - Kubernetes Credentials Provider](https://jenkinsci.github.io/kubernetes-credentials-provider-plugin/)
+  - [Jenkins Kubernetes Plugin](https://github.com/jenkinsci/kubernetes-plugin)
+- [Bitnami SealedSecrets](https://github.com/bitnami-labs/sealed-secrets)
+  - [Using sealed secrets with Flux](https://fluxcd.io/flux/guides/sealed-secrets/)
+- [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
+  - [operator-sdk](https://github.com/operator-framework/operator-sdk)
 
 ## Alternative tools
 
-* [Sops Operator](https://github.com/peak-scale/sops-operator) (Peak Scale)
-* [Kubernetes external secrets](https://github.com/external-secrets/external-secrets)
-* [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
-* [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
-* [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
-* [Kamus](https://kamus.soluto.io/)
-* [Tesoro](https://github.com/kapicorp/tesoro)
-* [Sops Operator](https://github.com/craftypath/sops-operator) (Craftypath)
+- [Sops Operator](https://github.com/peak-scale/sops-operator) (Peak Scale)
+- [Kubernetes external secrets](https://github.com/external-secrets/external-secrets)
+- [Vault Secrets Operator](https://github.com/ricoberger/vault-secrets-operator)
+- [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
+- [Secrets Store CSI driver](https://github.com/kubernetes-sigs/secrets-store-csi-driver)
+- [Kamus](https://kamus.soluto.io/)
+- [Tesoro](https://github.com/kapicorp/tesoro)
+- [Sops Operator](https://github.com/craftypath/sops-operator) (Craftypath)
 
 ## Stargazers over time
 

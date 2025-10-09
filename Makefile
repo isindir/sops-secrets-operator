@@ -5,7 +5,7 @@ SOPS_SEC_OPERATOR_VERSION := 0.17.0
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.19.0"
 # https://github.com/kubernetes-sigs/controller-runtime/releases
-CONTROLLER_RUNTIME_VERSION := "v0.22.0"
+CONTROLLER_RUNTIME_VERSION := "v0.22.2"
 # https://github.com/kubernetes-sigs/kustomize/releases
 KUSTOMIZE_VERSION := "v5.7.1"
 # use `setup-envtest list` to obtain the list of available versions
@@ -13,7 +13,7 @@ KUSTOMIZE_VERSION := "v5.7.1"
 #   https://github.com/kubernetes-sigs/controller-runtime/issues/1571
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # https://raw.githubusercontent.com/kubernetes-sigs/controller-tools/master/envtest-releases.yaml
-ENVTEST_K8S_VERSION := "1.34.0"
+ENVTEST_K8S_VERSION := "1.34.1"
 
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true

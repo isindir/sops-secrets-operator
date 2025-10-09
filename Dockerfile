@@ -2,7 +2,7 @@
 # https://wiki.ubuntu.com/Releases
 # https://hub.docker.com/_/ubuntu/tags?page=1&name=plucky
 # UPDATE_HERE
-FROM ubuntu:plucky-20250730 AS asdf-builder
+FROM ubuntu:plucky-20250925.1 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
@@ -12,9 +12,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install build tools
 RUN apt-get -y update \
-      && apt-get -y install build-essential \
-      && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget \
-      && apt-get clean && rm -rf /var/lib/apt/lists/*
+  && apt-get -y install build-essential \
+  && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install asdf
 WORKDIR /usr/local
@@ -33,7 +33,7 @@ WORKDIR /root
 COPY .tool-versions .
 
 RUN awk '$0 !~ /^#/ {print $1}' .tool-versions|xargs -I{} asdf plugin add  {} \
-      && asdf install && asdf reshim
+  && asdf install && asdf reshim
 ENV PATH="/root/.asdf/shims:/root/.asdf/bin:$PATH"
 
 # Compile source code
@@ -55,13 +55,13 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:plucky-20250730
+FROM ubuntu:plucky-20250925.1
 
 # Install build tools
 RUN apt-get -y update \
-      && apt-get -y upgrade \
-      && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
-      && apt-get clean && rm -rf /var/lib/apt/lists/*
+  && apt-get -y upgrade \
+  && apt-get -y install --no-install-recommends gnupg2 ca-certificates \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 COPY --from=asdf-builder /workspace/manager .
