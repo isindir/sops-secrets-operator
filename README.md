@@ -23,7 +23,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops    | Chart  | Operator |
 | ---------- | ------- | ------ | -------- |
-| v1.34.x    | v3.11.0 | 0.23.1 | 0.17.1   |
+| v1.34.x    | v3.11.0 | 0.24.0 | 0.17.2   |
 | v1.33.x    | v3.10.2 | 0.22.0 | 0.16.0   |
 | v1.32.x    | v3.9.4  | 0.21.0 | 0.15.0   |
 | v1.31.x    | v3.9.4  | 0.20.5 | 0.14.3   |
@@ -85,7 +85,6 @@ helm upgrade --install sops sops/sops-secrets-operator --namespace sops
 See example:
 
 ```yaml
-
 ---
 secretsAsFiles:
   - mountPath: /etc/sops-age-key-file
@@ -278,7 +277,6 @@ If there is a need to re-own existing `Secrets` by `SopsSecret`, following annot
 be added to the target kubernetes native secret:
 
 ```yaml
-
 ---
 metadata:
   annotations:

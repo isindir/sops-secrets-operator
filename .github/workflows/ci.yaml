@@ -18,7 +18,7 @@ jobs:
       # https://hub.docker.com/r/rancher/k3s/tags
       K3S_VERSION: v1.34.1-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 1.0.0
+      HELM_UNITTEST_VERSION: 1.0.3
 
     steps:
       # UPDATE_HERE
@@ -184,8 +184,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+          username: ${{ secrets.QUAY_IO_USERNAME }}
+          password: ${{ secrets.QUAY_IO_PASS }}
 
       # UPDATE_HERE
       # https://github.com/docker/build-push-action/releases

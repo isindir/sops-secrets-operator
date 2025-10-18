@@ -1,6 +1,6 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.17.1
+SOPS_SEC_OPERATOR_VERSION := 0.17.2
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.19.0"
@@ -18,7 +18,7 @@ ENVTEST_K8S_VERSION := "1.34.1"
 # Use existing cluster instead of starting processes
 USE_EXISTING_CLUSTER ?= true
 # Image URL to use all building/pushing image targets
-IMG_NAME ?= isindir/sops-secrets-operator
+IMG_NAME ?= quay.io/isindir/sops-secrets-operator
 IMG ?= ${IMG_NAME}:${SOPS_SEC_OPERATOR_VERSION}
 IMG_LATEST ?= ${IMG_NAME}:latest
 IMG_CACHE ?= ${IMG_NAME}:cache
