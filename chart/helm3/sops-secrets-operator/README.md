@@ -133,12 +133,12 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.port | int | `8081` | The address the probe endpoint binds to. (default ":8081") |
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
-| image.repository | string | `"isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.17.1"` | Operator image tag |
+| image.repository | string | `"quay.io/isindir/sops-secrets-operator"` | Operator image name |
+| image.tag | string | `"0.17.2"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
-| initImage.repository | string | `"ubuntu"` | Init container image name |
-| initImage.tag | string | `"plucky-20250925.1"` | Init container image tag |
+| initImage.repository | string | `"public.ecr.aws/ubuntu/ubuntu"` | Init container image name |
+| initImage.tag | string | `"25.10"` | Init container image tag |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
 | logging.development | bool | `false` | Zap Development Mode enabled |
 | logging.encoder | string | `"json"` | Zap log encoding (one of 'json' or 'console') |

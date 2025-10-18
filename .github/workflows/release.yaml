@@ -3,11 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'master'
+      - "master"
 
 jobs:
   build:
-
     name: Release
     environment: ci-cd
     # UPDATE_HERE
@@ -15,30 +14,29 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-
       # UPDATE_HERE
       # https://github.com/actions/checkout/releases
       - uses: actions/checkout@v5
         name: Check out code
         with:
-          fetch-tags: 'true'
+          fetch-tags: "true"
           fetch-depth: 0
 
       - name: Set up Docker variables
         id: set_variables
         run: |
-            VERSION=$(make image_tag)
-            echo "SOPS_SEC_OPERATOR_VERSION=$VERSION" >> $GITHUB_ENV
-            SKIP_RELEASE=$(git tag -l "${VERSION}")
-            echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
-            echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
-            echo "IMAGE_CACHE_NAME=$(make image_cache_name)" >> $GITHUB_ENV
-            echo "SKIP_RELEASE=${SKIP_RELEASE}" >> $GITHUB_ENV
+          VERSION=$(make image_tag)
+          echo "SOPS_SEC_OPERATOR_VERSION=$VERSION" >> $GITHUB_ENV
+          SKIP_RELEASE=$(git tag -l "${VERSION}")
+          echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
+          echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
+          echo "IMAGE_CACHE_NAME=$(make image_cache_name)" >> $GITHUB_ENV
+          echo "SKIP_RELEASE=${SKIP_RELEASE}" >> $GITHUB_ENV
 
       - name: Skip release
         if: env.SKIP_RELEASE != ''
         run: |
-            echo "Skip release, tag found for ${VERSION}"
+          echo "Skip release, tag found for ${VERSION}"
 
       # UPDATE_HERE
       # https://github.com/asdf-vm/actions/releases
@@ -64,22 +62,23 @@ jobs:
 
       # UPDATE_HERE
       # https://github.com/docker/login-action/releases
-      - name: Log in to Docker Hub
+      - name: Log in to Quay.io
         if: env.SKIP_RELEASE == ''
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+          registry: quay.io
+          username: ${{ secrets.QUAY_IO_USERNAME }}
+          password: ${{ secrets.QUAY_IO_PASS }}
 
       - name: Tag and release
         if: env.SKIP_RELEASE == ''
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-            git tag "${SOPS_SEC_OPERATOR_VERSION}"
-            git push origin --tags
-            git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp
-            gh release create "${SOPS_SEC_OPERATOR_VERSION}" -F chglog.tmp
+          git tag "${SOPS_SEC_OPERATOR_VERSION}"
+          git push origin --tags
+          git-chglog "${SOPS_SEC_OPERATOR_VERSION}" > chglog.tmp
+          gh release create "${SOPS_SEC_OPERATOR_VERSION}" -F chglog.tmp
 
       # UPDATE_HERE
       # https://github.com/docker/build-push-action/releases

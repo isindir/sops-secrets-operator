@@ -14,18 +14,18 @@ namespaced: false
 # UPDATE_HERE
 image:
   # -- Operator image name
-  repository: isindir/sops-secrets-operator
+  repository: quay.io/isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: 0.17.1
+  tag: "0.17.2"
   # -- Operator image pull policy
   pullPolicy: Always
 
 # UPDATE_HERE
 initImage:
   # -- Init container image name
-  repository: ubuntu
+  repository: public.ecr.aws/ubuntu/ubuntu
   # -- Init container image tag
-  tag: plucky-20250925.1
+  tag: "25.10"
   # -- Init container image pull policy
   pullPolicy: Always
 

@@ -1,8 +1,11 @@
 ############################################################
 # https://wiki.ubuntu.com/Releases
-# https://hub.docker.com/_/ubuntu/tags?page=1&name=plucky
+# https://gallery.ecr.aws/ubuntu/ubuntu
+#   crane ls public.ecr.aws/ubuntu/ubuntu
+# https://gallery.ecr.aws/lts/ubuntu
+#   crane ls public.ecr.aws/lts/ubuntu
 # UPDATE_HERE
-FROM ubuntu:plucky-20250925.1 AS asdf-builder
+FROM public.ecr.aws/ubuntu/ubuntu:25.10 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
@@ -55,7 +58,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM ubuntu:plucky-20250925.1
+FROM public.ecr.aws/ubuntu/ubuntu:25.10
 
 # Install build tools
 RUN apt-get -y update \
