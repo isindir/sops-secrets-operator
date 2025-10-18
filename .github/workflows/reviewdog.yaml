@@ -32,4 +32,4 @@ jobs:
       - name: docker hadolint
         uses: reviewdog/action-hadolint@v1
         with:
-          hadolint_flags: --trusted-registry docker.io
+          hadolint_flags: --trusted-registry quay.io --trusted-registry public.ecr.aws
