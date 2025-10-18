@@ -62,10 +62,11 @@ jobs:
 
       # UPDATE_HERE
       # https://github.com/docker/login-action/releases
-      - name: Log in to Docker Hub
+      - name: Log in to Quay.io
         if: env.SKIP_RELEASE == ''
         uses: docker/login-action@v3
         with:
+          registry: quay.io
           username: ${{ secrets.QUAY_IO_USERNAME }}
           password: ${{ secrets.QUAY_IO_PASS }}
 
