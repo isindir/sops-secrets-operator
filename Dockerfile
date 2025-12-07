@@ -5,7 +5,7 @@
 # https://gallery.ecr.aws/lts/ubuntu
 #   crane ls public.ecr.aws/lts/ubuntu
 # UPDATE_HERE
-FROM public.ecr.aws/ubuntu/ubuntu:25.10 AS asdf-builder
+FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS asdf-builder
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
@@ -58,7 +58,7 @@ RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager cmd/main.go
 
 ############################################################
 # UPDATE_HERE
-FROM public.ecr.aws/ubuntu/ubuntu:25.10
+FROM public.ecr.aws/ubuntu/ubuntu:26.04
 
 # Install build tools
 RUN apt-get -y update \
