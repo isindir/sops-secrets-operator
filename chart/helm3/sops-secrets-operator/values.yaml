@@ -16,7 +16,7 @@ image:
   # -- Operator image name
   repository: quay.io/isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: "0.17.2"
+  tag: "0.17.3"
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -25,7 +25,7 @@ initImage:
   # -- Init container image name
   repository: public.ecr.aws/ubuntu/ubuntu
   # -- Init container image tag
-  tag: "25.10"
+  tag: "26.04"
   # -- Init container image pull policy
   pullPolicy: Always
 

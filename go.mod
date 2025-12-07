@@ -1,7 +1,7 @@
 module github.com/isindir/sops-secrets-operator
 
 // UPDATE_HERE
-go 1.25.2
+go 1.25.5
 
 require (
 	// https://github.com/mozilla/sops/releases
@@ -9,7 +9,7 @@ require (
 	// https://github.com/go-logr/logr/releases
 	github.com/go-logr/logr v1.4.3
 	// https://github.com/onsi/ginkgo/releases
-	github.com/onsi/ginkgo/v2 v2.26.0
+	github.com/onsi/ginkgo/v2 v2.27.2
 	// https://github.com/onsi/gomega/releases
 	github.com/onsi/gomega v1.38.2
 	// https://github.com/prometheus/client_golang/releases
@@ -17,11 +17,11 @@ require (
 	// https://github.com/sirupsen/logrus/releases
 	github.com/sirupsen/logrus v1.9.3
 	// https://github.com/kubernetes/apimachinery/tags
-	k8s.io/api v0.34.1
-	k8s.io/apimachinery v0.34.1
-	k8s.io/client-go v0.34.1
+	k8s.io/api v0.34.2
+	k8s.io/apimachinery v0.34.2
+	k8s.io/client-go v0.34.2
 	// https://github.com/kubernetes-sigs/controller-runtime/releases
-	sigs.k8s.io/controller-runtime v0.22.2
+	sigs.k8s.io/controller-runtime v0.22.4
 )
 
 require (
@@ -146,7 +146,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
-	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect

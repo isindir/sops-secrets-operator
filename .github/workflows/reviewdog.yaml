@@ -11,7 +11,7 @@ jobs:
       # UPDATE_HERE
       # https://github.com/actions/checkout/releases
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # UPDATE_HERE
       # https://github.com/reviewdog/action-golangci-lint/releases

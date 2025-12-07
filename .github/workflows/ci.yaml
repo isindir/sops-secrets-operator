@@ -16,14 +16,14 @@ jobs:
     env:
       # UPDATE_HERE
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.34.1-k3s1
+      K3S_VERSION: v1.34.2-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
       HELM_UNITTEST_VERSION: 1.0.3
 
     steps:
       # UPDATE_HERE
       # https://github.com/actions/checkout/releases
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Check out code
 
       # UPDATE_HERE
