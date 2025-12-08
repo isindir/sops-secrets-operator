@@ -219,6 +219,53 @@ spec:
 EOF
 ```
 
+## Cross-Namespace Secret Deployment
+
+Starting with v1alpha3, `SopsSecret` supports deploying secrets to multiple namespaces using the `targetNamespaces` field. This is useful when the same secret needs to be accessible across different namespaces without duplication.
+
+### Example: Deploy Secret to Multiple Namespaces
+
+```yaml
+apiVersion: isindir.github.com/v1alpha3
+kind: SopsSecret
+metadata:
+  name: database-credentials
+  namespace: production
+spec:
+  secretTemplates:
+    # This secret will be created in multiple namespaces
+    - name: db-secret
+      targetNamespaces:
+        - production  # Same namespace as SopsSecret (uses controller ownership)
+        - backend     # Cross-namespace (uses annotation-based management)
+        - worker      # Cross-namespace (uses annotation-based management)
+      stringData:
+        DB_HOST: mydb.example.com
+        DB_PASSWORD: encrypted_password_here
+        DB_USER: dbuser
+```
+
+### How Cross-Namespace Secrets Work
+
+- **Same-namespace secrets**: When a secret is deployed to the same namespace as the `SopsSecret`, it uses standard Kubernetes controller ownership for automatic garbage collection.
+- **Cross-namespace secrets**: When a secret is deployed to a different namespace, it uses annotation-based management (`sopssecret/owner` annotation) since Kubernetes doesn't allow cross-namespace owner references.
+- **Backward compatibility**: If `targetNamespaces` is not specified or is empty, the secret is deployed to the `SopsSecret`'s namespace (existing behavior).
+
+### RBAC Requirements for Cross-Namespace Secrets
+
+To deploy secrets across namespaces, the operator requires appropriate RBAC permissions. Ensure the operator's `ClusterRole` includes:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sops-secrets-operator
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+```
+
 - Encrypt file using `sops` and AWS kms key:
 
 ```bash

@@ -96,29 +96,38 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// Iterate over secret templates
 	r.Log.V(1).Info("Entering template data loop", "sopssecret", req.NamespacedName)
 	for _, secretTemplate := range plainTextSopsSecret.Spec.SecretsTemplate {
-
-		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(ctx, req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
-		if rescheduleReconcileLoop {
-			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+		// Determine target namespaces - if empty, default to SopsSecret's namespace
+		targetNamespaces := secretTemplate.TargetNamespaces
+		if len(targetNamespaces) == 0 {
+			targetNamespaces = []string{encryptedSopsSecret.Namespace}
 		}
 
-		kubeSecretInCluster, rescheduleReconcileLoop := r.getSecretFromClusterOrCreateFromTemplate(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate)
-		if rescheduleReconcileLoop {
-			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
-		}
+		// Create secret in each target namespace
+		for _, targetNS := range targetNamespaces {
+			kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplateForNamespace(
+				ctx, req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate, targetNS)
+			if rescheduleReconcileLoop {
+				sopsSecretsReconciliationFailures.Inc()
+				return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			}
 
-		rescheduleReconcileLoop = r.isKubeSecretManagedOrAnnotatedToBeManaged(ctx, req, encryptedSopsSecret, kubeSecretInCluster)
-		if rescheduleReconcileLoop {
-			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
-		}
+			kubeSecretInCluster, rescheduleReconcileLoop := r.getSecretFromClusterOrCreateFromTemplate(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate)
+			if rescheduleReconcileLoop {
+				sopsSecretsReconciliationFailures.Inc()
+				return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			}
 
-		rescheduleReconcileLoop = r.refreshKubeSecretIfNeeded(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate, kubeSecretInCluster)
-		if rescheduleReconcileLoop {
-			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			rescheduleReconcileLoop = r.isKubeSecretManagedOrAnnotatedToBeManaged(ctx, req, encryptedSopsSecret, kubeSecretInCluster)
+			if rescheduleReconcileLoop {
+				sopsSecretsReconciliationFailures.Inc()
+				return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			}
+
+			rescheduleReconcileLoop = r.refreshKubeSecretIfNeeded(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate, kubeSecretInCluster)
+			if rescheduleReconcileLoop {
+				sopsSecretsReconciliationFailures.Inc()
+				return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			}
 		}
 	}
 
@@ -155,17 +164,33 @@ func (r *SopsSecretReconciler) isKubeSecretManagedOrAnnotatedToBeManaged(
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	kubeSecretInCluster *corev1.Secret,
 ) bool {
-	// kubeSecretFromTemplate found - perform ownership check
-	if !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) && !isAnnotatedToBeManaged(kubeSecretInCluster) {
-		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_NOT_OWNED)
+	// Same namespace: check controller ownership OR annotation
+	if kubeSecretInCluster.Namespace == encryptedSopsSecret.Namespace {
+		if !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) && !isAnnotatedToBeManaged(kubeSecretInCluster) {
+			r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_NOT_OWNED)
 
-		r.Log.V(0).Info(
-			"Child secret is not owned by controller or sopssecret Error",
-			"sopssecret", req.NamespacedName,
-			"error", fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
-		)
-		return true
+			r.Log.V(0).Info(
+				"Child secret is not owned by controller or sopssecret Error",
+				"sopssecret", req.NamespacedName,
+				"error", fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
+			)
+			return true
+		}
+	} else {
+		// Cross-namespace: must be marked as managed by this specific SopsSecret
+		ownerRef := fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name)
+		if kubeSecretInCluster.Annotations["sopssecret/owner"] != ownerRef {
+			r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_NOT_OWNED)
+
+			r.Log.V(0).Info(
+				"Cross-namespace secret is not marked as managed by this SopsSecret",
+				"sopssecret", req.NamespacedName,
+				"secret", fmt.Sprintf("%s/%s", kubeSecretInCluster.Namespace, kubeSecretInCluster.Name),
+			)
+			return true
+		}
 	}
+
 	return false
 }
 
@@ -181,11 +206,11 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 	copyOfKubeSecretInCluster.StringData = kubeSecretFromTemplate.StringData
 	copyOfKubeSecretInCluster.Data = map[string][]byte{}
 	copyOfKubeSecretInCluster.Type = kubeSecretFromTemplate.Type
-	copyOfKubeSecretInCluster.ObjectMeta.Annotations = kubeSecretFromTemplate.ObjectMeta.Annotations
-	copyOfKubeSecretInCluster.ObjectMeta.Labels = kubeSecretFromTemplate.ObjectMeta.Labels
+	copyOfKubeSecretInCluster.Annotations = kubeSecretFromTemplate.Annotations
+	copyOfKubeSecretInCluster.Labels = kubeSecretFromTemplate.Labels
 
 	if isAnnotatedToBeManaged(kubeSecretInCluster) {
-		copyOfKubeSecretInCluster.ObjectMeta.OwnerReferences = kubeSecretFromTemplate.ObjectMeta.OwnerReferences
+		copyOfKubeSecretInCluster.OwnerReferences = kubeSecretFromTemplate.OwnerReferences
 	}
 
 	if !apiequality.Semantic.DeepEqual(kubeSecretInCluster, copyOfKubeSecretInCluster) {
@@ -256,15 +281,16 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 	return kubeSecretToFindAndCompare, false
 }
 
-func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
+func (r *SopsSecretReconciler) newKubeSecretFromTemplateForNamespace(
 	ctx context.Context,
 	req ctrl.Request,
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	plainTextSopsSecret *isindirv1alpha3.SopsSecret,
 	secretTemplate *isindirv1alpha3.SopsSecretTemplate,
+	targetNamespace string,
 ) (*corev1.Secret, bool) {
 	// Define a new secret object
-	kubeSecretFromTemplate, err := createKubeSecretFromTemplate(plainTextSopsSecret, secretTemplate, r.Log)
+	kubeSecretFromTemplate, err := createKubeSecretFromTemplate(plainTextSopsSecret, secretTemplate, targetNamespace, r.Log)
 	if err != nil {
 		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_CREATION_ERROR)
 
@@ -276,18 +302,37 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 		return nil, true
 	}
 
-	// Set encryptedSopsSecret as the owner of kubeSecret
-	err = controllerutil.SetControllerReference(encryptedSopsSecret, kubeSecretFromTemplate, r.Scheme)
-	if err != nil {
-		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_SETTING_OWNERSHIP_ERROR)
+	// Only set controller reference if in same namespace (Kubernetes doesn't allow cross-namespace owner refs)
+	if kubeSecretFromTemplate.Namespace == encryptedSopsSecret.Namespace {
+		err = controllerutil.SetControllerReference(encryptedSopsSecret, kubeSecretFromTemplate, r.Scheme)
+		if err != nil {
+			r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_SETTING_OWNERSHIP_ERROR)
 
-		r.Log.V(0).Info(
-			"Setting controller ownership of the child secret error",
+			r.Log.V(0).Info(
+				"Setting controller ownership of the child secret error",
+				"sopssecret", req.NamespacedName,
+				"error", err,
+			)
+
+			return nil, true
+		}
+	} else {
+		// For cross-namespace secrets, use annotation-based management
+		if kubeSecretFromTemplate.Annotations == nil {
+			kubeSecretFromTemplate.Annotations = make(map[string]string)
+		}
+		kubeSecretFromTemplate.Annotations[isindirv1alpha3.SopsSecretManagedAnnotation] = "true"
+
+		// Add reference annotation for tracking the owning SopsSecret
+		kubeSecretFromTemplate.Annotations["sopssecret/owner"] =
+			fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name)
+
+		r.Log.V(1).Info(
+			"Using annotation-based management for cross-namespace secret",
 			"sopssecret", req.NamespacedName,
-			"error", err,
+			"secret", kubeSecretFromTemplate.Name,
+			"targetNamespace", kubeSecretFromTemplate.Namespace,
 		)
-
-		return nil, true
 	}
 
 	return kubeSecretFromTemplate, false
@@ -348,22 +393,64 @@ func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
 	sopsSecret *isindirv1alpha3.SopsSecret,
 ) error {
 	r.Log.V(0).Info("Orphan secret cleanup started", "sopssecret", req.NamespacedName)
-	var namespaceSecrets corev1.SecretList
-	if err := r.List(ctx, &namespaceSecrets, client.InNamespace(req.Namespace)); err != nil {
-		return err
+
+	// Collect all target namespaces from templates
+	targetNamespaces := make(map[string]bool)
+	targetNamespaces[req.Namespace] = true // Always include SopsSecret's namespace
+
+	for _, template := range sopsSecret.Spec.SecretsTemplate {
+		if len(template.TargetNamespaces) > 0 {
+			for _, ns := range template.TargetNamespaces {
+				targetNamespaces[ns] = true
+			}
+		}
 	}
 
+	// Build expected secrets map with namespace-qualified keys (namespace/name)
 	expectedSecrets := make(map[string]bool)
 	for _, s := range sopsSecret.Spec.SecretsTemplate {
-		expectedSecrets[s.Name] = true
+		// If no targetNamespaces specified, default to SopsSecret's namespace
+		namespaces := s.TargetNamespaces
+		if len(namespaces) == 0 {
+			namespaces = []string{sopsSecret.Namespace}
+		}
+		// Add each target namespace/secret combination to expected set
+		for _, ns := range namespaces {
+			expectedSecrets[fmt.Sprintf("%s/%s", ns, s.Name)] = true
+		}
 	}
 
-	for _, secret := range namespaceSecrets.Items {
-		if metav1.IsControlledBy(&secret, encryptedSopsSecret) && !expectedSecrets[secret.Name] {
-			if err := r.Delete(ctx, &secret); err != nil {
-				r.Log.V(0).Info("Failed to delete orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+	// Check each target namespace for orphaned secrets
+	for ns := range targetNamespaces {
+		var namespaceSecrets corev1.SecretList
+		if err := r.List(ctx, &namespaceSecrets, client.InNamespace(ns)); err != nil {
+			return err
+		}
+
+		for _, secret := range namespaceSecrets.Items {
+			secretKey := fmt.Sprintf("%s/%s", secret.Namespace, secret.Name)
+
+			// Check if owned by this SopsSecret or marked for management
+			isOwned := metav1.IsControlledBy(&secret, encryptedSopsSecret)
+			ownerAnnotation := secret.Annotations["sopssecret/owner"]
+			isManagedByAnnotation := ownerAnnotation == fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name)
+
+			if (isOwned || isManagedByAnnotation) && !expectedSecrets[secretKey] {
+				if err := r.Delete(ctx, &secret); err != nil {
+					r.Log.V(0).Info(
+						"Failed to delete orphaned secret",
+						"sopssecret", req.NamespacedName,
+						"secret", secret.Name,
+						"namespace", secret.Namespace,
+					)
+				}
+				r.Log.V(0).Info(
+					"Garbage collected an orphaned secret",
+					"sopssecret", req.NamespacedName,
+					"secret", secret.Name,
+					"namespace", secret.Namespace,
+				)
 			}
-			r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
 		}
 	}
 	r.Log.V(0).Info("Orphan secret cleanup finished", "sopssecret", req.NamespacedName)
@@ -412,10 +499,20 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func createKubeSecretFromTemplate(
 	sopsSecret *isindirv1alpha3.SopsSecret,
 	sopsSecretTemplate *isindirv1alpha3.SopsSecretTemplate,
+	targetNamespace string,
 	logger logr.Logger,
 ) (*corev1.Secret, error) {
 	if sopsSecretTemplate.Name == "" {
 		return nil, fmt.Errorf("createKubeSecretFromTemplate(): secret template name must be specified and not empty string")
+	}
+
+	// Log if creating in a different namespace than the SopsSecret
+	if targetNamespace != sopsSecret.Namespace {
+		logger.V(1).Info("Creating secret in target namespace",
+			"secretName", sopsSecretTemplate.Name,
+			"sourceNamespace", sopsSecret.Namespace,
+			"targetNamespace", targetNamespace,
+		)
 	}
 
 	strData, err := cloneTemplateData(sopsSecretTemplate.StringData, sopsSecretTemplate.Data)
@@ -430,14 +527,14 @@ func createKubeSecretFromTemplate(
 	logger.V(1).Info("Processing",
 		"sopssecret", fmt.Sprintf("%s.%s.%s", sopsSecret.Kind, sopsSecret.APIVersion, sopsSecret.Name),
 		"type", sopsSecretTemplate.Type,
-		"namespace", sopsSecret.Namespace,
+		"namespace", targetNamespace,
 		"templateItem", fmt.Sprintf("secret/%s", sopsSecretTemplate.Name),
 	)
 
 	secret := &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        sopsSecretTemplate.Name,
-			Namespace:   sopsSecret.Namespace,
+			Namespace:   targetNamespace,
 			Labels:      labels,
 			Annotations: annotations,
 		},

@@ -25,6 +25,12 @@ type SopsSecretTemplate struct {
 	//+required
 	Name string `json:"name"`
 
+	// Target namespaces for the Kubernetes secret. If empty, defaults to the SopsSecret's namespace.
+	// This enables deploying the same secret to multiple namespaces from a single template.
+	//+optional
+	//+kubebuilder:validation:MinItems=0
+	TargetNamespaces []string `json:"targetNamespaces,omitempty"`
+
 	// Annotations to apply to Kubernetes secret
 	//+optional
 	Annotations map[string]string `json:"annotations,omitempty"`
