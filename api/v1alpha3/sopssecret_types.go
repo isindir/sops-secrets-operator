@@ -43,7 +43,7 @@ type SopsSecretTemplate struct {
 	//+optional
 	Labels map[string]string `json:"labels,omitempty"`
 
-	// Kubernetes secret type. Default: Opauqe. Possible values: Opauqe,
+	// Kubernetes secret type. Default: Opaque. Possible values: Opaque,
 	// kubernetes.io/service-account-token, kubernetes.io/dockercfg,
 	// kubernetes.io/dockerconfigjson, kubernetes.io/basic-auth,
 	// kubernetes.io/ssh-auth, kubernetes.io/tls, bootstrap.kubernetes.io/token

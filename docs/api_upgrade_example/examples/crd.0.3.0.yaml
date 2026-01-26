@@ -197,8 +197,8 @@ spec:
                         information: https://kubernetes.io/docs/concepts/configuration/secret/#overview-of-secrets)'
                       type: object
                     type:
-                      description: 'Kubernetes secret type. Default: Opauqe. Possible
-                        values: Opauqe, kubernetes.io/service-account-token, kubernetes.io/dockercfg,
+                      description: 'Kubernetes secret type. Default: Opaque. Possible
+                        values: Opaque, kubernetes.io/service-account-token, kubernetes.io/dockercfg,
                         kubernetes.io/dockerconfigjson, kubernetes.io/basic-auth,
                         kubernetes.io/ssh-auth, kubernetes.io/tls, bootstrap.kubernetes.io/token'
                       type: string
