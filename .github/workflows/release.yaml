@@ -40,11 +40,9 @@ jobs:
 
       # UPDATE_HERE
       # https://github.com/asdf-vm/actions/releases
-      # https://github.com/asdf-vm/actions/issues/594
       - name: Install asdf tools
         if: env.SKIP_RELEASE == ''
         uses: asdf-vm/actions/install@v4
-        # uses: asdf-vm/actions/install@9cd779f40fe38688dd19505ccbc4eaaf018b44e7
         with:
           asdf_version: 0.18.0
 
