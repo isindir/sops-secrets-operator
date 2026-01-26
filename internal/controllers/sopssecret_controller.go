@@ -181,11 +181,11 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 	copyOfKubeSecretInCluster.StringData = kubeSecretFromTemplate.StringData
 	copyOfKubeSecretInCluster.Data = map[string][]byte{}
 	copyOfKubeSecretInCluster.Type = kubeSecretFromTemplate.Type
-	copyOfKubeSecretInCluster.ObjectMeta.Annotations = kubeSecretFromTemplate.ObjectMeta.Annotations
-	copyOfKubeSecretInCluster.ObjectMeta.Labels = kubeSecretFromTemplate.ObjectMeta.Labels
+	copyOfKubeSecretInCluster.Annotations = kubeSecretFromTemplate.Annotations
+	copyOfKubeSecretInCluster.Labels = kubeSecretFromTemplate.Labels
 
 	if isAnnotatedToBeManaged(kubeSecretInCluster) {
-		copyOfKubeSecretInCluster.ObjectMeta.OwnerReferences = kubeSecretFromTemplate.ObjectMeta.OwnerReferences
+		copyOfKubeSecretInCluster.OwnerReferences = kubeSecretFromTemplate.OwnerReferences
 	}
 
 	if !apiequality.Semantic.DeepEqual(kubeSecretInCluster, copyOfKubeSecretInCluster) {
