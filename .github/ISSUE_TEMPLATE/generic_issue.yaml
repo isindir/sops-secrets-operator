@@ -13,6 +13,27 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: ai_usage
+    attributes:
+      label: AI-generated code or design
+      description: Was AI used to generate code or design related to this issue?
+      options:
+        - "No"
+        - "Yes – code"
+        - "Yes – design"
+        - "Yes – both"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other context, screenshots, logs, or references.
+    validations:
+      required: false
+
   - type: textarea
     id: solution
     attributes:
@@ -28,24 +49,3 @@ body:
       description: Describe any alternative approaches you’ve considered.
     validations:
       required: false
-
-  - type: textarea
-    id: context
-    attributes:
-      label: Additional context
-      description: Add any other context, screenshots, logs, or references.
-    validations:
-      required: false
-
-  - type: dropdown
-    id: ai_usage
-    attributes:
-      label: AI-generated code or design
-      description: Was AI used to generate code or design related to this issue?
-      options:
-        - "No"
-        - "Yes – code"
-        - "Yes – design"
-        - "Yes – both"
-    validations:
-      required: true
