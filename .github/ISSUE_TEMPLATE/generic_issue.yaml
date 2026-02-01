@@ -1,0 +1,51 @@
+name: Generic Issue
+description: Report a problem, propose a change, or request a feature
+title: "[Issue]: "
+labels:
+  - triage
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a clear and concise description of the problem or feature.
+      placeholder: What is happening or what do you want?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Suggested solution
+      description: Describe what you want to be changed or implemented.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative solutions considered
+      description: Describe any alternative approaches you’ve considered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other context, screenshots, logs, or references.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: ai_usage
+    attributes:
+      label: AI-generated code or design
+      description: Was AI used to generate code or design related to this issue?
+      options:
+        - "No"
+        - "Yes – code"
+        - "Yes – design"
+        - "Yes – both"
+    validations:
+      required: true
