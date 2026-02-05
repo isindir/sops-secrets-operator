@@ -505,7 +505,7 @@ func decryptSopsSecretInstance(
 	decryptedSopsSecret := &isindirv1alpha3.SopsSecret{}
 	err = json.Unmarshal(decryptedSopsSecretAsBytes, &decryptedSopsSecret)
 	if err != nil {
-		logger.V(0).Info(
+		logger.Error(
 			"Failed to Unmarshal decrypted sops secret decryptedSopsSecret",
 			"sopssecret", fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name),
 			"error", err,
