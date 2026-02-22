@@ -5,31 +5,32 @@
 # https://gallery.ecr.aws/lts/ubuntu
 #   crane ls public.ecr.aws/lts/ubuntu
 # UPDATE_HERE
-FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS asdf-builder
+FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS install-asdf
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
 ARG ASDF_VERSION=v0.18.0
 
+# hadolint ignore=DL3008
+RUN apt-get -y update \
+  && apt-get -y install --no-install-recommends git bash golang ca-certificates \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN go install github.com/asdf-vm/asdf/cmd/asdf@${ASDF_VERSION}
+
+############################################################
+# UPDATE_HERE
+FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS asdf-builder
+
+COPY --from=install-asdf /root/go/bin/asdf /usr/local/bin/
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install build tools
 RUN apt-get -y update \
-  && apt-get -y install build-essential \
-  && apt-get -y install autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget \
+  && apt-get -y install --no-install-recommends build-essential \
+  && apt-get -y install --no-install-recommends autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install asdf
-WORKDIR /usr/local
-RUN git config --global user.email "you@example.com" \
-  && git config --global user.name "Your Name" \
-  && git config --global init.defaultBranch ${ASDF_VERSION} \
-  && git config --global pull.rebase true \
-  && git init \
-  && git add . \
-  && git commit -m'Initial commit' && git remote add origin https://github.com/asdf-vm/asdf.git \
-  && git pull origin ${ASDF_VERSION} --allow-unrelated-histories \
-  && rm -fr .git ~/.gitconfig
 
 # Install project build tools and linters using asdf
 WORKDIR /root
