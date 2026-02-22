@@ -11,6 +11,7 @@ FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS install-asdf
 # https://github.com/asdf-vm/asdf/releases
 ARG ASDF_VERSION=v0.18.0
 
+# hadolint ignore=DL3008
 RUN apt-get -y update \
   && apt-get -y install git bash golang \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
