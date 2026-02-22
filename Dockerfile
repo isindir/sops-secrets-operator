@@ -13,7 +13,7 @@ ARG ASDF_VERSION=v0.18.0
 
 # hadolint ignore=DL3008
 RUN apt-get -y update \
-  && apt-get -y install --no-install-recommends git bash golang \
+  && apt-get -y install --no-install-recommends git bash golang ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN go install github.com/asdf-vm/asdf/cmd/asdf@${ASDF_VERSION}
@@ -29,7 +29,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install build tools
 RUN apt-get -y update \
   && apt-get -y install --no-install-recommends build-essential \
-  && apt-get -y install --no-install-recommends autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget \
+  && apt-get -y install --no-install-recommends autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install project build tools and linters using asdf
