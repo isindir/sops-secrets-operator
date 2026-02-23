@@ -159,10 +159,10 @@ func (r *SopsSecretReconciler) isKubeSecretManagedOrAnnotatedToBeManaged(
 	if !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) && !isAnnotatedToBeManaged(kubeSecretInCluster) {
 		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_NOT_OWNED)
 
-		r.Log.V(0).Info(
+		r.Log.Error(
+			fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
 			"Child secret is not owned by controller or sopssecret Error",
 			"sopssecret", req.NamespacedName,
-			"error", fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
 		)
 		return true
 	}
@@ -197,10 +197,10 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 		if err := r.Update(ctx, copyOfKubeSecretInCluster); err != nil {
 			r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_UPDATE_ERROR)
 
-			r.Log.V(0).Info(
+			r.Log.Error(
+				err,
 				"Child secret update error",
 				"sopssecret", req.NamespacedName,
-				"error", err,
 			)
 			return true
 		}
@@ -232,10 +232,10 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 
 	// No kubeSecretFromTemplate alike found - CREATE one
 	if errors.IsNotFound(err) {
-		r.Log.V(1).Info(
+		r.Log.Error(
+			err,
 			"Creating a new Secret",
 			"sopssecret", req.NamespacedName,
-			"message", err,
 		)
 		err = r.Create(ctx, kubeSecretFromTemplate)
 		kubeSecretToFindAndCompare = kubeSecretFromTemplate.DeepCopy()
@@ -245,10 +245,10 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 	if err != nil {
 		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_UNKNOWN_ERROR)
 
-		r.Log.V(0).Info(
+		r.Log.Error(
+			err,
 			"Unknown Error",
 			"sopssecret", req.NamespacedName,
-			"error", err,
 		)
 		return nil, true
 	}
@@ -268,10 +268,10 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	if err != nil {
 		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_CREATION_ERROR)
 
-		r.Log.V(0).Info(
+		r.Log.Error(
+			err,
 			"New child secret creation error",
 			"sopssecret", req.NamespacedName,
-			"error", err,
 		)
 		return nil, true
 	}
@@ -281,10 +281,10 @@ func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
 	if err != nil {
 		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_SETTING_OWNERSHIP_ERROR)
 
-		r.Log.V(0).Info(
+		r.Log.Error(
+			err,
 			"Setting controller ownership of the child secret error",
 			"sopssecret", req.NamespacedName,
-			"error", err,
 		)
 
 		return nil, true
@@ -361,7 +361,7 @@ func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
 	for _, secret := range namespaceSecrets.Items {
 		if metav1.IsControlledBy(&secret, encryptedSopsSecret) && !expectedSecrets[secret.Name] {
 			if err := r.Delete(ctx, &secret); err != nil {
-				r.Log.V(0).Info("Failed to delete orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+				r.Log.Error(err, "Failed to delete orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
 			}
 			r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
 		}
@@ -484,20 +484,20 @@ func decryptSopsSecretInstance(
 ) (*isindirv1alpha3.SopsSecret, error) {
 	sopsSecretAsBytes, err := json.Marshal(encryptedSopsSecret)
 	if err != nil {
-		logger.V(0).Info(
+		logger.Error(
+			err,
 			"Failed to convert encrypted sops secret to bytes[]",
 			"sopssecret", fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name),
-			"error", err,
 		)
 		return nil, err
 	}
 
 	decryptedSopsSecretAsBytes, err := customDecryptData(sopsSecretAsBytes, "json")
 	if err != nil {
-		logger.V(0).Info(
+		logger.Error(
+			err,
 			"Failed to Decrypt encrypted sops secret decryptedSopsSecret",
 			"sopssecret", fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name),
-			"error", err,
 		)
 		return nil, err
 	}
@@ -506,9 +506,9 @@ func decryptSopsSecretInstance(
 	err = json.Unmarshal(decryptedSopsSecretAsBytes, &decryptedSopsSecret)
 	if err != nil {
 		logger.Error(
+			err,
 			"Failed to Unmarshal decrypted sops secret decryptedSopsSecret",
 			"sopssecret", fmt.Sprintf("%s/%s", encryptedSopsSecret.Namespace, encryptedSopsSecret.Name),
-			"error", err,
 		)
 		return nil, err
 	}
