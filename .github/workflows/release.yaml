@@ -44,6 +44,7 @@ jobs:
         if: env.SKIP_RELEASE == ''
         uses: asdf-vm/actions/install@v4
         with:
+          # https://github.com/asdf-vm/asdf/releases
           asdf_version: 0.18.0
 
       # UPDATE_HERE
