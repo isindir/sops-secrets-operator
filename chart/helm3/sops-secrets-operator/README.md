@@ -118,6 +118,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | azure.enabled | bool | `false` | if true Azure KeyVault will be used |
 | azure.existingSecretName | string | `""` | Name of a pre-existing secret containing Azure Service Principal Credentials (ClientID, ClientSecret, TenantID) |
 | azure.tenantId | string | `""` | TenantID of Azure Service principal to use |
+| defaultEnforceOwnership | bool | `false` | Default behavior for enforcing ownership of pre-existing secrets. When enabled, the controller will take ownership of secrets that exist but are not owned by the SopsSecret. This is useful after backup restore operations where secrets may exist with stale owner references. Can be overridden per-SopsSecret with spec.enforceOwnership. |
 | extraEnv | list | `[]` | A list of additional environment variables |
 | fullnameOverride | string | `""` | Overrides auto-generated long resource name |
 | gcp | object | `{"enabled":false,"existingSecretName":"","svcAccSecret":"","svcAccSecretCustomName":""}` | GCP KMS configuration section |
@@ -134,7 +135,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"quay.io/isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.19.0"` | Operator image tag |
+| image.tag | string | `"0.20.0"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"public.ecr.aws/ubuntu/ubuntu"` | Init container image name |

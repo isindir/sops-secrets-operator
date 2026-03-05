@@ -51,9 +51,10 @@ const (
 // SopsSecretReconciler reconciles a SopsSecret object
 type SopsSecretReconciler struct {
 	client.Client
-	Log          logr.Logger
-	Scheme       *runtime.Scheme
-	RequeueAfter int64
+	Log                     logr.Logger
+	Scheme                  *runtime.Scheme
+	RequeueAfter            int64
+	DefaultEnforceOwnership bool
 }
 
 //+kubebuilder:rbac:groups=isindir.github.com,resources=sopssecrets,verbs=get;list;watch;create;update;patch;delete
@@ -109,8 +110,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		rescheduleReconcileLoop = r.isKubeSecretManagedOrAnnotatedToBeManaged(ctx, req, encryptedSopsSecret, kubeSecretInCluster)
-		if rescheduleReconcileLoop {
+		if !r.canManageKubeSecret(ctx, req, encryptedSopsSecret, kubeSecretInCluster) {
 			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
@@ -149,24 +149,38 @@ func (r *SopsSecretReconciler) decryptSopsSecret(
 	return decryptedSopsSecret, false
 }
 
-func (r *SopsSecretReconciler) isKubeSecretManagedOrAnnotatedToBeManaged(
+// canManageKubeSecret checks if the controller can manage the given Kubernetes secret.
+// Returns true if the secret is already owned by this SopsSecret, is annotated to be managed,
+// or if enforceOwnership is enabled.
+func (r *SopsSecretReconciler) canManageKubeSecret(
 	ctx context.Context,
 	req ctrl.Request,
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	kubeSecretInCluster *corev1.Secret,
 ) bool {
-	// kubeSecretFromTemplate found - perform ownership check
-	if !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) && !isAnnotatedToBeManaged(kubeSecretInCluster) {
-		r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_NOT_OWNED)
-
-		r.Log.Error(
-			fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
-			"Child secret is not owned by controller or sopssecret Error",
-			"sopssecret", req.NamespacedName,
-		)
+	if metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) ||
+		isAnnotatedToBeManaged(kubeSecretInCluster) ||
+		r.shouldEnforceOwnership(encryptedSopsSecret) {
 		return true
 	}
+
+	r.UpdateSopsSecretStatus(ctx, encryptedSopsSecret, STATUS_CHILD_NOT_OWNED)
+
+	r.Log.Error(
+		fmt.Errorf("sopssecret has a conflict with existing kubernetes secret resource, potential reasons: target secret already pre-existed or is managed by multiple sops secrets"),
+		"Child secret is not owned by controller or sopssecret Error",
+		"sopssecret", req.NamespacedName,
+	)
 	return false
+}
+
+// shouldEnforceOwnership determines if the controller should take ownership of unowned or stale secrets.
+// Per-CR setting (spec.enforceOwnership) takes precedence over the global default.
+func (r *SopsSecretReconciler) shouldEnforceOwnership(sopsSecret *isindirv1alpha3.SopsSecret) bool {
+	if sopsSecret.Spec.EnforceOwnership != nil {
+		return *sopsSecret.Spec.EnforceOwnership
+	}
+	return r.DefaultEnforceOwnership
 }
 
 func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
@@ -184,7 +198,25 @@ func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 	copyOfKubeSecretInCluster.Annotations = kubeSecretFromTemplate.Annotations
 	copyOfKubeSecretInCluster.Labels = kubeSecretFromTemplate.Labels
 
-	if isAnnotatedToBeManaged(kubeSecretInCluster) {
+	// Update OwnerReferences if the secret is annotated to be managed
+	// or if enforce ownership is enabled (to take over orphaned secrets)
+	if isAnnotatedToBeManaged(kubeSecretInCluster) || r.shouldEnforceOwnership(encryptedSopsSecret) {
+		// Log when taking ownership from another owner to help identify potential race conditions
+		// where multiple SopsSecrets might be trying to manage the same secret.
+		// If you see this log entry flip-flopping between different SopsSecrets, it indicates
+		// a configuration issue where multiple SopsSecrets are targeting the same secret name.
+		if len(kubeSecretInCluster.OwnerReferences) > 0 && !metav1.IsControlledBy(kubeSecretInCluster, encryptedSopsSecret) {
+			prevOwner := kubeSecretInCluster.OwnerReferences[0]
+			r.Log.V(0).Info(
+				"Taking ownership of secret with existing owner references",
+				"secret", kubeSecretInCluster.Name,
+				"namespace", kubeSecretInCluster.Namespace,
+				"previousOwnerKind", prevOwner.Kind,
+				"previousOwnerName", prevOwner.Name,
+				"previousOwnerAPIVersion", prevOwner.APIVersion,
+				"newOwner", encryptedSopsSecret.Name,
+			)
+		}
 		copyOfKubeSecretInCluster.OwnerReferences = kubeSecretFromTemplate.OwnerReferences
 	}
 

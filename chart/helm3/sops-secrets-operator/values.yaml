@@ -16,7 +16,7 @@ image:
   # -- Operator image name
   repository: quay.io/isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: "0.19.0"
+  tag: "0.20.0"
   # -- Operator image pull policy
   pullPolicy: Always
 
@@ -50,6 +50,12 @@ serviceAccount:
 
 # -- Requeue failed reconciliation in minutes (min 1). (default 5)
 requeueAfter: 5
+
+# -- Default behavior for enforcing ownership of pre-existing secrets.
+# When enabled, the controller will take ownership of secrets that exist but are not owned by the SopsSecret.
+# This is useful after backup restore operations where secrets may exist with stale owner references.
+# Can be overridden per-SopsSecret with spec.enforceOwnership.
+defaultEnforceOwnership: false
 
 # -- Paths to a kubeconfig. Only required if out-of-cluster.
 kubeconfig:

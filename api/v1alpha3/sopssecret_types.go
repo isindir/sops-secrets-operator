@@ -27,6 +27,15 @@ type SopsSecretSpec struct {
 	// This flag tells the controller to suspend the reconciliation of this source.
 	//+optional
 	Suspend bool `json:"suspend,omitempty"`
+
+	// EnforceOwnership tells the controller to take ownership of pre-existing secrets
+	// that are not currently owned by this SopsSecret. This is useful after backup restore
+	// operations where the secret exists but has stale owner references.
+	// When set to true, the controller will update the secret's owner reference to point
+	// to this SopsSecret, effectively taking control of the secret.
+	// When not set, the global default (--default-enforce-ownership flag) is used.
+	//+optional
+	EnforceOwnership *bool `json:"enforceOwnership,omitempty"`
 }
 
 // SopsSecretTemplate defines the map of secrets to create

@@ -30,8 +30,8 @@ tests:
         app.kubernetes.io/instance: sops
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: sops-secrets-operator
-        app.kubernetes.io/version: 0.19.0
-        helm.sh/chart: sops-secrets-operator-0.25.1
+        app.kubernetes.io/version: 0.20.0
+        helm.sh/chart: sops-secrets-operator-0.25.2
 
 # custom name
 - it: should correctly render custome name
@@ -169,7 +169,7 @@ tests:
   # UPDATE_HERE
   - equal:
       path: spec.template.spec.containers[0].image
-      value: quay.io/isindir/sops-secrets-operator:0.19.0
+      value: quay.io/isindir/sops-secrets-operator:0.20.0
   - equal:
       path: spec.template.spec.containers[0].imagePullPolicy
       value: Always
@@ -559,3 +559,26 @@ tests:
         control-plane: controller-sops-secrets-operator
         abc: qqq
         cde: zzz
+
+# defaultEnforceOwnership
+- it: should not include default-enforce-ownership flag by default
+  asserts:
+  - notContains:
+      path: spec.template.spec.containers[0].args
+      content: "-default-enforce-ownership=true"
+
+- it: should include default-enforce-ownership flag when enabled
+  set:
+    defaultEnforceOwnership: true
+  asserts:
+  - contains:
+      path: spec.template.spec.containers[0].args
+      content: "-default-enforce-ownership=true"
+
+- it: should not include default-enforce-ownership flag when explicitly disabled
+  set:
+    defaultEnforceOwnership: false
+  asserts:
+  - notContains:
+      path: spec.template.spec.containers[0].args
+      content: "-default-enforce-ownership=true"
