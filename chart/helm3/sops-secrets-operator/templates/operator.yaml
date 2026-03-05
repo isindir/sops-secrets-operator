@@ -100,6 +100,9 @@ spec:
           {{- if .Values.kubeconfig.enabled }}
           - "-kubeconfig={{ .Values.kubeconfig.path | quote }}"
           {{- end }}
+          {{- if .Values.defaultEnforceOwnership }}
+          - "-default-enforce-ownership=true"
+          {{- end }}
           livenessProbe:
             httpGet:
               path: /healthz

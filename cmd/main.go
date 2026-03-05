@@ -51,6 +51,7 @@ func main() {
 	var probeAddr string
 	var requeueAfter int64
 	var watchNamespace string
+	var defaultEnforceOwnership bool
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -59,6 +60,8 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.Int64Var(&requeueAfter, "requeue-decrypt-after", 5, "Requeue failed reconciliation in minutes (min 1).")
 	flag.StringVar(&watchNamespace, "watch-namespace", "", "Namespace to watch for SopsSecret objects (default: all namespaces).")
+	flag.BoolVar(&defaultEnforceOwnership, "default-enforce-ownership", false,
+		"Default behavior for enforcing ownership of pre-existing secrets.")
 
 	opts := zap.Options{
 		Development: true,
@@ -108,11 +111,19 @@ func main() {
 		),
 	)
 
+	setupLog.V(0).Info(
+		fmt.Sprintf(
+			"Default enforce ownership of pre-existing secrets: %t",
+			defaultEnforceOwnership,
+		),
+	)
+
 	if err = (&controllers.SopsSecretReconciler{
-		Client:       mgr.GetClient(),
-		Log:          ctrl.Log.WithName("controllers").WithName("SopsSecret"),
-		Scheme:       mgr.GetScheme(),
-		RequeueAfter: requeueAfter,
+		Client:                  mgr.GetClient(),
+		Log:                     ctrl.Log.WithName("controllers").WithName("SopsSecret"),
+		Scheme:                  mgr.GetScheme(),
+		RequeueAfter:            requeueAfter,
+		DefaultEnforceOwnership: defaultEnforceOwnership,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SopsSecret")
 		os.Exit(1)

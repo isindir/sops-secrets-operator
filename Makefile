@@ -1,6 +1,6 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.19.0
+SOPS_SEC_OPERATOR_VERSION := 0.20.0
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.20.1"
