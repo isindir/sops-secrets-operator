@@ -173,6 +173,10 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | serviceAccount.enabled | bool | `true` |  |
 | serviceAccount.name | string | `""` | Custom service account name to use instead of automatically generated name (if enabled - chart will generate SA, if not enabled - will use preconfigured) |
 | tolerations | list | `[]` | Tolerations to be applied to operator pod |
+| podSecurityContext.enabled | bool | `false` | Enable alternative flexible security context configuration |
+| podSecurityContext.* | object | `{}` | Flexible security context configuration. Mapped to `spec.securityContext` |
+| containerSecurityContext.enabled | bool | `false` | Enable alternative flexible security context configuration |
+| containerSecurityContext.* | object | `{}` | Flexible security context configuration. Mapped to `spec.containers[*].securityContext` and `spec.initContainers[*].securityContext` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 

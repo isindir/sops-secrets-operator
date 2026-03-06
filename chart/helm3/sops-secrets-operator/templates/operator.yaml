@@ -36,7 +36,10 @@ spec:
           image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
           imagePullPolicy: {{ .Values.initImage.pullPolicy }}
           command: ['/bin/sh', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
-          {{- if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- else if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
           securityContext:
             capabilities:
               drop: {{ .Values.securityContext.container.capabilities.drop }}
@@ -54,7 +57,10 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- else if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
           securityContext:
             capabilities:
               drop: {{ .Values.securityContext.container.capabilities.drop }}
@@ -195,7 +201,10 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.securityContext.enabled }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext:
+        {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- else if .Values.securityContext.enabled }}
       securityContext:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}

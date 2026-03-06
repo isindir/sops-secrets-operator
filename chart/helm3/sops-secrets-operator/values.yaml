@@ -186,6 +186,42 @@ securityContext:
       add:
       - NET_BIND_SERVICE
 
+# -- Pod-level Security Context (new - allows more flexible configuration)
+# When enabled, this takes precedence over the legacy securityContext fields above
+podSecurityContext:
+  # -- Enable flexible pod security context
+  enabled: false
+  # -- UID to run as
+  runAsUser: 65532
+  # -- GID to run as
+  runAsGroup: 65532
+  # -- fs group
+  fsGroup: 65532
+  # -- Enable kubelet validation for using root user to run container
+  runAsNonRoot: true
+  # -- seccomp profile configuration
+  seccompProfile:
+    type: RuntimeDefault
+  # Any other pod-level securityContext fields can be added here, e.g.:
+
+# -- Container-level Security Context (new flexible approach)
+# When enabled, this takes precedence over the legacy securityContext.container fields above
+containerSecurityContext:
+  # -- Enable flexible container security context
+  enabled: false
+  # -- Allow privilege escalation
+  allowPrivilegeEscalation: false
+  # -- Read-only root filesystem
+  readOnlyRootFilesystem: false
+  # -- capabilities configuration
+  capabilities:
+    drop:
+      - ALL
+  # Any other container-level securityContext fields can be added here, e.g.:
+  # runAsNonRoot: true
+  # runAsUser: 1000
+  # privileged: false
+
 # -- Tolerations to be applied to operator pod
 tolerations: []
 
