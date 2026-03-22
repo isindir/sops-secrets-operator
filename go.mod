@@ -1,11 +1,11 @@
 module github.com/isindir/sops-secrets-operator
 
 // UPDATE_HERE
-go 1.26.0
+go 1.26.1
 
 require (
 	// https://github.com/mozilla/sops/releases
-	github.com/getsops/sops/v3 v3.12.1
+	github.com/getsops/sops/v3 v3.12.2
 	// https://github.com/go-logr/logr/releases
 	github.com/go-logr/logr v1.4.3
 	// https://github.com/onsi/ginkgo/releases
@@ -17,12 +17,12 @@ require (
 	// https://github.com/sirupsen/logrus/releases
 	github.com/sirupsen/logrus v1.9.4
 	// https://github.com/kubernetes/apimachinery/tags
-	k8s.io/api v0.35.2
-	k8s.io/apimachinery v0.35.2
-	k8s.io/client-go v0.35.2
+	k8s.io/api v0.35.3
+	k8s.io/apimachinery v0.35.3
+	k8s.io/client-go v0.35.3
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
 	// https://github.com/kubernetes-sigs/controller-runtime/releases
-	sigs.k8s.io/controller-runtime v0.23.1
+	sigs.k8s.io/controller-runtime v0.23.3
 )
 
 require (

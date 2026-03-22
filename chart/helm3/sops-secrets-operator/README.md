@@ -135,7 +135,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"quay.io/isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.20.0"` | Operator image tag |
+| image.tag | string | `"0.20.1"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"public.ecr.aws/ubuntu/ubuntu"` | Init container image name |

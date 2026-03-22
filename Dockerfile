@@ -9,7 +9,7 @@ FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS install-asdf
 
 # UPDATE_HERE
 # https://github.com/asdf-vm/asdf/releases
-ARG ASDF_VERSION=v0.18.0
+ARG ASDF_VERSION=v0.18.1
 
 # hadolint ignore=DL3008
 RUN apt-get -y update \

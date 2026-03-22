@@ -2,15 +2,15 @@
 # https://github.com/kubernetes-sigs/kubebuilder/releases
 kubebuilder 4.13.0
 # https://golang.org/dl/
-golang 1.26.0
+golang 1.26.1
 # https://github.com/mozilla/sops/releases
-sops 3.12.1
+sops 3.12.2
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize 5.8.1
 # https://github.com/rancher/k3d/releases
 k3d 5.8.3
 # https://github.com/kubernetes/kubernetes/releases
-kubectl 1.35.2
+kubectl 1.35.3
 # https://github.com/helm/helm/releases
 helm 3.20.0
 # https://github.com/norwoodj/helm-docs/releases
@@ -20,6 +20,6 @@ kubeconform 0.7.0
 # https://github.com/git-chglog/git-chglog/releases
 git-chglog 0.15.4
 # https://github.com/golangci/golangci-lint/releases
-golangci-lint 2.10.1
+golangci-lint 2.11.3
 # https://github.com/cli/cli/releases
-github-cli 2.87.3
+github-cli 2.88.1

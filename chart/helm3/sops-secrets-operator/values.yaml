@@ -16,7 +16,7 @@ image:
   # -- Operator image name
   repository: quay.io/isindir/sops-secrets-operator
   # -- Operator image tag
-  tag: "0.20.0"
+  tag: "0.20.1"
   # -- Operator image pull policy
   pullPolicy: Always
 
