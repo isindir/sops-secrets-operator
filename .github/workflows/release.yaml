@@ -29,6 +29,8 @@ jobs:
           echo "SOPS_SEC_OPERATOR_VERSION=$VERSION" >> $GITHUB_ENV
           SKIP_RELEASE=$(git tag -l "${VERSION}")
           echo "IMAGE_FULL_NAME=$(make image_full_name)" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$(make image_name)" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$(make image_tag)" >> $GITHUB_ENV
           echo "IMAGE_LATEST_NAME=$(make image_latest_name)" >> $GITHUB_ENV
           echo "IMAGE_CACHE_NAME=$(make image_cache_name)" >> $GITHUB_ENV
           echo "SKIP_RELEASE=${SKIP_RELEASE}" >> $GITHUB_ENV
@@ -80,6 +82,18 @@ jobs:
           gh release create "${SOPS_SEC_OPERATOR_VERSION}" -F chglog.tmp
 
       # UPDATE_HERE
+      # https://github.com/docker/metadata-action/releases
+      - name: Docker meta
+        id: meta
+        if: env.SKIP_RELEASE == ''
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |-
+            type=raw,value=${{ env.IMAGE_TAG }}
+            type=raw,value=latest
+
+      # UPDATE_HERE
       # https://github.com/docker/build-push-action/releases
       - name: Docker build
         if: env.SKIP_RELEASE == ''
@@ -87,7 +101,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_LATEST_NAME }},${{ env.IMAGE_FULL_NAME }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=${{ env.IMAGE_CACHE_NAME }}
           cache-to: type=registry,ref=${{ env.IMAGE_CACHE_NAME }},mode=max
