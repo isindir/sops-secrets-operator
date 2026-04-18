@@ -31,7 +31,7 @@ tests:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: sops-secrets-operator
         app.kubernetes.io/version: 0.20.1
-        helm.sh/chart: sops-secrets-operator-0.25.3
+        helm.sh/chart: sops-secrets-operator-0.25.4
 
 # custom name
 - it: should correctly render custome name
@@ -582,3 +582,288 @@ tests:
   - notContains:
       path: spec.template.spec.containers[0].args
       content: "-default-enforce-ownership=true"
+
+# securityContext - pod disabled, container disabled
+- it: should not render any securityContext when both pod and container are disabled
+  set:
+    securityContext:
+      enabled: false
+      container:
+        enabled: false
+  asserts:
+  - isNull:
+      path: spec.template.spec.securityContext
+  - isNull:
+      path: spec.template.spec.containers[0].securityContext
+
+# securityContext - pod enabled (empty custom), container disabled
+- it: should render default pod securityContext when enabled with empty custom
+  set:
+    securityContext:
+      enabled: true
+      runAsUser: 13001
+      runAsGroup: 13001
+      runAsNonRoot: true
+      fsGroup: 13001
+      seccompProfileType: RuntimeDefault
+      seccompProfileName: ""
+      customPodSecurityContext: {}
+      container:
+        enabled: false
+        capabilities:
+          drop:
+          - all
+          add:
+          - NET_BIND_SERVICE
+        customContainerSecurityContext: {}
+  asserts:
+  - equal:
+      path: spec.template.spec.securityContext
+      value:
+        runAsUser: 13001
+        runAsGroup: 13001
+        fsGroup: 13001
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+  - isNull:
+      path: spec.template.spec.containers[0].securityContext
+
+# securityContext - pod enabled (empty custom), container enabled (empty custom)
+- it: should render default pod and container securityContext when both enabled with empty custom
+  set:
+    securityContext:
+      enabled: true
+      runAsUser: 13001
+      runAsGroup: 13001
+      runAsNonRoot: true
+      fsGroup: 13001
+      seccompProfileType: RuntimeDefault
+      seccompProfileName: ""
+      customPodSecurityContext: {}
+      container:
+        enabled: true
+        capabilities:
+          drop:
+          - all
+          add:
+          - NET_BIND_SERVICE
+        customContainerSecurityContext: {}
+  asserts:
+  - equal:
+      path: spec.template.spec.securityContext
+      value:
+        runAsUser: 13001
+        runAsGroup: 13001
+        fsGroup: 13001
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+  - isNotNull:
+      path: spec.template.spec.containers[0].securityContext
+
+# securityContext - pod enabled (non-empty custom), container enabled (empty custom)
+- it: should render custom pod securityContext and default container securityContext
+  set:
+    securityContext:
+      enabled: true
+      runAsUser: 13001
+      runAsGroup: 13001
+      runAsNonRoot: true
+      fsGroup: 13001
+      seccompProfileType: RuntimeDefault
+      seccompProfileName: ""
+      customPodSecurityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      container:
+        enabled: true
+        capabilities:
+          drop:
+          - all
+          add:
+          - NET_BIND_SERVICE
+        customContainerSecurityContext: {}
+  asserts:
+  - equal:
+      path: spec.template.spec.securityContext
+      value:
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+  - isNotNull:
+      path: spec.template.spec.containers[0].securityContext
+
+# securityContext - pod enabled (empty custom), container enabled (non-empty custom)
+- it: should render default pod securityContext and custom container securityContext
+  set:
+    securityContext:
+      enabled: true
+      runAsUser: 13001
+      runAsGroup: 13001
+      runAsNonRoot: true
+      fsGroup: 13001
+      seccompProfileType: RuntimeDefault
+      seccompProfileName: ""
+      customPodSecurityContext: {}
+      container:
+        enabled: true
+        capabilities:
+          drop:
+          - all
+          add:
+          - NET_BIND_SERVICE
+        customContainerSecurityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+  asserts:
+  - equal:
+      path: spec.template.spec.securityContext
+      value:
+        runAsUser: 13001
+        runAsGroup: 13001
+        fsGroup: 13001
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+  - equal:
+      path: spec.template.spec.containers[0].securityContext
+      value:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+          - ALL
+
+# securityContext - both pod and container custom overrides non-empty
+- it: should render both custom pod and custom container securityContext simultaneously
+  set:
+    securityContext:
+      enabled: true
+      runAsUser: 13001
+      runAsGroup: 13001
+      runAsNonRoot: true
+      fsGroup: 13001
+      seccompProfileType: RuntimeDefault
+      seccompProfileName: ""
+      customPodSecurityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      container:
+        enabled: true
+        capabilities:
+          drop:
+          - all
+          add:
+          - NET_BIND_SERVICE
+        customContainerSecurityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+  asserts:
+  - equal:
+      path: spec.template.spec.securityContext
+      value:
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+  - equal:
+      path: spec.template.spec.containers[0].securityContext
+      value:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+          - ALL
+
+# securityContext - initContainer receives custom container securityContext
+- it: should apply custom container securityContext to initContainer when gpg is enabled
+  set:
+    gpg:
+      enabled: true
+      secret1: gpg-key1
+      secret2: gpg-key2
+    securityContext:
+      enabled: true
+      runAsUser: 13001
+      runAsGroup: 13001
+      runAsNonRoot: true
+      fsGroup: 13001
+      seccompProfileType: RuntimeDefault
+      seccompProfileName: ""
+      customPodSecurityContext: {}
+      container:
+        enabled: true
+        capabilities:
+          drop:
+          - all
+          add:
+          - NET_BIND_SERVICE
+        customContainerSecurityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+  asserts:
+  - equal:
+      path: spec.template.spec.initContainers[0].securityContext
+      value:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+          - ALL
+  - equal:
+      path: spec.template.spec.containers[0].securityContext
+      value:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+          - ALL
+
+# securityContext - default pod securityContext when customPodSecurityContext key is not set
+- it: should render default pod securityContext when customPodSecurityContext is not explicitly set
+  set:
+    securityContext:
+      enabled: true
+      runAsUser: 13001
+      runAsGroup: 13001
+      runAsNonRoot: true
+      fsGroup: 13001
+      seccompProfileType: RuntimeDefault
+      seccompProfileName: ""
+      container:
+        enabled: false
+  asserts:
+  - equal:
+      path: spec.template.spec.securityContext
+      value:
+        runAsUser: 13001
+        runAsGroup: 13001
+        fsGroup: 13001
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+  - isNull:
+      path: spec.template.spec.containers[0].securityContext

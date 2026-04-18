@@ -175,6 +175,16 @@ securityContext:
   seccompProfileType: RuntimeDefault
   # -- if seccompProfile.type is set to Localhost, set localhostProfile to value of seccompProfileName (user must specify value)
   seccompProfileName: ""
+  # -- Custom pod securityContext override. When non-empty and securityContext.enabled is true, this replaces the preconfigured pod securityContext entirely.
+  # @default -- `{}` (uses preconfigured defaults above)
+  customPodSecurityContext: {}
+  #   # Example: override with distroless-compatible UID/GID
+  #   runAsUser: 65532
+  #   runAsGroup: 65532
+  #   fsGroup: 65532
+  #   runAsNonRoot: true
+  #   seccompProfile:
+  #     type: RuntimeDefault
   # -- container/initContainer
   container:
     # -- enables securityContext capabilities feature in containers
@@ -185,6 +195,14 @@ securityContext:
       - all
       add:
       - NET_BIND_SERVICE
+    # -- Custom container securityContext override. When non-empty and container.enabled is true, this replaces the preconfigured container securityContext entirely.
+    # @default -- `{}` (uses preconfigured defaults above)
+    customContainerSecurityContext: {}
+    #   allowPrivilegeEscalation: false
+    #   readOnlyRootFilesystem: true
+    #   capabilities:
+    #     drop:
+    #       - ALL
 
 # -- Tolerations to be applied to operator pod
 tolerations: []

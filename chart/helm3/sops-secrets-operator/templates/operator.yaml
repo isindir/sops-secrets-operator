@@ -38,9 +38,15 @@ spec:
           command: ['/bin/sh', '-c', 'cp -Lr /var/secrets/gpg-secrets/* /var/secrets/gpg/']
           {{- if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
           securityContext:
+            {{- if .Values.securityContext.container.customContainerSecurityContext }}
+            {{- toYaml .Values.securityContext.container.customContainerSecurityContext | nindent 12 }}
+            {{- else }}
             capabilities:
-              drop: {{ .Values.securityContext.container.capabilities.drop }}
-              add: {{ .Values.securityContext.container.capabilities.add }}
+              drop:
+                {{- toYaml .Values.securityContext.container.capabilities.drop | nindent 16 }}
+              add:
+                {{- toYaml .Values.securityContext.container.capabilities.add | nindent 16 }}
+            {{- end }}
           {{- end }}
           volumeMounts:
           - mountPath: /var/secrets/gpg
@@ -56,9 +62,15 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if and .Values.securityContext.enabled .Values.securityContext.container.enabled }}
           securityContext:
+            {{- if .Values.securityContext.container.customContainerSecurityContext }}
+            {{- toYaml .Values.securityContext.container.customContainerSecurityContext | nindent 12 }}
+            {{- else }}
             capabilities:
-              drop: {{ .Values.securityContext.container.capabilities.drop }}
-              add: {{ .Values.securityContext.container.capabilities.add }}
+              drop:
+                {{- toYaml .Values.securityContext.container.capabilities.drop | nindent 16 }}
+              add:
+                {{- toYaml .Values.securityContext.container.capabilities.add | nindent 16 }}
+            {{- end }}
           {{- end }}
           {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles }}
           volumeMounts:
@@ -197,6 +209,9 @@ spec:
       {{- end }}
       {{- if .Values.securityContext.enabled }}
       securityContext:
+        {{- if .Values.securityContext.customPodSecurityContext }}
+        {{- toYaml .Values.securityContext.customPodSecurityContext | nindent 8 }}
+        {{- else }}
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
@@ -206,6 +221,7 @@ spec:
           {{- if  eq .Values.securityContext.seccompProfileType "Localhost" }}
           localhostProfile: {{ .Values.securityContext.seccompProfileName }}
           {{- end }}
+        {{- end }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
