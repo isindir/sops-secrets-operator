@@ -1,6 +1,6 @@
 # UPDATE_HERE
 GO := GOPROXY=https://proxy.golang.org go
-SOPS_SEC_OPERATOR_VERSION := 0.20.1
+SOPS_SEC_OPERATOR_VERSION := 0.20.2
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_GEN_VERSION := "v0.20.1"
@@ -109,14 +109,14 @@ pre-commit: ## Update and runs pre-commit.
 package-helm: ## Repackages helm chart.
 	@{ \
 		( cd docs; \
-			helm package ../chart/helm3/sops-secrets-operator ; \
+			helm package ../chart/helm4/sops-secrets-operator ; \
 			helm repo index . --url https://isindir.github.io/sops-secrets-operator ) ; \
 	}
 
 .PHONY: test-helm
 test-helm: ## Tests helm chart.
 	@{ \
-		$(MAKE) -C chart/helm3/sops-secrets-operator all ; \
+		$(MAKE) -C chart/helm4/sops-secrets-operator all ; \
 	}
 
 ##@ Development

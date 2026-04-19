@@ -34,16 +34,16 @@ go.mod
 * cluster version (same as kubectl in other files)
 
 ```
-chart/helm3/sops-secrets-operator/Makefile
+chart/helm4/sops-secrets-operator/Makefile
 ```
 
 * chart version, docker image version, kube version for kubeval
 
 ```
-chart/helm3/sops-secrets-operator/Makefile
-chart/helm3/sops-secrets-operator/Chart.yaml
-chart/helm3/sops-secrets-operator/values.yaml
-chart/helm3/sops-secrets-operator/tests/operator_test.yaml
+chart/helm4/sops-secrets-operator/Makefile
+chart/helm4/sops-secrets-operator/Chart.yaml
+chart/helm4/sops-secrets-operator/values.yaml
+chart/helm4/sops-secrets-operator/tests/operator_test.yaml
 ```
 
 * for any new `SopsSecret` api version change needs to be updated

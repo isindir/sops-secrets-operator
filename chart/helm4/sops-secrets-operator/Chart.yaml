@@ -1,7 +1,8 @@
 apiVersion: v2
 # UPDATE_HERE
-version: 0.25.4
-appVersion: 0.20.1
+version: 0.26.0
+kubeVersion: ">= 1.34.0 < 1.36.0"
+appVersion: 0.20.2
 type: application
 description: Helm chart deploys sops-secrets-operator
 name: sops-secrets-operator
@@ -10,19 +11,18 @@ sources:
 maintainers:
 - name: isindir
   email: isindir@users.sf.net
-metadata:
-  annotations:
-    artifacthub.io/operator: "true"
-    artifacthub.io/links:
+annotations:
+  artifacthub.io/operator: "true"
+  artifacthub.io/links: |
     - name: "SOPS: Secrets OPerationS - Kubernetes Operator github project"
       url: "https://github.com/isindir/sops-secrets-operator.git"
     - name: "SOPS: Secrets OPerationS"
       url: "https://github.com/mozilla/sops"
-    artifacthub.io/maintainers:
+  artifacthub.io/maintainers: |
     - name: isindir
       email: isindir@users.sf.net
-    artifacthub.io/operatorCapabilities: "Full Lifecycle"
-    artifacthub.io/crds:
+  artifacthub.io/operatorCapabilities: "Full Lifecycle"
+  artifacthub.io/crds: |
     - kind: SopsSecret
       version: isindir.github.com/v1alpha3
       name: sopssecret

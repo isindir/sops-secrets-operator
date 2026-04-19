@@ -4,7 +4,7 @@ CHART_NAME?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^name:/ { gsub(
 VERSION_TAG?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^version/ { gsub(/['\'',]/, ""); print $$2; }')
 
 # UPDATE_HERE
-K8S_VERSION := "1.35.3"
+K8S_VERSION := "1.35.4"
 
 SHELL=/bin/bash
 
@@ -31,7 +31,7 @@ echo: ## prints chart information
 
 .PHONY: test
 test: ## runs unittests
-	helm unittest --color .
+	helm unittest .
 	@echo '--------------------'
 
 .PHONY: lint

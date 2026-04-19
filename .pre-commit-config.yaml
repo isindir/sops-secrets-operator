@@ -6,9 +6,7 @@ repos:
   hooks:
   - id: helm-docs
     args:
-      # Make the tool search for charts only under the `example-charts` directory
-      - --chart-search-root=chart/helm3/
-      # The `./` makes it relative to the chart-search-root set above
+      - --chart-search-root=chart/helm4/
       - --template-files=./README.md.gotmpl
 - repo: https://github.com/pre-commit/pre-commit-hooks
   # https://github.com/pre-commit/pre-commit-hooks/releases
