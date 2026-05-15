@@ -108,9 +108,12 @@ pre-commit: ## Update and runs pre-commit.
 .PHONY: package-helm
 package-helm: ## Repackages helm chart.
 	@{ \
-		( cd docs; \
-			helm package ../chart/helm4/sops-secrets-operator ; \
-			helm repo index . --url https://isindir.github.io/sops-secrets-operator ) ; \
+		tmpdir=$$(mktemp -d) ; \
+		helm package chart/helm4/sops-secrets-operator -d $$tmpdir ; \
+		helm repo index $$tmpdir --url https://isindir.github.io/sops-secrets-operator --merge docs/index.yaml ; \
+		cp $$tmpdir/index.yaml docs/index.yaml ; \
+		cp $$tmpdir/*.tgz docs/ ; \
+		rm -rf $$tmpdir ; \
 	}
 
 .PHONY: test-helm
