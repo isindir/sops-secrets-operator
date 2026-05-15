@@ -47,7 +47,7 @@ jobs:
         uses: asdf-vm/actions/install@v4
         with:
           # https://github.com/asdf-vm/asdf/releases
-          asdf_version: 0.18.1
+          asdf_version: 0.19.0
 
       # UPDATE_HERE
       # https://github.com/docker/setup-qemu-action/releases
