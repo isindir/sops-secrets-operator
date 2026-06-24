@@ -4,6 +4,7 @@ metadata:
   name: {{ include "sops-secrets-operator.fullname" . }}
   labels:
 {{ include "sops-secrets-operator.labels" . | indent 4 }}
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:

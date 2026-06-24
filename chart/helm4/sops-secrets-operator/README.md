@@ -135,7 +135,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | healthProbes.readiness | object | `{"initialDelaySeconds":5,"periodSeconds":10}` | Readiness probe configuration |
 | image.pullPolicy | string | `"Always"` | Operator image pull policy |
 | image.repository | string | `"quay.io/isindir/sops-secrets-operator"` | Operator image name |
-| image.tag | string | `"0.20.1"` | Operator image tag |
+| image.tag | string | `"0.21.0"` | Operator image tag |
 | imagePullSecrets | list | `[]` | Secrets to pull image from private docker repository |
 | initImage.pullPolicy | string | `"Always"` | Init container image pull policy |
 | initImage.repository | string | `"public.ecr.aws/ubuntu/ubuntu"` | Init container image name |
@@ -159,9 +159,11 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | resources | object | `{}` | Operator container resources |
 | secretsAsEnvVars | list | `[]` | configure custom secrets to be used as environment variables at runtime, see values.yaml |
 | secretsAsFiles | list | `[]` | configure custom secrets to be mounted at runtime, see values.yaml |
-| securityContext.container | object | `{"capabilities":{"add":["NET_BIND_SERVICE"],"drop":["all"]},"enabled":false}` | container/initContainer |
+| securityContext.container | object | `{"capabilities":{"add":["NET_BIND_SERVICE"],"drop":["all"]},"customContainerSecurityContext":{},"enabled":false}` | container/initContainer |
 | securityContext.container.capabilities | object | `{"add":["NET_BIND_SERVICE"],"drop":["all"]}` | capabilities |
+| securityContext.container.customContainerSecurityContext | object | `{}` (uses preconfigured defaults above) | Custom container securityContext override. When non-empty and container.enabled is true, this replaces the preconfigured container securityContext entirely. |
 | securityContext.container.enabled | bool | `false` | enables securityContext capabilities feature in containers |
+| securityContext.customPodSecurityContext | object | `{}` (uses preconfigured defaults above) | Custom pod securityContext override. When non-empty and securityContext.enabled is true, this replaces the preconfigured pod securityContext entirely. |
 | securityContext.enabled | bool | `false` | Enable securityContext |
 | securityContext.fsGroup | int | `13001` | fs group |
 | securityContext.runAsGroup | int | `13001` | GID to run as |
