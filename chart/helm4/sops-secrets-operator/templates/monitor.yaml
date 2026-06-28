@@ -3,6 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "sops-secrets-operator.fullname" . }}-metrics-monitor
+  namespace: {{ include "sops-secrets-operator.namespace" . }}
   labels:
     {{- include "sops-secrets-operator.labels" . | nindent 4 }}
     {{- with .Values.metrics.additionalLabels }}

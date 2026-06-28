@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "sops-secrets-operator.fullname" . }}
+  namespace: {{ include "sops-secrets-operator.namespace" . }}
   labels:
 {{ include "sops-secrets-operator.labels" . | indent 4 }}
 spec:

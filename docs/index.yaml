@@ -20,6 +20,45 @@ entries:
       artifacthub.io/operatorCapabilities: Full Lifecycle
     apiVersion: v2
     appVersion: 0.21.1
+    created: "2026-06-28T14:34:02.35649+01:00"
+    description: Helm chart deploys sops-secrets-operator
+    digest: dab50894756ceff663141704e6dc7c57024ea72903f48d0a892095b253122478
+    keywords:
+    - gitops
+    - sops
+    - kms
+    - encryption
+    - secret
+    - git
+    maintainers:
+    - email: isindir@users.sf.net
+      name: isindir
+    name: sops-secrets-operator
+    sources:
+    - https://github.com/isindir/sops-secrets-operator.git
+    type: application
+    urls:
+    - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.28.0.tgz
+    version: 0.28.0
+  - annotations:
+      artifacthub.io/crds: |
+        - kind: SopsSecret
+          version: isindir.github.com/v1alpha3
+          name: sopssecret
+          displayName: SopsSecret
+          description: SopsSecret - encapsulates sops encrypted kubernetes secrets definitions
+      artifacthub.io/links: |
+        - name: "SOPS: Secrets OPerationS - Kubernetes Operator github project"
+          url: "https://github.com/isindir/sops-secrets-operator.git"
+        - name: "SOPS: Secrets OPerationS"
+          url: "https://github.com/mozilla/sops"
+      artifacthub.io/maintainers: |
+        - name: isindir
+          email: isindir@users.sf.net
+      artifacthub.io/operator: "true"
+      artifacthub.io/operatorCapabilities: Full Lifecycle
+    apiVersion: v2
+    appVersion: 0.21.1
     created: "2026-06-28T12:05:17.362624+01:00"
     description: Helm chart deploys sops-secrets-operator
     digest: b62f9af2338330085b831bf8df6bc8e3cf726a50df140ea5c03226e4f97f97f5
@@ -2345,4 +2384,4 @@ entries:
     urls:
     - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.1.10.tgz
     version: 0.1.10
-generated: "2026-06-28T12:05:17.361766+01:00"
+generated: "2026-06-28T14:34:02.355037+01:00"

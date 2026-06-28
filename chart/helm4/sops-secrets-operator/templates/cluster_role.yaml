@@ -7,6 +7,9 @@ kind: ClusterRole
 {{- end }}
 metadata:
   name: {{ include "sops-secrets-operator.fullname" . }}
+  {{- if .Values.namespaced }}
+  namespace: {{ include "sops-secrets-operator.namespace" . }}
+  {{- end }}
   labels:
 {{ include "sops-secrets-operator.labels" . | indent 4 }}
 rules:
