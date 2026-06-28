@@ -225,7 +225,7 @@ EOF
 - Encrypt file using `sops` and AWS kms key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --kms 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -234,7 +234,7 @@ sops --encrypt \
 or
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --kms 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
   --encrypted-regex='^(data)$' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -246,7 +246,7 @@ sops --encrypt \
 - Encrypt file using `sops` and GCP KMS key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --gcp-kms 'projects/<project-name>/locations/<location>/keyRings/<keyring-name>/cryptoKeys/<key-name>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -255,7 +255,7 @@ sops --encrypt \
 - Encrypt file using `sops` and Azure Keyvault key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --azure-kv 'https://<vault-url>/keys/<key-name>/<key-version>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -264,7 +264,7 @@ sops --encrypt \
 - Encrypt file using `sops` and PGP key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --pgp '<pgp-finger-print>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
