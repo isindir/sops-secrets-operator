@@ -16,7 +16,7 @@ jobs:
     steps:
       # UPDATE_HERE
       # https://github.com/actions/checkout/releases
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Check out code
         with:
           fetch-tags: "true"
