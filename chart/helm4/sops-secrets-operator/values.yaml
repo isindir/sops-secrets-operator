@@ -35,6 +35,8 @@ imagePullSecrets: []
 nameOverride: ""
 # -- Overrides auto-generated long resource name
 fullnameOverride: ""
+# -- Overrides the release namespace rendered into metadata. Defaults to the release namespace when empty. Useful for GitOps tooling (e.g. Kustomize/ArgoCD) that consumes `helm template` output.
+namespaceOverride: ""
 
 # -- Annotations to be added to operator pod
 podAnnotations: {}

@@ -29,11 +29,11 @@ spec:
         .dockerconfigjson: '{"auths":{"index.docker.io":{"username":"imyuser","password":"mypass","email":"myuser@abc.com","auth":"aW15dXNlcjpteXBhc3M="}}}'
 EOF
 
-sops -e --age ${SOPS_AGE_RECIPIENTS} --encrypted-suffix Templates qqq.jenkins-secrets.yaml > qqq.jenkins-secrets.enc.yaml
+sops encrypt --age ${SOPS_AGE_RECIPIENTS} --encrypted-suffix Templates qqq.jenkins-secrets.yaml > qqq.jenkins-secrets.enc.yaml
 
 # check
 cat qqq.jenkins-secrets.enc.yaml
-sops -d qqq.jenkins-secrets.enc.yaml
+sops decrypt qqq.jenkins-secrets.enc.yaml
 ```
 
 ```bash

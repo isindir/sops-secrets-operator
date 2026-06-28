@@ -158,8 +158,7 @@ spec:
         token: Wb4ziZdELkdUf6m6KtNd7iRjjQRvSeJno5meH4NAGHFmpqJyEsekZ2WjX232s4Gj
 EOF
 
-# sops: 3.5.0
-sops -e \
+sops encrypt \
   -k 'arn:aws:kms:<region>:<account>:alias/<kms-key-alias-name>' \
   --encrypted-suffix='_templates' \
   plain.v1alpha1.yaml > enc.v1alpha1.yaml
@@ -237,7 +236,7 @@ EOF
 * encryption command also changes to:
 
 ```bash
-sops -e \
+sops encrypt \
   -k 'arn:aws:kms:<region>:<account>:alias/<kms-key-alias-name>' \
   --encrypted-suffix='Templates' \
   plain.v1alpha3.yaml > enc.v1alpha3.yaml

@@ -25,6 +25,16 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Resolve the namespace for namespaced resources.
+Uses .Values.namespaceOverride if set, otherwise .Release.Namespace.
+Rendering metadata.namespace explicitly keeps `helm template` output compatible
+with GitOps tooling (e.g. Kustomize/ArgoCD) that no longer backfills namespaces.
+*/}}
+{{- define "sops-secrets-operator.namespace" -}}
+{{- default .Release.Namespace .Values.namespaceOverride -}}
+{{- end -}}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "sops-secrets-operator.chart" -}}

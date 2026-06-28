@@ -23,7 +23,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops    | Chart  | Operator |
 | ---------- | ------- | ------ | -------- |
-| v1.36.x    | v3.13.1 | 0.27.2 | 0.21.1   |
+| v1.36.x    | v3.13.1 | 0.28.0 | 0.21.1   |
 | v1.35.x    | v3.12.2 | 0.26.0 | 0.20.2   |
 | v1.35.x    | v3.12.2 | 0.25.4 | 0.20.1   |
 | v1.34.x    | v3.11.0 | 0.24.1 | 0.17.3   |
@@ -225,7 +225,7 @@ EOF
 - Encrypt file using `sops` and AWS kms key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --kms 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -234,7 +234,7 @@ sops --encrypt \
 or
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --kms 'arn:aws:kms:<region>:<account>:alias/<key-alias-name>' \
   --encrypted-regex='^(data)$' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -246,7 +246,7 @@ sops --encrypt \
 - Encrypt file using `sops` and GCP KMS key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --gcp-kms 'projects/<project-name>/locations/<location>/keyRings/<keyring-name>/cryptoKeys/<key-name>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -255,7 +255,7 @@ sops --encrypt \
 - Encrypt file using `sops` and Azure Keyvault key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --azure-kv 'https://<vault-url>/keys/<key-name>/<key-version>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
@@ -264,7 +264,7 @@ sops --encrypt \
 - Encrypt file using `sops` and PGP key:
 
 ```bash
-sops --encrypt \
+sops encrypt \
   --pgp '<pgp-finger-print>' \
   --encrypted-suffix='Templates' jenkins-secrets.yaml \
   > jenkins-secrets.enc.yaml
