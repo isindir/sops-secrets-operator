@@ -25,6 +25,7 @@ var _ = Describe("SopssecretController", func() {
 	TestSecretObject01 := &isindirv1alpha3.SopsSecret{}
 	TestSecretObject02 := &isindirv1alpha3.SopsSecret{}
 	TestSecretObject03 := &isindirv1alpha3.SopsSecret{}
+	TestSecretObject04 := &isindirv1alpha3.SopsSecret{}
 	BeforeEach(func() {
 		// 00 secret
 		content, err := os.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "00-test-secrets.yaml"))
@@ -56,6 +57,14 @@ var _ = Describe("SopssecretController", func() {
 
 		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
 		TestSecretObject03 = obj.(*isindirv1alpha3.SopsSecret)
+		Expect(err).Should(BeNil())
+
+		// 04 secret (encrypted with sops --mac-only-encrypted)
+		content, err = os.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "04-test-secrets-mac-only.yaml"))
+		Expect(err).Should(BeNil())
+
+		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
+		TestSecretObject04 = obj.(*isindirv1alpha3.SopsSecret)
 		Expect(err).Should(BeNil())
 	})
 
@@ -304,6 +313,38 @@ var _ = Describe("SopssecretController", func() {
 				}
 				return controller.K8sClient.Delete(ctx, secret)
 			}, timeout, interval).Should(Succeed())
+		})
+	})
+
+	Context("When Creating SopsSecret encrypted with --mac-only-encrypted", func() {
+		It("Should accept the object and decrypt the managed secret using SopsSecret 04", func() {
+			ctx := context.Background()
+
+			By("By creating a new SopsSecret version 04 with mac_only_encrypted set")
+			Expect(controller.K8sClient.Create(ctx, TestSecretObject04)).To(Succeed())
+
+			By("By checking that status of the SopsSecret is Healthy")
+			sourceSopsSecretNamespacedName := types.NamespacedName{Namespace: "default", Name: "test-sopssecret-04"}
+			Eventually(func(g Gomega) {
+				sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+				g.Expect(controller.K8sClient.Get(ctx, sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+				g.Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
+				// Read the field back from the API server: a structural CRD
+				// prunes unknown fields, so this only stays true if the CRD
+				// schema actually carries mac_only_encrypted.
+				g.Expect(sourceSopsSecret.Sops.MacOnlyEncrypted).To(BeTrue())
+			}, timeout, interval).Should(Succeed())
+
+			By("By checking the decrypted content of the managed k8s secret")
+			managedSecretNamespacedName := types.NamespacedName{Namespace: "default", Name: "test-mac-only-token"}
+			Eventually(func(g Gomega) {
+				managedSecret := &corev1.Secret{}
+				g.Expect(controller.K8sClient.Get(ctx, managedSecretNamespacedName, managedSecret)).To(Succeed())
+				g.Expect(string(managedSecret.Data["token"])).To(Equal("macOnlyEncryptedPlaintextValue1234567890"))
+			}, timeout, interval).Should(Succeed())
+
+			By("By deleting SopsSecret version 04")
+			Expect(controller.K8sClient.Delete(ctx, TestSecretObject04)).To(Succeed())
 		})
 	})
 

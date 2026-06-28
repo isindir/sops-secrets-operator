@@ -133,6 +133,11 @@ type SopsMetadata struct {
 	// Suffix used to encrypt SopsSecret resource
 	//+optional
 	EncryptedSuffix string `json:"encrypted_suffix,omitempty"`
+
+	// MacOnlyEncrypted - sops setting; when true the MAC is computed
+	// over values that end up encrypted only (sops --mac-only-encrypted).
+	//+optional
+	MacOnlyEncrypted bool `json:"mac_only_encrypted,omitempty"`
 }
 
 // SopsSecretStatus defines the observed state of SopsSecret

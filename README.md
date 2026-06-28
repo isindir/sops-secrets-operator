@@ -274,6 +274,11 @@ sops --encrypt \
 > access to one of these is needed. For more information see `sops`
 > documentation.
 
+> **Note:** Files encrypted with `sops --mac-only-encrypted` are supported. The
+> resulting `sops.mac_only_encrypted: true` metadata field is recognised by the
+> CRD, so such resources pass strict server-side field validation when applied
+> with `kubectl apply` or `helm upgrade`.
+
 ## Changing ownership of existing secrets
 
 If there is a need to re-own existing `Secrets` by `SopsSecret`, following annotation should
