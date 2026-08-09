@@ -5,12 +5,27 @@
 package controllers
 
 import (
+	"errors"
 	"testing"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 )
+
+// TestCloneTemplateDataErrorWrapping verifies that cloneTemplateData wraps the
+// underlying base64 decode error so callers can inspect the root cause via
+// errors.Unwrap / errors.Is / errors.As (#49 — error wrapping).
+func TestCloneTemplateDataErrorWrapping(t *testing.T) {
+	invalidBase64 := "not-valid-base64!!!"
+	_, err := cloneTemplateData(nil, map[string]string{"key": invalidBase64})
+	if err == nil {
+		t.Fatal("expected error for invalid base64, got nil")
+	}
+	if errors.Unwrap(err) == nil {
+		t.Errorf("errors.Unwrap(err) == nil: error was not wrapped (use %%w, not %%v); got: %v", err)
+	}
+}
 
 func TestShouldEnforceOwnership(t *testing.T) {
 	tests := []struct {

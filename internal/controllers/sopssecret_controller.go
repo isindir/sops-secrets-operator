@@ -129,8 +129,13 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
+// UpdateSopsSecretStatus sets the status message on the given SopsSecret and
+// persists it to the API server. The update is best-effort: if it fails the
+// primary reconcile result already captures the meaningful outcome, so the
+// status-update error is intentionally not propagated.
 func (r *SopsSecretReconciler) UpdateSopsSecretStatus(ctx context.Context, sopsSecret *isindirv1alpha3.SopsSecret, message string) {
 	sopsSecret.Status.Message = message
+	// Best-effort: status update failure does not affect the reconcile result.
 	_ = r.Status().Update(ctx, sopsSecret)
 }
 
@@ -385,7 +390,7 @@ func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
 		return err
 	}
 
-	expectedSecrets := make(map[string]bool)
+	expectedSecrets := make(map[string]bool, len(sopsSecret.Spec.SecretsTemplate))
 	for _, s := range sopsSecret.Spec.SecretsTemplate {
 		expectedSecrets[s.Name] = true
 	}
@@ -495,7 +500,7 @@ func cloneTemplateData(stringData map[string]string, data map[string]string) (ma
 	for key, value := range data {
 		decoded, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {
-			return nil, fmt.Errorf("createKubeSecretFromTemplate(): data[%v] is not a valid base64 string", key)
+			return nil, fmt.Errorf("createKubeSecretFromTemplate(): data[%v] is not a valid base64 string: %w", key, err)
 		}
 		strData[key] = string(decoded)
 	}
