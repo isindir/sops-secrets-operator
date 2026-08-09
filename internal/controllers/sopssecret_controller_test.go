@@ -128,14 +128,16 @@ var _ = Describe("SopssecretController", func() {
 			ctx := context.Background()
 
 			Expect(controller.K8sClient.Create(ctx, TestSecretObject00)).To(Succeed())
-			time.Sleep(10 * time.Second)
 
 			By("By checking that correct number of secrets was created")
 			listCommandOptions := &client.ListOptions{Namespace: "default"}
 			secretsList := &corev1.SecretList{}
-			Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
-			// 5 from SopsSecret object + 1 for Service Account
-			Expect(len(secretsList.Items)).To(Equal(5))
+			Eventually(func(g Gomega) {
+				secretsList = &corev1.SecretList{}
+				g.Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
+				// 5 from SopsSecret object + 1 for Service Account
+				g.Expect(len(secretsList.Items)).To(Equal(5))
+			}, timeout, interval).Should(Succeed())
 
 			By("By checking content of token stringdata test secret")
 			testSecret := &corev1.Secret{}
@@ -172,36 +174,42 @@ var _ = Describe("SopssecretController", func() {
 			By("By updating a managed k8s secret value outside of SopsSecret object")
 			testSecret.Data["username"] = []byte("newUsername")
 			Expect(controller.K8sClient.Update(ctx, testSecret)).To(Succeed())
-			time.Sleep(10 * time.Second)
-			Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
-			Expect(string(testSecret.Data["username"])).To(Equal("myUsername"))
+			Eventually(func(g Gomega) {
+				g.Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
+				g.Expect(string(testSecret.Data["username"])).To(Equal("myUsername"))
+			}, timeout, interval).Should(Succeed())
 
 			By("By deleting data item from a managed k8s secret value outside of SopsSecret object")
 			delete(testSecret.Data, "username")
 			Expect(controller.K8sClient.Update(ctx, testSecret)).To(Succeed())
-			time.Sleep(10 * time.Second)
-			Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
-			Expect(string(testSecret.Data["username"])).To(Equal("myUsername"))
+			Eventually(func(g Gomega) {
+				g.Expect(controller.K8sClient.Get(ctx, *tagrgetSecretNamespacedName, testSecret)).To(Succeed())
+				g.Expect(string(testSecret.Data["username"])).To(Equal("myUsername"))
+			}, timeout, interval).Should(Succeed())
 
 			By("By checking that status of the SopsSecret is Healthy")
 			sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
 			sourceSopsSecretNamespacedName := &types.NamespacedName{Namespace: "default", Name: "test-sopssecret"}
-			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
-			Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
+			Eventually(func(g Gomega) {
+				g.Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+				g.Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
+			}, timeout, interval).Should(Succeed())
 
 			By("By removing secret template from SopsSecret must remove managed k8s secret")
 			// Delete template from SopsSecret and update
 			copy(sourceSopsSecret.Spec.SecretsTemplate[0:], sourceSopsSecret.Spec.SecretsTemplate[1:])
 			sourceSopsSecret.Spec.SecretsTemplate = sourceSopsSecret.Spec.SecretsTemplate[:len(sourceSopsSecret.Spec.SecretsTemplate)-1]
 			Expect(controller.K8sClient.Update(ctx, sourceSopsSecret)).To(Succeed())
-			time.Sleep(10 * time.Second)
-			secretsList = &corev1.SecretList{}
-			Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
-
-			// 4 from SopsSecret object + 1 for Service Account
-			Expect(len(secretsList.Items)).To(Equal(4))
-			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
-			Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
+			Eventually(func(g Gomega) {
+				secretsList = &corev1.SecretList{}
+				g.Expect(controller.K8sClient.List(ctx, secretsList, listCommandOptions)).To(Succeed())
+				// 4 from SopsSecret object + 1 for Service Account
+				g.Expect(len(secretsList.Items)).To(Equal(4))
+			}, timeout, interval).Should(Succeed())
+			Eventually(func(g Gomega) {
+				g.Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+				g.Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
+			}, timeout, interval).Should(Succeed())
 
 			By("By deleting SopsSecret version 00")
 			Expect(controller.K8sClient.Delete(ctx, TestSecretObject00)).To(Succeed())
@@ -213,13 +221,14 @@ var _ = Describe("SopssecretController", func() {
 			By("By creating a new SopsSecret version 01")
 			ctx := context.Background()
 			Expect(controller.K8sClient.Create(ctx, TestSecretObject01)).To(Succeed())
-			time.Sleep(10 * time.Second)
 
 			By("By checking that status of the SopsSecret is 'Decryption error'")
-			sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
-			sourceSopsSecretNamespacedName := &types.NamespacedName{Namespace: "default", Name: "test-sopssecret-01"}
-			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
-			Expect(sourceSopsSecret.Status.Message).To(Equal("Decryption error"))
+			sourceSopsSecretNamespacedName01 := types.NamespacedName{Namespace: "default", Name: "test-sopssecret-01"}
+			Eventually(func(g Gomega) {
+				sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+				g.Expect(controller.K8sClient.Get(ctx, sourceSopsSecretNamespacedName01, sourceSopsSecret)).To(Succeed())
+				g.Expect(sourceSopsSecret.Status.Message).To(Equal("Decryption error"))
+			}, timeout, interval).Should(Succeed())
 
 			By("By deleting SopsSecret version 01")
 			Expect(controller.K8sClient.Delete(ctx, TestSecretObject01)).To(Succeed())
@@ -238,17 +247,17 @@ var _ = Describe("SopssecretController", func() {
 				Type: corev1.SecretTypeOpaque,
 			}
 			Expect(controller.K8sClient.Create(ctx, testSecret)).To(Succeed())
-			time.Sleep(10 * time.Second)
 
 			By("By creating a new SopsSecret version 02")
 			Expect(controller.K8sClient.Create(ctx, TestSecretObject02)).To(Succeed())
-			time.Sleep(10 * time.Second)
 
 			By("By checking that status of the SopsSecret is 'Child secret is not owned by controller error'")
-			sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
-			sourceSopsSecretNamespacedName := &types.NamespacedName{Namespace: "default", Name: "test-sopssecret-02"}
-			Expect(controller.K8sClient.Get(ctx, *sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
-			Expect(sourceSopsSecret.Status.Message).To(Equal("Child secret is not owned by controller error"))
+			sourceSopsSecretNamespacedName02 := types.NamespacedName{Namespace: "default", Name: "test-sopssecret-02"}
+			Eventually(func(g Gomega) {
+				sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+				g.Expect(controller.K8sClient.Get(ctx, sourceSopsSecretNamespacedName02, sourceSopsSecret)).To(Succeed())
+				g.Expect(sourceSopsSecret.Status.Message).To(Equal("Child secret is not owned by controller error"))
+			}, timeout, interval).Should(Succeed())
 
 			By("By deleting SopsSecret version 02")
 			Expect(controller.K8sClient.Delete(ctx, TestSecretObject02)).To(Succeed())
