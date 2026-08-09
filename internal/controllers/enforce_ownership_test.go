@@ -14,8 +14,8 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"k8s.io/utils/ptr"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // spyLogSink is a logr.LogSink that records whether Error() was called.
@@ -26,10 +26,10 @@ type spyLogSink struct {
 	infoMsgs    []string
 }
 
-func (s *spyLogSink) Init(logr.RuntimeInfo)                          {}
-func (s *spyLogSink) Enabled(int) bool                              { return true }
-func (s *spyLogSink) WithValues(...any) logr.LogSink                { return s }
-func (s *spyLogSink) WithName(string) logr.LogSink                  { return s }
+func (s *spyLogSink) Init(logr.RuntimeInfo)          {}
+func (s *spyLogSink) Enabled(int) bool               { return true }
+func (s *spyLogSink) WithValues(...any) logr.LogSink { return s }
+func (s *spyLogSink) WithName(string) logr.LogSink   { return s }
 func (s *spyLogSink) Info(_ int, msg string, _ ...any) {
 	s.infoCalled = true
 	s.infoMsgs = append(s.infoMsgs, msg)
