@@ -4,7 +4,7 @@ kubebuilder 4.15.0
 # https://golang.org/dl/
 golang 1.26.4
 # https://github.com/mozilla/sops/releases
-sops 3.13.1
+sops 3.13.3
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize 5.8.1
 # https://github.com/rancher/k3d/releases
