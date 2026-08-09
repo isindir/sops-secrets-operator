@@ -39,7 +39,7 @@ jobs:
           sudo apt update
           sudo apt install -f
           sudo apt-get install gnupg2 -y
-          sudo apt-get install qemu-user-static -y
+          sudo apt-get install qemu-user-binfmt -y
 
       - name: install helm unittest plugin
         run: |
