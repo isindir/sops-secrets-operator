@@ -267,11 +267,10 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 		kubeSecretToFindAndCompare,
 	)
 
-	// No kubeSecretFromTemplate alike found - CREATE one
+	// No kubeSecretFromTemplate alike found - CREATE one (normal path, not an error)
 	if errors.IsNotFound(err) {
-		r.Log.Error(
-			err,
-			"Creating a new Secret",
+		r.Log.V(0).Info(
+			"Secret not found, creating",
 			"sopssecret", req.NamespacedName,
 		)
 		err = r.Create(ctx, kubeSecretFromTemplate)
@@ -399,8 +398,9 @@ func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
 		if metav1.IsControlledBy(&secret, encryptedSopsSecret) && !expectedSecrets[secret.Name] {
 			if err := r.Delete(ctx, &secret); err != nil {
 				r.Log.Error(err, "Failed to delete orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+			} else {
+				r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
 			}
-			r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
 		}
 	}
 	r.Log.V(0).Info("Orphan secret cleanup finished", "sopssecret", req.NamespacedName)
