@@ -12,13 +12,13 @@ jobs:
     environment: ci-cd
     # UPDATE_HERE
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
       # UPDATE_HERE
       # https://hub.docker.com/r/rancher/k3s/tags
-      K3S_VERSION: v1.36.2-k3s1
+      K3S_VERSION: v1.36.3-k3s1
       # https://github.com/helm-unittest/helm-unittest/releases
-      HELM_UNITTEST_VERSION: 1.1.1
+      HELM_UNITTEST_VERSION: 1.1.2
 
     steps:
       # UPDATE_HERE
@@ -32,7 +32,7 @@ jobs:
         uses: asdf-vm/actions/install@v4
         with:
           # https://github.com/asdf-vm/asdf/releases
-          asdf_version: 0.19.0
+          asdf_version: 0.20.0
 
       - name: install gpg2
         run: |

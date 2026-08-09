@@ -58,6 +58,6 @@ tests:
         app.kubernetes.io/instance: sops
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: sops-secrets-operator
-        app.kubernetes.io/version: "0.21.1"
-        helm.sh/chart: sops-secrets-operator-0.28.0
+        app.kubernetes.io/version: "0.21.2"
+        helm.sh/chart: sops-secrets-operator-0.28.1
         custom-label: custom-value
