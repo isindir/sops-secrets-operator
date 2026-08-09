@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-logr/logr"
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
+	"github.com/prometheus/client_golang/prometheus"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -108,6 +109,20 @@ func TestGarbageCollectSuccessLogOnlyOnSuccess(t *testing.T) {
 			}
 		}
 	})
+}
+
+// TestRegisterMetrics verifies that RegisterMetrics does not panic when called
+// with a fresh Prometheus registry. This guards against accidental removal of
+// counter registrations and ensures the package can be imported in unit tests
+// without touching the global registry.
+func TestRegisterMetrics(t *testing.T) {
+	reg := prometheus.NewRegistry()
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("RegisterMetrics panicked: %v", r)
+		}
+	}()
+	RegisterMetrics(reg)
 }
 
 // TestCloneTemplateDataErrorWrapping verifies that cloneTemplateData wraps the

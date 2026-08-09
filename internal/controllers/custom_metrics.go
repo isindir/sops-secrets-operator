@@ -8,7 +8,6 @@ package controllers
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
 var (
@@ -34,9 +33,12 @@ var (
 	)
 )
 
-func init() {
-	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(
+// RegisterMetrics registers the package's Prometheus counters with the supplied
+// registry. Call this once from SetupWithManager instead of relying on init()
+// so the controllers package can be imported in unit tests without side effects
+// on the global Prometheus registry.
+func RegisterMetrics(registry prometheus.Registerer) {
+	registry.MustRegister(
 		sopsSecretsReconciliations,
 		sopsSecretsReconciliationFailures,
 		sopsSecretsReconciliationsSuspended,

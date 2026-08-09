@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -438,6 +439,8 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	for k := range sopslogging.Loggers {
 		sopslogging.Loggers[k].Out = io.Discard
 	}
+
+	RegisterMetrics(ctrlmetrics.Registry)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha3.SopsSecret{}, sopsPredicates).
