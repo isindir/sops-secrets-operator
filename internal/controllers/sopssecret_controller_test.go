@@ -382,16 +382,23 @@ var _ = Describe("SopssecretController", func() {
 				// Read the field back from the API server: a structural CRD
 				// prunes unknown fields, so this only stays true if the CRD
 				// schema actually carries unencrypted_regex.
-				g.Expect(sourceSopsSecret.Sops.UnencryptedRegex).To(Equal("^(apiVersion|kind|metadata|status|name|PLAIN_CONFIG_VALUE)$"))
+				g.Expect(sourceSopsSecret.Sops.UnencryptedRegex).To(
+					Equal("^(apiVersion|kind|metadata|status|name|LOG_LEVEL|WEB_CONCURRENCY|OTEL_EXPORTER_OTLP_ENDPOINT)$"),
+				)
 			}, timeout, interval).Should(Succeed())
 
-			By("By checking that the managed k8s secret holds the plain text value and the decrypted value")
+			By("By checking that the managed k8s secret holds the plain text values and the decrypted values")
 			managedSecretNamespacedName := types.NamespacedName{Namespace: "default", Name: "test-partially-encrypted-05"}
 			Eventually(func(g Gomega) {
 				managedSecret := &corev1.Secret{}
 				g.Expect(controller.K8sClient.Get(ctx, managedSecretNamespacedName, managedSecret)).To(Succeed())
-				g.Expect(string(managedSecret.Data["PLAIN_CONFIG_VALUE"])).To(Equal("someConfigValue"))
-				g.Expect(string(managedSecret.Data["SECRET_TOKEN"])).To(Equal("someSecretToken"))
+				// values which the regex matches: in plain text in the git repository
+				g.Expect(string(managedSecret.Data["LOG_LEVEL"])).To(Equal("debug"))
+				g.Expect(string(managedSecret.Data["WEB_CONCURRENCY"])).To(Equal("4"))
+				g.Expect(string(managedSecret.Data["OTEL_EXPORTER_OTLP_ENDPOINT"])).To(Equal("https://otel.example.com:4318"))
+				// values which the regex does not match: encrypted in the git repository
+				g.Expect(string(managedSecret.Data["DATABASE_URL"])).To(Equal("postgres://app:s3cr3t@db.example.com:5432/app"))
+				g.Expect(string(managedSecret.Data["OPENAI_API_KEY"])).To(Equal("sk-example-not-a-real-key"))
 			}, timeout, interval).Should(Succeed())
 
 			By("By deleting SopsSecret version 05")

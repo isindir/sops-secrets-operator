@@ -261,6 +261,48 @@ changes to that configuration in a diff. A new key is encrypted by default.
 > and `metadata.resourceVersion`. These fields are in plain text. If the regex does not match
 > them, the operator tries to decrypt them, and the reconciliation fails.
 
+A worked example. One application usually needs both secrets and configuration which is not
+secret. This `SopsSecret` holds five environment variables for one deployment:
+
+```yaml
+---
+apiVersion: isindir.github.com/v1alpha3
+kind: SopsSecret
+metadata:
+  name: my-app
+spec:
+  secretTemplates:
+    - name: my-app-env
+      stringData:
+        LOG_LEVEL: debug
+        WEB_CONCURRENCY: "4"
+        OTEL_EXPORTER_OTLP_ENDPOINT: https://otel.example.com:4318
+        DATABASE_URL: postgres://app:s3cr3t@db.example.com:5432/app
+        OPENAI_API_KEY: sk-example-not-a-real-key
+```
+
+Put the rule in `.sops.yaml`, so that the allowlist is in one file which the team reviews, and
+so that nobody has to repeat the flag:
+
+```yaml
+---
+creation_rules:
+  - path_regex: \.enc\.yaml$
+    unencrypted_regex: '^(apiVersion|kind|metadata|status|name|LOG_LEVEL|WEB_CONCURRENCY|OTEL_EXPORTER_OTLP_ENDPOINT)$'
+    kms: arn:aws:kms:<region>:<account>:alias/<key-alias-name>
+```
+
+After `sops encrypt`, the first three values stay readable and the last two are cipher text. A
+change to `WEB_CONCURRENCY` is then visible in the diff, and `DATABASE_URL` and `OPENAI_API_KEY`
+stay protected. A new key which the regex does not match is encrypted, so the default is safe.
+
+Values in `stringData` must stay quoted when they look like a number or a boolean, for example
+`WEB_CONCURRENCY: "4"`. Kubernetes only accepts strings in `stringData`.
+
+See `config/age-test-key/05-raw-test-secrets-unencrypted-regex.yaml` and
+`config/age-test-key/05-test-secrets-unencrypted-regex.yaml` for the same example before and
+after encryption.
+
 - Encrypt file using `sops` and GCP KMS key:
 
 ```bash
