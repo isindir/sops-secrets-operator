@@ -26,6 +26,14 @@ type spyLogSink struct {
 	infoMsgs    []string
 }
 
+// newReconcilerWithSpy creates a SopsSecretReconciler wired to a fresh
+// spyLogSink. Both are returned so callers can inspect log calls after the
+// fact without repeating the three-line setup everywhere.
+func newReconcilerWithSpy() (*SopsSecretReconciler, *spyLogSink) {
+	spy := &spyLogSink{}
+	return &SopsSecretReconciler{Log: logr.New(spy)}, spy
+}
+
 func (s *spyLogSink) Init(logr.RuntimeInfo)          {}
 func (s *spyLogSink) Enabled(int) bool               { return true }
 func (s *spyLogSink) WithValues(...any) logr.LogSink { return s }
@@ -44,9 +52,7 @@ func (s *spyLogSink) Error(_ error, msg string, _ ...any) {
 // Secret-not-found is the normal creation path, not a failure condition.
 // Logging it at error level causes false alerts (#48-adjacent).
 func TestIsNotFoundDoesNotLogError(t *testing.T) {
-	spy := &spyLogSink{}
-	logger := logr.New(spy)
-	r := &SopsSecretReconciler{Log: logger}
+	r, spy := newReconcilerWithSpy()
 
 	notFoundErr := k8serrors.NewNotFound(schema.GroupResource{Group: "", Resource: "secrets"}, "test-secret")
 
@@ -70,8 +76,7 @@ func TestGarbageCollectSuccessLogOnlyOnSuccess(t *testing.T) {
 	successMsg := "Garbage collected an orphaned secret"
 
 	t.Run("success log emitted when Delete succeeds", func(t *testing.T) {
-		spy := &spyLogSink{}
-		r := &SopsSecretReconciler{Log: logr.New(spy)}
+		r, spy := newReconcilerWithSpy()
 
 		// Fixed behaviour: success log inside else{} — only fires when err == nil.
 		var deleteErr error
@@ -93,8 +98,7 @@ func TestGarbageCollectSuccessLogOnlyOnSuccess(t *testing.T) {
 	})
 
 	t.Run("success log NOT emitted when Delete fails", func(t *testing.T) {
-		spy := &spyLogSink{}
-		r := &SopsSecretReconciler{Log: logr.New(spy)}
+		r, spy := newReconcilerWithSpy()
 
 		deleteErr := errors.New("simulated delete failure")
 		if deleteErr != nil {
