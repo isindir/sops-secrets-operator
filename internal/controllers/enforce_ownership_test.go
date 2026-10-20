@@ -115,18 +115,23 @@ func TestGarbageCollectSuccessLogOnlyOnSuccess(t *testing.T) {
 	})
 }
 
-// TestRegisterMetrics verifies that RegisterMetrics does not panic when called
-// with a fresh Prometheus registry. This guards against accidental removal of
-// counter registrations and ensures the package can be imported in unit tests
-// without touching the global registry.
+// TestRegisterMetrics verifies that RegisterMetrics is safe to call repeatedly
+// and never panics, whether or not it has already been invoked earlier in this
+// process. Registration is guarded by a process-wide sync.Once, so only the
+// first caller actually registers; this test stays correct in either case by
+// asserting the invariant that matters to callers: no error escapes.
 func TestRegisterMetrics(t *testing.T) {
 	reg := prometheus.NewRegistry()
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("RegisterMetrics panicked: %v", r)
-		}
-	}()
-	RegisterMetrics(reg)
+	for i := 0; i < 3; i++ {
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("RegisterMetrics call #%d panicked: %v", i, r)
+				}
+			}()
+			RegisterMetrics(reg)
+		}()
+	}
 }
 
 // TestCloneTemplateDataErrorWrapping verifies that cloneTemplateData wraps the
