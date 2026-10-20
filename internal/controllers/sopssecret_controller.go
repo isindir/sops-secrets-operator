@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -129,8 +130,13 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
+// UpdateSopsSecretStatus sets the status message on the given SopsSecret and
+// persists it to the API server. The update is best-effort: if it fails the
+// primary reconcile result already captures the meaningful outcome, so the
+// status-update error is intentionally not propagated.
 func (r *SopsSecretReconciler) UpdateSopsSecretStatus(ctx context.Context, sopsSecret *isindirv1alpha3.SopsSecret, message string) {
 	sopsSecret.Status.Message = message
+	// Best-effort: status update failure does not affect the reconcile result.
 	_ = r.Status().Update(ctx, sopsSecret)
 }
 
@@ -262,11 +268,10 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 		kubeSecretToFindAndCompare,
 	)
 
-	// No kubeSecretFromTemplate alike found - CREATE one
+	// No kubeSecretFromTemplate alike found - CREATE one (normal path, not an error)
 	if errors.IsNotFound(err) {
-		r.Log.Error(
-			err,
-			"Creating a new Secret",
+		r.Log.V(0).Info(
+			"Secret not found, creating",
 			"sopssecret", req.NamespacedName,
 		)
 		err = r.Create(ctx, kubeSecretFromTemplate)
@@ -385,7 +390,7 @@ func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
 		return err
 	}
 
-	expectedSecrets := make(map[string]bool)
+	expectedSecrets := make(map[string]bool, len(sopsSecret.Spec.SecretsTemplate))
 	for _, s := range sopsSecret.Spec.SecretsTemplate {
 		expectedSecrets[s.Name] = true
 	}
@@ -394,8 +399,9 @@ func (r *SopsSecretReconciler) garbageCollectOrphanedSecrets(
 		if metav1.IsControlledBy(&secret, encryptedSopsSecret) && !expectedSecrets[secret.Name] {
 			if err := r.Delete(ctx, &secret); err != nil {
 				r.Log.Error(err, "Failed to delete orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
+			} else {
+				r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
 			}
-			r.Log.V(0).Info("Garbage collected an orphaned secret", "sopssecret", req.NamespacedName, "secret", secret.Name, "namespace", secret.Namespace)
 		}
 	}
 	r.Log.V(0).Info("Orphan secret cleanup finished", "sopssecret", req.NamespacedName)
@@ -433,6 +439,8 @@ func (r *SopsSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	for k := range sopslogging.Loggers {
 		sopslogging.Loggers[k].Out = io.Discard
 	}
+
+	RegisterMetrics(ctrlmetrics.Registry)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&isindirv1alpha3.SopsSecret{}, sopsPredicates).
@@ -495,7 +503,7 @@ func cloneTemplateData(stringData map[string]string, data map[string]string) (ma
 	for key, value := range data {
 		decoded, err := base64.StdEncoding.DecodeString(value)
 		if err != nil {
-			return nil, fmt.Errorf("createKubeSecretFromTemplate(): data[%v] is not a valid base64 string", key)
+			return nil, fmt.Errorf("createKubeSecretFromTemplate(): data[%v] is not a valid base64 string: %w", key, err)
 		}
 		strData[key] = string(decoded)
 	}
