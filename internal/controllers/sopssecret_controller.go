@@ -133,11 +133,16 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 // UpdateSopsSecretStatus sets the status message on the given SopsSecret and
 // persists it to the API server. The update is best-effort: if it fails the
 // primary reconcile result already captures the meaningful outcome, so the
-// status-update error is intentionally not propagated.
+// status-update error is logged at debug level and not propagated.
 func (r *SopsSecretReconciler) UpdateSopsSecretStatus(ctx context.Context, sopsSecret *isindirv1alpha3.SopsSecret, message string) {
 	sopsSecret.Status.Message = message
-	// Best-effort: status update failure does not affect the reconcile result.
-	_ = r.Status().Update(ctx, sopsSecret)
+	if err := r.Status().Update(ctx, sopsSecret); err != nil {
+		r.Log.V(1).Info(
+			"Failed to update SopsSecret status",
+			"sopssecret", client.ObjectKeyFromObject(sopsSecret),
+			"error", err,
+		)
+	}
 }
 
 func (r *SopsSecretReconciler) decryptSopsSecret(

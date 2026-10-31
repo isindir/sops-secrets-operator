@@ -25,7 +25,7 @@ jobs:
       - name: action-lint
         uses: reviewdog/action-actionlint@v1
         with:
-          actionlint_flags: "actionlint -shellcheck="
+          actionlint_flags: "-shellcheck="
 
       # UPDATE_HERE
       # https://github.com/reviewdog/action-hadolint/releases
