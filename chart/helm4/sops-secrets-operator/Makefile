@@ -4,7 +4,7 @@ CHART_NAME?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^name:/ { gsub(
 VERSION_TAG?=$(shell cat Chart.yaml | awk 'BEGIN { FS=": " } $$0~/^version/ { gsub(/['\'',]/, ""); print $$2; }')
 
 # UPDATE_HERE
-K8S_VERSION := "1.36.3"
+K8S_VERSION := "1.37.2"
 
 SHELL=/bin/bash
 
@@ -50,7 +50,7 @@ validate: ## validates rendered chart templates using 'kubeconform'
 				-verbose \
 				-strict \
 				-output pretty \
-				-schema-location https://raw.githubusercontent.com/Onemind-Services-LLC/kubernetes-json-schema/master/schema \
-				-schema-location https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/monitoring.coreos.com/servicemonitor_v1.json \
+				-schema-location default \
+				-schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{ .Group }}/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json' \
 				-kubernetes-version $(K8S_VERSION) -
 	@echo '--------------------'
