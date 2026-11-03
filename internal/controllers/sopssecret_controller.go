@@ -87,7 +87,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	plainTextSopsSecret, rescheduleReconcileLoop := r.decryptSopsSecret(ctx, encryptedSopsSecret)
 	if rescheduleReconcileLoop {
 		sopsSecretsReconciliationFailures.Inc()
-		return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+		return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 	}
 
 	err = r.garbageCollectOrphanedSecrets(ctx, req, encryptedSopsSecret, plainTextSopsSecret)
@@ -102,24 +102,24 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		kubeSecretFromTemplate, rescheduleReconcileLoop := r.newKubeSecretFromTemplate(ctx, req, encryptedSopsSecret, plainTextSopsSecret, &secretTemplate)
 		if rescheduleReconcileLoop {
 			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		kubeSecretInCluster, rescheduleReconcileLoop := r.getSecretFromClusterOrCreateFromTemplate(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate)
 		if rescheduleReconcileLoop {
 			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		if !r.canManageKubeSecret(ctx, req, encryptedSopsSecret, kubeSecretInCluster) {
 			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
 		rescheduleReconcileLoop = r.refreshKubeSecretIfNeeded(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate, kubeSecretInCluster)
 		if rescheduleReconcileLoop {
 			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{Requeue: true, RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
+			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 	}
 

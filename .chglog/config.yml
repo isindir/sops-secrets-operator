@@ -16,6 +16,7 @@ options:
         - refactor
         - style
         - test
+        - chore
   commit_groups:
     title_maps:
       build: Build system and external dependency changes
@@ -25,6 +26,7 @@ options:
       fix: Bug fixes
       perf: Performance improvements
       refactor: Code refactoring
+      chore: Code refactoring
       style: Cosmetic changes
       test: Changes to the tests
   header:
