@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"maps"
 	"slices"
 	"testing"
 
@@ -22,6 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/client/interceptor"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	isindirv1alpha3 "github.com/isindir/sops-secrets-operator/api/v1alpha3"
 )
@@ -152,7 +154,7 @@ func TestMissingChildSecretIsCreatedWithoutLoggingAnError(t *testing.T) {
 	}
 	r, spy := newTestReconciler(t, interceptor.Funcs{})
 
-	got, reschedule := r.getSecretFromClusterOrCreateFromTemplate(t.Context(), requestFor(owner), owner, fromTemplate)
+	got, _, reschedule := r.getSecretFromClusterOrCreateFromTemplate(t.Context(), requestFor(owner), owner, fromTemplate)
 
 	if reschedule {
 		t.Fatalf("creating a missing child secret must not reschedule; error logs: %v", spy.errors)
@@ -165,6 +167,136 @@ func TestMissingChildSecretIsCreatedWithoutLoggingAnError(t *testing.T) {
 	}
 	if len(spy.errors) != 0 {
 		t.Errorf("creating a missing child secret is the normal path and must not log at error level; error logs: %v", spy.errors)
+	}
+}
+
+// apiServerLikeSecretWrite mimics what the real API server and the typed
+// controller-runtime client do to a Secret on write: stringData is merged into
+// data, and the caller's object is replaced by the server response, which never
+// carries stringData.
+func apiServerLikeSecretWrite(obj client.Object) {
+	s, ok := obj.(*corev1.Secret)
+	if !ok || len(s.StringData) == 0 {
+		return
+	}
+	if s.Data == nil {
+		s.Data = map[string][]byte{}
+	}
+	for k, v := range s.StringData {
+		s.Data[k] = []byte(v)
+	}
+	s.StringData = nil
+}
+
+// apiServerLikeSecretFuncs returns interceptors that apply apiServerLikeSecretWrite
+// on Create/Update, reject TLS secrets without tls.crt/tls.key like the API
+// server validation does, and record every Update issued.
+func apiServerLikeSecretFuncs(updates *[]*corev1.Secret) interceptor.Funcs {
+	return interceptor.Funcs{
+		Create: func(ctx context.Context, c client.WithWatch, obj client.Object, opts ...client.CreateOption) error {
+			apiServerLikeSecretWrite(obj)
+			return c.Create(ctx, obj, opts...)
+		},
+		Update: func(ctx context.Context, c client.WithWatch, obj client.Object, opts ...client.UpdateOption) error {
+			if s, ok := obj.(*corev1.Secret); ok {
+				*updates = append(*updates, s.DeepCopy())
+			}
+			apiServerLikeSecretWrite(obj)
+			if s, ok := obj.(*corev1.Secret); ok && s.Type == corev1.SecretTypeTLS {
+				if len(s.Data[corev1.TLSCertKey]) == 0 || len(s.Data[corev1.TLSPrivateKeyKey]) == 0 {
+					return k8serrors.NewInvalid(corev1.SchemeGroupVersion.WithKind("Secret").GroupKind(), s.Name, nil)
+				}
+			}
+			return c.Update(ctx, obj, opts...)
+		},
+	}
+}
+
+func newTLSChildFromTemplate(t *testing.T, r *SopsSecretReconciler, owner *isindirv1alpha3.SopsSecret) *corev1.Secret {
+	t.Helper()
+	fromTemplate := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "child", Namespace: owner.Namespace},
+		Type:       corev1.SecretTypeTLS,
+		StringData: map[string]string{corev1.TLSCertKey: "cert", corev1.TLSPrivateKeyKey: "key"},
+	}
+	if err := controllerutil.SetControllerReference(owner, fromTemplate, r.Scheme); err != nil {
+		t.Fatalf("setting controller reference: %v", err)
+	}
+	return fromTemplate
+}
+
+func TestCreatingChildSecretDoesNotMutateTemplate(t *testing.T) {
+	owner := newTestSopsSecret()
+	var updates []*corev1.Secret
+	r, _ := newTestReconciler(t, apiServerLikeSecretFuncs(&updates), owner)
+	fromTemplate := newTLSChildFromTemplate(t, r, owner)
+	want := maps.Clone(fromTemplate.StringData)
+
+	_, created, reschedule := r.getSecretFromClusterOrCreateFromTemplate(t.Context(), requestFor(owner), owner, fromTemplate)
+
+	if reschedule || !created {
+		t.Fatalf("got created=%v reschedule=%v, want created=true reschedule=false", created, reschedule)
+	}
+	if !maps.Equal(fromTemplate.StringData, want) {
+		t.Errorf("template StringData was mutated by Create: got %v, want %v", fromTemplate.StringData, want)
+	}
+}
+
+func TestNewChildSecretIsNotOverwrittenRightAfterCreation(t *testing.T) {
+	owner := newTestSopsSecret()
+	var updates []*corev1.Secret
+	r, spy := newTestReconciler(t, apiServerLikeSecretFuncs(&updates), owner)
+	fromTemplate := newTLSChildFromTemplate(t, r, owner)
+
+	if reschedule := r.reconcileChildSecret(t.Context(), requestFor(owner), owner, fromTemplate); reschedule {
+		t.Fatalf("creating a new child secret must not reschedule; error logs: %v", spy.errors)
+	}
+
+	if len(updates) != 0 {
+		t.Errorf("a freshly created child secret must not be updated in the same reconcile; updates: %v", updates)
+	}
+	got := &corev1.Secret{}
+	if err := r.Get(t.Context(), client.ObjectKeyFromObject(fromTemplate), got); err != nil {
+		t.Fatalf("Get() child: %v", err)
+	}
+	if string(got.Data[corev1.TLSCertKey]) != "cert" || string(got.Data[corev1.TLSPrivateKeyKey]) != "key" {
+		t.Errorf("child secret data = %v, want tls.crt and tls.key from the template", got.Data)
+	}
+	if owner.Status.Message == STATUS_CHILD_UPDATE_ERROR {
+		t.Errorf("status must not report a child update error after a successful create")
+	}
+}
+
+func TestExistingStaleChildSecretIsRefreshed(t *testing.T) {
+	owner := newTestSopsSecret()
+	var updates []*corev1.Secret
+	stale := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "child", Namespace: owner.Namespace},
+		Type:       corev1.SecretTypeTLS,
+		Data:       map[string][]byte{corev1.TLSCertKey: []byte("old"), corev1.TLSPrivateKeyKey: []byte("old")},
+	}
+	r, spy := newTestReconciler(t, apiServerLikeSecretFuncs(&updates), owner)
+	if err := controllerutil.SetControllerReference(owner, stale, r.Scheme); err != nil {
+		t.Fatalf("setting controller reference: %v", err)
+	}
+	if err := r.Create(t.Context(), stale); err != nil {
+		t.Fatalf("seeding stale child: %v", err)
+	}
+	fromTemplate := newTLSChildFromTemplate(t, r, owner)
+
+	if reschedule := r.reconcileChildSecret(t.Context(), requestFor(owner), owner, fromTemplate); reschedule {
+		t.Fatalf("refreshing an existing child secret must not reschedule; error logs: %v", spy.errors)
+	}
+
+	if len(updates) != 1 {
+		t.Fatalf("stale child secret must be updated exactly once; updates: %d", len(updates))
+	}
+	got := &corev1.Secret{}
+	if err := r.Get(t.Context(), client.ObjectKeyFromObject(fromTemplate), got); err != nil {
+		t.Fatalf("Get() child: %v", err)
+	}
+	if string(got.Data[corev1.TLSCertKey]) != "cert" || string(got.Data[corev1.TLSPrivateKeyKey]) != "key" {
+		t.Errorf("child secret data = %v, want refreshed tls.crt and tls.key", got.Data)
 	}
 }
 
