@@ -105,19 +105,7 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
 
-		kubeSecretInCluster, rescheduleReconcileLoop := r.getSecretFromClusterOrCreateFromTemplate(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate)
-		if rescheduleReconcileLoop {
-			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
-		}
-
-		if !r.canManageKubeSecret(ctx, req, encryptedSopsSecret, kubeSecretInCluster) {
-			sopsSecretsReconciliationFailures.Inc()
-			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
-		}
-
-		rescheduleReconcileLoop = r.refreshKubeSecretIfNeeded(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate, kubeSecretInCluster)
-		if rescheduleReconcileLoop {
+		if r.reconcileChildSecret(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate) {
 			sopsSecretsReconciliationFailures.Inc()
 			return reconcile.Result{RequeueAfter: time.Duration(r.RequeueAfter) * time.Minute}, nil
 		}
@@ -194,6 +182,34 @@ func (r *SopsSecretReconciler) shouldEnforceOwnership(sopsSecret *isindirv1alpha
 	return r.DefaultEnforceOwnership
 }
 
+// reconcileChildSecret makes sure the child secret described by kubeSecretFromTemplate
+// exists in the cluster and matches the template. Returns true if the reconcile loop
+// should be rescheduled.
+func (r *SopsSecretReconciler) reconcileChildSecret(
+	ctx context.Context,
+	req ctrl.Request,
+	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
+	kubeSecretFromTemplate *corev1.Secret,
+) bool {
+	kubeSecretInCluster, created, rescheduleReconcileLoop := r.getSecretFromClusterOrCreateFromTemplate(
+		ctx, req, encryptedSopsSecret, kubeSecretFromTemplate,
+	)
+	if rescheduleReconcileLoop {
+		return true
+	}
+
+	// Just created from the template: already owned and up to date, nothing to refresh.
+	if created {
+		return false
+	}
+
+	if !r.canManageKubeSecret(ctx, req, encryptedSopsSecret, kubeSecretInCluster) {
+		return true
+	}
+
+	return r.refreshKubeSecretIfNeeded(ctx, req, encryptedSopsSecret, kubeSecretFromTemplate, kubeSecretInCluster)
+}
+
 func (r *SopsSecretReconciler) refreshKubeSecretIfNeeded(
 	ctx context.Context,
 	req ctrl.Request,
@@ -261,16 +277,16 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 	req ctrl.Request,
 	encryptedSopsSecret *isindirv1alpha3.SopsSecret,
 	kubeSecretFromTemplate *corev1.Secret,
-) (*corev1.Secret, bool) {
+) (kubeSecretInCluster *corev1.Secret, created, rescheduleReconcileLoop bool) {
 	// Check if kubeSecretFromTemplate already exists in the cluster store
-	kubeSecretToFindAndCompare := &corev1.Secret{}
+	kubeSecretInCluster = &corev1.Secret{}
 	err := r.Get(
 		ctx,
 		types.NamespacedName{
 			Name:      kubeSecretFromTemplate.Name,
 			Namespace: kubeSecretFromTemplate.Namespace,
 		},
-		kubeSecretToFindAndCompare,
+		kubeSecretInCluster,
 	)
 
 	// No kubeSecretFromTemplate alike found - CREATE one (normal path, not an error)
@@ -279,8 +295,11 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 			"Secret not found, creating",
 			"sopssecret", req.NamespacedName,
 		)
-		err = r.Create(ctx, kubeSecretFromTemplate)
-		kubeSecretToFindAndCompare = kubeSecretFromTemplate.DeepCopy()
+		// Create mutates its argument into the server response (StringData cleared),
+		// so create from a copy and keep the template intact for the caller.
+		kubeSecretInCluster = kubeSecretFromTemplate.DeepCopy()
+		err = r.Create(ctx, kubeSecretInCluster)
+		created = err == nil
 	}
 
 	// Unknown error while trying to find kubeSecretFromTemplate in cluster - reschedule reconciliation
@@ -292,10 +311,10 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 			"Unknown Error",
 			"sopssecret", req.NamespacedName,
 		)
-		return nil, true
+		return nil, false, true
 	}
 
-	return kubeSecretToFindAndCompare, false
+	return kubeSecretInCluster, created, false
 }
 
 func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
