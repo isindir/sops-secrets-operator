@@ -63,7 +63,8 @@ func findLogEntry(entries []logEntry, msg string) (logEntry, bool) {
 
 // newTestReconciler returns a reconciler backed by a fake API server seeded
 // with objs, with funcs intercepting its client calls, and the spy capturing
-// its logs.
+// its logs. The APIReader reads the fake API server directly, bypassing funcs,
+// like the manager's uncached reader bypasses the informer cache.
 func newTestReconciler(t *testing.T, funcs interceptor.Funcs, objs ...client.Object) (*SopsSecretReconciler, *spyLogSink) {
 	t.Helper()
 	scheme := runtime.NewScheme()
@@ -73,14 +74,18 @@ func newTestReconciler(t *testing.T, funcs interceptor.Funcs, objs ...client.Obj
 	if err := isindirv1alpha3.AddToScheme(scheme); err != nil {
 		t.Fatalf("adding SopsSecret types to scheme: %v", err)
 	}
-	c := fake.NewClientBuilder().
+	apiServer := fake.NewClientBuilder().
 		WithScheme(scheme).
 		WithObjects(objs...).
 		WithStatusSubresource(&isindirv1alpha3.SopsSecret{}).
-		WithInterceptorFuncs(funcs).
 		Build()
 	spy := &spyLogSink{}
-	return &SopsSecretReconciler{Client: c, Scheme: scheme, Log: logr.New(spy)}, spy
+	return &SopsSecretReconciler{
+		Client:    interceptor.NewClient(apiServer, funcs),
+		APIReader: apiServer,
+		Scheme:    scheme,
+		Log:       logr.New(spy),
+	}, spy
 }
 
 func newTestSopsSecret() *isindirv1alpha3.SopsSecret {
@@ -298,6 +303,117 @@ func TestExistingStaleChildSecretIsRefreshed(t *testing.T) {
 	if string(got.Data[corev1.TLSCertKey]) != "cert" || string(got.Data[corev1.TLSPrivateKeyKey]) != "key" {
 		t.Errorf("child secret data = %v, want refreshed tls.crt and tls.key", got.Data)
 	}
+}
+
+// staleCacheFuncs extends apiServerLikeSecretFuncs with a Get that returns
+// NotFound for the first read of the named Secret, like an informer cache that
+// has not yet seen a Secret which already exists on the API server.
+func staleCacheFuncs(updates *[]*corev1.Secret, name types.NamespacedName) interceptor.Funcs {
+	funcs := apiServerLikeSecretFuncs(updates)
+	missed := false
+	funcs.Get = func(ctx context.Context, c client.WithWatch, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+		if _, ok := obj.(*corev1.Secret); ok && key == name && !missed {
+			missed = true
+			return k8serrors.NewNotFound(corev1.Resource("secrets"), key.Name)
+		}
+		return c.Get(ctx, key, obj, opts...)
+	}
+	return funcs
+}
+
+func TestStaleCacheMissOnExistingChildRefreshesItInSameReconcile(t *testing.T) {
+	owner := newTestSopsSecret()
+	var updates []*corev1.Secret
+	stale := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "child",
+			Namespace: owner.Namespace,
+			OwnerReferences: []metav1.OwnerReference{
+				*metav1.NewControllerRef(owner, isindirv1alpha3.GroupVersion.WithKind("SopsSecret")),
+			},
+		},
+		Type: corev1.SecretTypeTLS,
+		Data: map[string][]byte{corev1.TLSCertKey: []byte("old"), corev1.TLSPrivateKeyKey: []byte("old")},
+	}
+	r, spy := newTestReconciler(t, staleCacheFuncs(&updates, client.ObjectKeyFromObject(stale)), owner, stale)
+	fromTemplate := newTLSChildFromTemplate(t, r, owner)
+
+	if reschedule := r.reconcileChildSecret(t.Context(), requestFor(owner), owner, fromTemplate); reschedule {
+		t.Fatalf("AlreadyExists after a stale cache miss must not reschedule; error logs: %v", spy.errors)
+	}
+
+	if len(spy.errors) != 0 {
+		t.Errorf("AlreadyExists after a stale cache miss is benign and must not log at error level; error logs: %v", spy.errors)
+	}
+	if owner.Status.Message == STATUS_UNKNOWN_ERROR {
+		t.Errorf("status must not report %q for a stale cache miss", STATUS_UNKNOWN_ERROR)
+	}
+	if len(updates) != 1 {
+		t.Fatalf("existing stale child secret must be refreshed exactly once; updates: %d", len(updates))
+	}
+	got := &corev1.Secret{}
+	if err := r.Get(t.Context(), client.ObjectKeyFromObject(fromTemplate), got); err != nil {
+		t.Fatalf("Get() child: %v", err)
+	}
+	if string(got.Data[corev1.TLSCertKey]) != "cert" || string(got.Data[corev1.TLSPrivateKeyKey]) != "key" {
+		t.Errorf("child secret data = %v, want refreshed tls.crt and tls.key", got.Data)
+	}
+}
+
+func TestStaleCacheMissOnUnownedChildReportsNotOwned(t *testing.T) {
+	owner := newTestSopsSecret()
+	var updates []*corev1.Secret
+	foreign := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "child", Namespace: owner.Namespace},
+		Data:       map[string][]byte{"foreign": []byte("data")},
+	}
+	r, spy := newTestReconciler(t, staleCacheFuncs(&updates, client.ObjectKeyFromObject(foreign)), owner, foreign)
+	fromTemplate := newTLSChildFromTemplate(t, r, owner)
+
+	if reschedule := r.reconcileChildSecret(t.Context(), requestFor(owner), owner, fromTemplate); !reschedule {
+		t.Fatalf("an unowned child secret must reschedule")
+	}
+
+	if owner.Status.Message != STATUS_CHILD_NOT_OWNED {
+		t.Errorf("status = %q, want %q", owner.Status.Message, STATUS_CHILD_NOT_OWNED)
+	}
+	if _, ok := findLogEntry(spy.errors, "Unknown Error"); ok {
+		t.Errorf("AlreadyExists after a stale cache miss must not be logged as Unknown Error; error logs: %v", spy.errors)
+	}
+	if len(updates) != 0 {
+		t.Errorf("an unowned child secret must not be updated; updates: %v", updates)
+	}
+}
+
+func TestStaleCacheMissFallsBackToUnknownErrorWhenRereadFails(t *testing.T) {
+	owner := newTestSopsSecret()
+	var updates []*corev1.Secret
+	existing := &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "child", Namespace: owner.Namespace}}
+	r, spy := newTestReconciler(t, staleCacheFuncs(&updates, client.ObjectKeyFromObject(existing)), owner, existing)
+	rereadErr := errors.New("simulated API reader failure")
+	r.APIReader = failingReader{err: rereadErr}
+	fromTemplate := newTLSChildFromTemplate(t, r, owner)
+
+	if reschedule := r.reconcileChildSecret(t.Context(), requestFor(owner), owner, fromTemplate); !reschedule {
+		t.Fatalf("a failed re-read must reschedule")
+	}
+
+	if owner.Status.Message != STATUS_UNKNOWN_ERROR {
+		t.Errorf("status = %q, want %q", owner.Status.Message, STATUS_UNKNOWN_ERROR)
+	}
+	if e, ok := findLogEntry(spy.errors, "Unknown Error"); !ok || !errors.Is(e.err, rereadErr) {
+		t.Errorf("failed re-read must be logged at error level with the re-read error; error logs: %v", spy.errors)
+	}
+}
+
+type failingReader struct{ err error }
+
+func (f failingReader) Get(context.Context, client.ObjectKey, client.Object, ...client.GetOption) error {
+	return f.err
+}
+
+func (f failingReader) List(context.Context, client.ObjectList, ...client.ListOption) error {
+	return f.err
 }
 
 func TestStatusUpdateFailureIsLoggedAtDebugLevel(t *testing.T) {

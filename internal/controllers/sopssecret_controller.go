@@ -52,6 +52,9 @@ const (
 // SopsSecretReconciler reconciles a SopsSecret object
 type SopsSecretReconciler struct {
 	client.Client
+	// APIReader reads straight from the API server, bypassing the informer
+	// cache. Falls back to Client when nil.
+	APIReader               client.Reader
 	Log                     logr.Logger
 	Scheme                  *runtime.Scheme
 	RequeueAfter            int64
@@ -300,6 +303,17 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 		kubeSecretInCluster = kubeSecretFromTemplate.DeepCopy()
 		err = r.Create(ctx, kubeSecretInCluster)
 		created = err == nil
+
+		// The cache was stale and the secret already exists: read it from the
+		// API server and carry on with the ownership check and refresh.
+		if errors.IsAlreadyExists(err) {
+			r.Log.V(0).Info(
+				"Secret already exists, cache is stale, re-reading from API server",
+				"sopssecret", req.NamespacedName,
+			)
+			kubeSecretInCluster = &corev1.Secret{}
+			err = r.apiReader().Get(ctx, client.ObjectKeyFromObject(kubeSecretFromTemplate), kubeSecretInCluster)
+		}
 	}
 
 	// Unknown error while trying to find kubeSecretFromTemplate in cluster - reschedule reconciliation
@@ -315,6 +329,13 @@ func (r *SopsSecretReconciler) getSecretFromClusterOrCreateFromTemplate(
 	}
 
 	return kubeSecretInCluster, created, false
+}
+
+func (r *SopsSecretReconciler) apiReader() client.Reader {
+	if r.APIReader != nil {
+		return r.APIReader
+	}
+	return r.Client
 }
 
 func (r *SopsSecretReconciler) newKubeSecretFromTemplate(
