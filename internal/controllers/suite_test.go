@@ -77,9 +77,10 @@ var _ = BeforeSuite(func() {
 	Expect(k8sManager).NotTo(BeNil())
 
 	err = (&SopsSecretReconciler{
-		Client: k8sManager.GetClient(),
-		Scheme: k8sManager.GetScheme(),
-		Log:    ctrl.Log.WithName("controllers").WithName("SopsSecret"),
+		Client:    k8sManager.GetClient(),
+		APIReader: k8sManager.GetAPIReader(),
+		Scheme:    k8sManager.GetScheme(),
+		Log:       ctrl.Log.WithName("controllers").WithName("SopsSecret"),
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 

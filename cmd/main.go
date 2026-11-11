@@ -120,6 +120,7 @@ func main() {
 
 	if err = (&controllers.SopsSecretReconciler{
 		Client:                  mgr.GetClient(),
+		APIReader:               mgr.GetAPIReader(),
 		Log:                     ctrl.Log.WithName("controllers").WithName("SopsSecret"),
 		Scheme:                  mgr.GetScheme(),
 		RequeueAfter:            requeueAfter,
