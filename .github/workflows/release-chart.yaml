@@ -1,0 +1,60 @@
+name: release-chart
+# Publishes the packaged helm chart (docs/sops-secrets-operator-<version>.tgz, created by 'make package-helm')
+# to oci://quay.io/isindir/charts. GitHub Pages (docs/) stays the primary chart repository.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Chart version to publish (default: version in Chart.yaml), must be packaged in docs/"
+        required: false
+        default: ""
+  push:
+    branches:
+      - "master"
+    paths:
+      - "docs/index.yaml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-chart
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish helm chart to OCI registry
+    # manual runs from other branches must not overwrite published chart versions
+    if: github.ref == 'refs/heads/master'
+    environment: ci-cd
+    # UPDATE_HERE
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: ubuntu-26.04
+
+    steps:
+      # UPDATE_HERE
+      # https://github.com/actions/checkout/releases
+      - uses: actions/checkout@v7
+        name: Check out code
+        with:
+          persist-credentials: false
+
+      # UPDATE_HERE
+      # https://github.com/asdf-vm/actions/releases
+      - name: Install asdf tools
+        uses: asdf-vm/actions/install@v4
+        with:
+          # https://github.com/asdf-vm/asdf/releases
+          asdf_version: 0.20.2
+
+      - name: Log in to Quay.io
+        env:
+          QUAY_IO_USERNAME: ${{ secrets.QUAY_IO_USERNAME }}
+          QUAY_IO_PASS: ${{ secrets.QUAY_IO_PASS }}
+        run: |
+          echo "${QUAY_IO_PASS}" | helm registry login quay.io --username "${QUAY_IO_USERNAME}" --password-stdin
+
+      - name: Push helm chart
+        env:
+          VERSION: ${{ inputs.version }}
+        run: hack/chart-release.sh push "${VERSION}"
