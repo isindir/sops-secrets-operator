@@ -99,12 +99,69 @@ extraEnv:
     value: /etc/sops-age-key-file/key
 ```
 
+### SSH recipients and SSH identities
+
+sops can use an SSH public key as an age recipient (an SSH recipient), so an existing SSH key pair can be
+used instead of a dedicated age key. Only `ssh-ed25519` and `ssh-rsa` keys are supported, and encrypting
+for an SSH recipient requires sops `3.10.0` or newer.
+
+- Encrypt for the SSH recipient - the whole public key line, comment included, can be used:
+
+```bash
+sops encrypt --age "$(cat ~/.ssh/sops_ed25519.pub)" --encrypted-suffix Templates \
+  jenkins-secrets.yaml > jenkins-secrets.enc.yaml
+```
+
+- Or encrypt with a `.sops.yaml` creation rule (SSH and age recipients can be mixed, comma separated):
+
+```yaml
+creation_rules:
+  - encrypted_suffix: Templates
+    age: >-
+      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... sops@example.com
+```
+
+- Create kubernetes secret from the matching private key (the SSH identity):
+
+```bash
+kubectl create secret generic sops-age-ssh-key --namespace sops \
+  --from-file=key=$HOME/.ssh/sops_ed25519
+```
+
+- Deploy helm chart:
+  - Use `secretsAsFiles` to mount the secret which contains the SSH identity.
+  - Use `extraEnv` and specify mounted SSH identity path in `SOPS_AGE_SSH_PRIVATE_KEY_FILE` environment variable.
+
+See example:
+
+```yaml
+---
+secretsAsFiles:
+  - mountPath: /etc/sops-age-ssh-key
+    name: sops-age-ssh-key
+    secretName: sops-age-ssh-key
+extraEnv:
+  - name: SOPS_AGE_SSH_PRIVATE_KEY_FILE
+    value: /etc/sops-age-ssh-key/key
+```
+
+> **NOTE:**
+>
+> - The SSH identity must not be passphrase protected: sops would prompt for the passphrase on a terminal,
+>   which the operator does not have, and decryption fails.
+> - Instead of a file, `SOPS_AGE_SSH_PRIVATE_KEY_CMD` can be set to a command which prints the (not
+>   passphrase protected) SSH identity; the command must exist in the operator image.
+> - sops also always loads `~/.ssh/id_ed25519` and `~/.ssh/id_rsa` when they exist - do not rely on these
+>   in the operator container, set `SOPS_AGE_SSH_PRIVATE_KEY_FILE` explicitly.
+> - SSH identities and age identities (`SOPS_AGE_KEY_FILE`) can be configured together, the operator tries all
+>   of them, so SopsSecrets can be migrated from one to the other gradually.
+
 - Also see: [Local testing using age](docs/age/README.md)
 
 References:
 
 - [Age git repository](https://github.com/FiloSottile/age)
-- [SOPS Age documentation](https://github.com/mozilla/sops#22encrypting-using-age)
+- [SOPS Age documentation](https://getsops.io/docs/usage/identities/age/)
 
 ## PGP
 
