@@ -21,6 +21,16 @@ $ helm upgrade --install sops sops/sops-secrets-operator \
 
 > where `custom.values.yaml` must customise deployment and configure access to Cloud KMS
 
+The same chart is also published to an OCI registry (starting with chart version `0.29.3`), e.g. to use a registry
+pull-through cache:
+
+```console
+$ helm upgrade --install sops oci://quay.io/isindir/charts/sops-secrets-operator \
+  --namespace sops -f custom.values.yaml
+```
+
+> add `--version <chart version>` to pin a chart version with either source
+
 * AWS is supported via `kiam` namespace and pod annotations or via [IAM roles for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html)
 * GCP is supported via service account secret which allows decryption using GCP KMS
 * GPG is supported via secrets with GPG configuration

@@ -46,6 +46,9 @@ jobs:
           helm plugin install --verify=false https://github.com/helm-unittest/helm-unittest --version ${HELM_UNITTEST_VERSION}
           helm unittest --help
 
+      - name: Verify helm chart version is packaged
+        run: hack/chart-release.sh verify
+
       - name: Test helm charts
         run: make test-helm
 

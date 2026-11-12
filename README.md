@@ -48,13 +48,26 @@ Requirements for building operator from source code can be found in [.tool-versi
 
 # Operator Installation
 
-## Helm repository
+## Helm chart sources
 
-Add `helm` repository for chart installation:
+The chart is published to two places with identical content for every chart version, use either of them:
+
+- Helm repository (GitHub Pages):
 
 ```bash
 helm repo add sops https://isindir.github.io/sops-secrets-operator/
+helm upgrade --install sops sops/sops-secrets-operator --namespace sops
 ```
+
+- OCI registry (quay.io, starting with chart version `0.29.3`), e.g. to use a registry pull-through cache:
+
+```bash
+helm upgrade --install sops oci://quay.io/isindir/charts/sops-secrets-operator --namespace sops
+```
+
+Add `--version <chart version>` to pin a chart version with either source. Installation instructions below use the
+Helm repository (`sops/sops-secrets-operator`), with the OCI registry use
+`oci://quay.io/isindir/charts/sops-secrets-operator` instead.
 
 ## AWS
 
