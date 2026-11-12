@@ -195,6 +195,7 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | initImage.repository | string | `"public.ecr.aws/ubuntu/ubuntu"` | Init container image name |
 | initImage.tag | string | `"26.04"` | Init container image tag |
 | kubeconfig | object | `{"enabled":false,"path":null}` | Paths to a kubeconfig. Only required if out-of-cluster. |
+| logging | object | `{"development":false,"encoder":"json","level":"info","stacktraceLevel":"error","timeEncoding":"iso8601"}` | Logging configuration section suggested values Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn). Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default) |
 | logging.development | bool | `false` | Zap Development Mode enabled |
 | logging.encoder | string | `"json"` | Zap log encoding (one of 'json' or 'console') |
 | logging.level | string | `"info"` | Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity |

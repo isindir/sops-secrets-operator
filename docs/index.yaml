@@ -20,9 +20,9 @@ entries:
       artifacthub.io/operatorCapabilities: Full Lifecycle
     apiVersion: v2
     appVersion: 0.22.3
-    created: "2026-11-12T10:47:09.57087Z"
+    created: "2026-11-12T10:55:40.435181Z"
     description: Helm chart deploys sops-secrets-operator
-    digest: 0e46f84ef7a9dc5c463a3b7d6ab7d27f1e0cd29ae2de73b518c53e4e00823005
+    digest: 0c33badce39781afcd2546ea2b0b4c44cfec3de092fde375912718c0b63dd87e
     keywords:
     - gitops
     - sops
@@ -2618,4 +2618,4 @@ entries:
     urls:
     - https://isindir.github.io/sops-secrets-operator/sops-secrets-operator-0.1.10.tgz
     version: 0.1.10
-generated: "2026-11-12T10:47:09.57001Z"
+generated: "2026-11-12T10:55:40.434202Z"
