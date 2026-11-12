@@ -1,4 +1,4 @@
-{{- if .Values.metrics.enabled }}
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -6,19 +6,17 @@ metadata:
   namespace: {{ include "sops-secrets-operator.namespace" . }}
   labels:
     {{- include "sops-secrets-operator.labels" . | nindent 4 }}
-    {{- with .Values.metrics.additionalLabels }}
+    {{- with .Values.metrics.serviceMonitor.additionalLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
   endpoints:
     - path: /metrics
-      port: https
-      scheme: https
-      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-      tlsConfig:
-        insecureSkipVerify: true
+      port: metrics
+      scheme: http
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "sops-secrets-operator.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: metrics
 {{- end }}

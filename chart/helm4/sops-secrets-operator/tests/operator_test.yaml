@@ -34,7 +34,7 @@ tests:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: sops-secrets-operator
         app.kubernetes.io/version: 0.22.3
-        helm.sh/chart: sops-secrets-operator-0.29.3
+        helm.sh/chart: sops-secrets-operator-0.30.0
 
 # namespace override
 - it: should render namespaceOverride into metadata.namespace
@@ -288,6 +288,75 @@ tests:
   - equal:
       path: spec.template.spec.containers[0].volumeMounts[0].name
       value: foo
+
+- it: should render only extra volume mounts if nothing else is set
+  set:
+    extraVolumeMounts:
+    - name: azure-kv
+      mountPath: /mnt/secrets-store
+      readOnly: true
+  asserts:
+  - equal:
+      path: spec.template.spec.containers[0].volumeMounts
+      value:
+      - name: azure-kv
+        mountPath: /mnt/secrets-store
+        readOnly: true
+
+- it: should append extra volume mounts after gcp, gpg and secretsAsFiles mounts
+  set:
+    gcp:
+      enabled: true
+    gpg:
+      enabled: true
+    secretsAsFiles:
+    - name: foo
+      mountPath: "/etc/foo"
+      secretName: mysecret
+    extraVolumeMounts:
+    - name: azure-kv
+      mountPath: /mnt/secrets-store
+      readOnly: true
+    - name: scratch
+      mountPath: /tmp/scratch
+  asserts:
+  - equal:
+      path: spec.template.spec.containers[0].volumeMounts
+      value:
+      - mountPath: /var/secrets/google
+        name: sops-operator-gke-svc-account
+      - mountPath: /var/secrets/gpg
+        name: sops-gpg
+      - mountPath: /var/secrets/gpg-secrets
+        name: sops-operator-gpg-keys1
+      - mountPath: /var/secrets/gpg-secrets/private-keys-v1.d
+        name: sops-operator-gpg-keys2
+      - name: foo
+        mountPath: /etc/foo
+        readOnly: true
+      - name: azure-kv
+        mountPath: /mnt/secrets-store
+        readOnly: true
+      - name: scratch
+        mountPath: /tmp/scratch
+
+- it: should not add extra volume mounts to the GPG init container
+  set:
+    gpg:
+      enabled: true
+    extraVolumeMounts:
+    - name: azure-kv
+      mountPath: /mnt/secrets-store
+  asserts:
+  - equal:
+      path: spec.template.spec.initContainers[0].volumeMounts
+      value:
+      - mountPath: /var/secrets/gpg
+        name: sops-gpg
+      - mountPath: /var/secrets/gpg-secrets
+        name: sops-operator-gpg-keys1
+      - mountPath: /var/secrets/gpg-secrets/private-keys-v1.d
+        name: sops-operator-gpg-keys2
 
 # default env vars
 - it: by default renders only one variable
@@ -544,6 +613,66 @@ tests:
         secret:
           secretName: mysecret
 
+- it: should render only extra volumes if nothing else is set
+  set:
+    extraVolumes:
+    - name: azure-kv
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: sops-age-key
+  asserts:
+  - equal:
+      path: spec.template.spec.volumes
+      value:
+      - name: azure-kv
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: sops-age-key
+
+- it: should append extra volumes after gcp, gpg and secretsAsFiles volumes
+  set:
+    gcp:
+      enabled: true
+    gpg:
+      enabled: true
+    secretsAsFiles:
+    - name: foo
+      mountPath: "/etc/foo"
+      secretName: mysecret
+    extraVolumes:
+    - name: azure-kv
+      csi:
+        driver: secrets-store.csi.k8s.io
+    - name: scratch
+      emptyDir: {}
+  asserts:
+  - equal:
+      path: spec.template.spec.volumes
+      value:
+      - name: sops-operator-gke-svc-account
+        secret:
+          secretName: sops-secrets-operator-gcp-secret
+      - name: sops-operator-gpg-keys1
+        secret:
+          secretName: gpg1
+      - name: sops-operator-gpg-keys2
+        secret:
+          secretName: gpg2
+      - name: sops-gpg
+        emptyDir: {}
+      - name: foo
+        secret:
+          secretName: mysecret
+      - name: azure-kv
+        csi:
+          driver: secrets-store.csi.k8s.io
+      - name: scratch
+        emptyDir: {}
+
 # pod labels
 - it: pod labels should be empty by default
   release:
@@ -597,6 +726,60 @@ tests:
   - notContains:
       path: spec.template.spec.containers[0].args
       content: "-default-enforce-ownership=true"
+
+# metrics
+- it: should disable metrics listener and not expose metrics port by default
+  asserts:
+  - contains:
+      path: spec.template.spec.containers[0].args
+      content: "-metrics-bind-address=0"
+  - isNull:
+      path: spec.template.spec.containers[0].ports
+
+- it: should bind metrics listener to default port and expose it when metrics enabled
+  set:
+    metrics:
+      enabled: true
+  asserts:
+  - contains:
+      path: spec.template.spec.containers[0].args
+      content: "-metrics-bind-address=:8080"
+  - notContains:
+      path: spec.template.spec.containers[0].args
+      content: "-metrics-bind-address=0"
+  - equal:
+      path: spec.template.spec.containers[0].ports
+      value:
+      - name: metrics
+        containerPort: 8080
+        protocol: TCP
+
+- it: should use custom metrics port for listener and container port
+  set:
+    metrics:
+      enabled: true
+      port: 9443
+  asserts:
+  - contains:
+      path: spec.template.spec.containers[0].args
+      content: "-metrics-bind-address=:9443"
+  - equal:
+      path: spec.template.spec.containers[0].ports
+      value:
+      - name: metrics
+        containerPort: 9443
+        protocol: TCP
+
+- it: should ignore metrics port while metrics disabled
+  set:
+    metrics:
+      port: 9443
+  asserts:
+  - contains:
+      path: spec.template.spec.containers[0].args
+      content: "-metrics-bind-address=0"
+  - isNull:
+      path: spec.template.spec.containers[0].ports
 
 # securityContext - pod disabled, container disabled
 - it: should not render any securityContext when both pod and container are disabled

@@ -73,7 +73,7 @@ spec:
                 {{- toYaml .Values.securityContext.container.capabilities.add | nindent 16 }}
             {{- end }}
           {{- end }}
-          {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles }}
+          {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles .Values.extraVolumeMounts }}
           volumeMounts:
           {{- end }}
           {{- if .Values.gcp.enabled }}
@@ -93,11 +93,17 @@ spec:
             mountPath: {{ .mountPath }}
             readOnly: true
           {{- end }}
+          {{- with .Values.extraVolumeMounts }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
           command:
           - /usr/local/bin/manager
           args:
-          # The address the metric endpoint binds to. (default ":8080")
-          #- "-metrics-bind-address=127.0.0.1:8080"
+          {{- if .Values.metrics.enabled }}
+          - "-metrics-bind-address=:{{ .Values.metrics.port }}"
+          {{- else }}
+          - "-metrics-bind-address=0"
+          {{- end }}
           - "-health-probe-bind-address=:{{ .Values.healthProbes.port }}"
           # Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.
           - "-leader-elect"
@@ -115,6 +121,12 @@ spec:
           {{- end }}
           {{- if .Values.defaultEnforceOwnership }}
           - "-default-enforce-ownership=true"
+          {{- end }}
+          {{- if .Values.metrics.enabled }}
+          ports:
+          - name: metrics
+            containerPort: {{ .Values.metrics.port }}
+            protocol: TCP
           {{- end }}
           livenessProbe:
             httpGet:
@@ -175,7 +187,7 @@ spec:
             {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles }}
+      {{- if or .Values.gcp.enabled .Values.gpg.enabled .Values.secretsAsFiles .Values.extraVolumes }}
       volumes:
       {{- end }}
       {{- if .Values.gcp.enabled }}
@@ -203,6 +215,9 @@ spec:
       - name: {{ .name }}
         secret:
           secretName: {{ .secretName }}
+      {{- end }}
+      {{- with .Values.extraVolumes }}
+      {{- toYaml . | nindent 6 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

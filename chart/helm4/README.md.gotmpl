@@ -105,6 +105,48 @@ For reference see:
 * [sops section on how to encrypt](https://github.com/mozilla/sops#22encrypting-using-age)
 * Also see: [Local testing using age](docs/age/README.md)
 
+## Metrics
+
+Metrics are disabled by default (the operator metrics listener is switched off). Enable them with
+`--set metrics.enabled=true`, this opens the metrics listener on `metrics.port` (default `8080`) and creates a
+metrics Service (`<chart fullname>-metrics`) exposing it on the `metrics` port.
+
+To scrape the Service with [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator), also
+enable the ServiceMonitor (requires prometheus-operator CRDs in the cluster) and add the labels your Prometheus
+selects ServiceMonitors by:
+
+```yaml
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus
+```
+
+To scrape it with the [VictoriaMetrics operator](https://github.com/VictoriaMetrics/operator) instead (or side by side),
+enable the VMServiceScrape (requires VictoriaMetrics operator CRDs in the cluster):
+
+```yaml
+metrics:
+  enabled: true
+  vmServiceScrape:
+    enabled: true
+```
+
+> **Note:** if the VictoriaMetrics operator also converts prometheus-operator ServiceMonitors, enable only one of
+> `serviceMonitor` / `vmServiceScrape` for it, otherwise the operator metrics are scraped twice.
+
+Besides the standard controller-runtime metrics, the operator exposes:
+
+* `sopssecrets_reconcilation_successes_total` - successful SopsSecret reconciliations
+* `sopssecrets_reconcilation_failures_total` - failed SopsSecret reconciliations
+* `sopssecrets_reconcilation_suspends_total` - skipped reconciliations of suspended SopsSecrets
+
+> **Note:** since chart `0.30.0` the metrics listener is off unless `metrics.enabled` is `true` (previously the
+> operator always listened on `:8080`), and ServiceMonitor labels moved from `metrics.additionalLabels` to
+> `metrics.serviceMonitor.additionalLabels`.
+
 ## Uninstalling the Chart
 
 To uninstall/delete the `my-release` deployment:

@@ -4,10 +4,21 @@ templates:
 
 tests:
 
-- it: should not render any ServiceMonitor documents
+- it: should not render any ServiceMonitor documents by default
   release:
     name: sops
     namespace: sops
+  asserts:
+  - hasDocuments:
+      count: 0
+
+- it: should not render ServiceMonitor when only metrics are enabled
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
   asserts:
   - hasDocuments:
       count: 0
@@ -19,6 +30,8 @@ tests:
   set:
     metrics:
       enabled: true
+      serviceMonitor:
+        enabled: true
   asserts:
   - isKind:
       of: ServiceMonitor
@@ -32,8 +45,26 @@ tests:
   - equal:
       path: spec.selector.matchLabels
       value:
+        app.kubernetes.io/component: metrics
         app.kubernetes.io/instance: sops
         app.kubernetes.io/name: sops-secrets-operator
+
+- it: should scrape metrics Service port over plain HTTP
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+  asserts:
+  - equal:
+      path: spec.endpoints
+      value:
+      - path: /metrics
+        port: metrics
+        scheme: http
 
 - it: should include additional labels when set
   release:
@@ -42,8 +73,10 @@ tests:
   set:
     metrics:
       enabled: true
-      additionalLabels:
-        custom-label: custom-value
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          custom-label: custom-value
   asserts:
   - hasDocuments:
       count: 1
@@ -59,5 +92,5 @@ tests:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: sops-secrets-operator
         app.kubernetes.io/version: "0.22.3"
-        helm.sh/chart: sops-secrets-operator-0.29.3
+        helm.sh/chart: sops-secrets-operator-0.30.0
         custom-label: custom-value

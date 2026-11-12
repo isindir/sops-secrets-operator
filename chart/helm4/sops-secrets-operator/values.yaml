@@ -64,9 +64,9 @@ kubeconfig:
   enabled: false
   path:
 
-    # -- Logging configuration section suggested values
-    # Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn).
-    # Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default)
+# -- Logging configuration section suggested values
+# Development Mode (encoder=consoleEncoder,logLevel=Debug,stackTraceLevel=Warn).
+# Production Mode (encoder=jsonEncoder,logLevel=Info,stackTraceLevel=Error) (default)
 logging:
   # -- Zap Development Mode enabled
   development: false
@@ -146,6 +146,21 @@ secretsAsFiles: []
 #  mountPath: "/etc/foo"
 #  secretName: mysecret
 
+# -- Additional volumes for the operator pod, e.g. CSI secrets store volume for Azure Key Vault
+extraVolumes: []
+#- name: azure-kv
+#  csi:
+#    driver: secrets-store.csi.k8s.io
+#    readOnly: true
+#    volumeAttributes:
+#      secretProviderClass: sops-age-key
+
+# -- Additional volume mounts for the operator container (not the GPG init container)
+extraVolumeMounts: []
+#- name: azure-kv
+#  mountPath: /mnt/secrets-store
+#  readOnly: true
+
 # -- Operator container resources
 resources: {}
 # We usually recommend not to specify default resources and to leave this as a conscious
@@ -217,7 +232,20 @@ rbac:
   enabled: true
 
 metrics:
-  # -- Enable prometheus metrics
+  # -- Enable prometheus metrics: operator metrics listener, container port and metrics Service.
+  # When disabled, the operator metrics listener is switched off.
   enabled: false
-  # -- Additional labels for ServiceMonitor
-  additionalLabels: {}
+  # -- Metrics listener, container and Service port (no effect while metrics are disabled)
+  port: 8080
+  serviceMonitor:
+    # -- Create prometheus-operator ServiceMonitor scraping the metrics Service (requires `metrics.enabled`
+    # and prometheus-operator CRDs)
+    enabled: false
+    # -- Additional labels for ServiceMonitor (replaces removed `metrics.additionalLabels`)
+    additionalLabels: {}
+  vmServiceScrape:
+    # -- Create VictoriaMetrics operator VMServiceScrape scraping the metrics Service (requires `metrics.enabled`
+    # and VictoriaMetrics operator CRDs), can be enabled side by side with `metrics.serviceMonitor`
+    enabled: false
+    # -- Additional labels for VMServiceScrape
+    additionalLabels: {}

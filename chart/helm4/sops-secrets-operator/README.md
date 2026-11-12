@@ -103,6 +103,48 @@ For reference see:
 * [sops section on how to encrypt](https://github.com/mozilla/sops#22encrypting-using-age)
 * Also see: [Local testing using age](docs/age/README.md)
 
+## Metrics
+
+Metrics are disabled by default (the operator metrics listener is switched off). Enable them with
+`--set metrics.enabled=true`, this opens the metrics listener on `metrics.port` (default `8080`) and creates a
+metrics Service (`<chart fullname>-metrics`) exposing it on the `metrics` port.
+
+To scrape the Service with [prometheus-operator](https://github.com/prometheus-operator/prometheus-operator), also
+enable the ServiceMonitor (requires prometheus-operator CRDs in the cluster) and add the labels your Prometheus
+selects ServiceMonitors by:
+
+```yaml
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus
+```
+
+To scrape it with the [VictoriaMetrics operator](https://github.com/VictoriaMetrics/operator) instead (or side by side),
+enable the VMServiceScrape (requires VictoriaMetrics operator CRDs in the cluster):
+
+```yaml
+metrics:
+  enabled: true
+  vmServiceScrape:
+    enabled: true
+```
+
+> **Note:** if the VictoriaMetrics operator also converts prometheus-operator ServiceMonitors, enable only one of
+> `serviceMonitor` / `vmServiceScrape` for it, otherwise the operator metrics are scraped twice.
+
+Besides the standard controller-runtime metrics, the operator exposes:
+
+* `sopssecrets_reconcilation_successes_total` - successful SopsSecret reconciliations
+* `sopssecrets_reconcilation_failures_total` - failed SopsSecret reconciliations
+* `sopssecrets_reconcilation_suspends_total` - skipped reconciliations of suspended SopsSecrets
+
+> **Note:** since chart `0.30.0` the metrics listener is off unless `metrics.enabled` is `true` (previously the
+> operator always listened on `:8080`), and ServiceMonitor labels moved from `metrics.additionalLabels` to
+> `metrics.serviceMonitor.additionalLabels`.
+
 ## Uninstalling the Chart
 
 To uninstall/delete the `my-release` deployment:
@@ -130,6 +172,8 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | azure.tenantId | string | `""` | TenantID of Azure Service principal to use |
 | defaultEnforceOwnership | bool | `false` | Default behavior for enforcing ownership of pre-existing secrets. When enabled, the controller will take ownership of secrets that exist but are not owned by the SopsSecret. This is useful after backup restore operations where secrets may exist with stale owner references. Can be overridden per-SopsSecret with spec.enforceOwnership. |
 | extraEnv | list | `[]` | A list of additional environment variables |
+| extraVolumeMounts | list | `[]` | Additional volume mounts for the operator container (not the GPG init container) |
+| extraVolumes | list | `[]` | Additional volumes for the operator pod, e.g. CSI secrets store volume for Azure Key Vault |
 | fullnameOverride | string | `""` | Overrides auto-generated long resource name |
 | gcp | object | `{"enabled":false,"existingSecretName":"","svcAccSecret":"","svcAccSecretCustomName":""}` | GCP KMS configuration section |
 | gcp.enabled | bool | `false` | Node labels for operator pod assignment |
@@ -156,8 +200,12 @@ The following table lists the configurable parameters of the Sops-secrets-operat
 | logging.level | string | `"info"` | Zap Level to configure the verbosity of logging. Can be one of 'debug', 'info', 'error', or any integer value > 0 which corresponds to custom debug levels of increasing verbosity |
 | logging.stacktraceLevel | string | `"error"` | Zap Level at and above which stacktraces are captured (one of 'info', 'error'). |
 | logging.timeEncoding | string | `"iso8601"` | Zap time encoding (one of 'epoch', 'millis', 'nano', 'iso8601', 'rfc3339' or 'rfc3339nano'). Defaults to 'epoch'. |
-| metrics.additionalLabels | object | `{}` | Additional labels for ServiceMonitor |
-| metrics.enabled | bool | `false` | Enable prometheus metrics |
+| metrics.enabled | bool | `false` | Enable prometheus metrics: operator metrics listener, container port and metrics Service. When disabled, the operator metrics listener is switched off. |
+| metrics.port | int | `8080` | Metrics listener, container and Service port (no effect while metrics are disabled) |
+| metrics.serviceMonitor.additionalLabels | object | `{}` | Additional labels for ServiceMonitor (replaces removed `metrics.additionalLabels`) |
+| metrics.serviceMonitor.enabled | bool | `false` | Create prometheus-operator ServiceMonitor scraping the metrics Service (requires `metrics.enabled` and prometheus-operator CRDs) |
+| metrics.vmServiceScrape.additionalLabels | object | `{}` | Additional labels for VMServiceScrape |
+| metrics.vmServiceScrape.enabled | bool | `false` | Create VictoriaMetrics operator VMServiceScrape scraping the metrics Service (requires `metrics.enabled` and VictoriaMetrics operator CRDs), can be enabled side by side with `metrics.serviceMonitor` |
 | nameOverride | string | `""` | Overrides auto-generated short resource name |
 | namespaceOverride | string | `""` | Overrides the release namespace rendered into metadata. Defaults to the release namespace when empty. Useful for GitOps tooling (e.g. Kustomize/ArgoCD) that consumes `helm template` output. |
 | namespaced | bool | `false` | If set - operator will watch SopsSecret resources only in operator namespace |

@@ -1,3 +1,12 @@
 {{- if and (not .Values.serviceAccount.enabled) (not .Values.serviceAccount.name) }}
 {{- fail "Error: serviceAccount 'name' must be set if serviceAccount 'enabled' is set to false" }}
 {{- end }}
+{{- if and .Values.metrics.serviceMonitor.enabled (not .Values.metrics.enabled) }}
+{{- fail "Error: metrics.serviceMonitor.enabled requires metrics.enabled to be true" }}
+{{- end }}
+{{- if and .Values.metrics.vmServiceScrape.enabled (not .Values.metrics.enabled) }}
+{{- fail "Error: metrics.vmServiceScrape.enabled requires metrics.enabled to be true" }}
+{{- end }}
+{{- if .Values.metrics.additionalLabels }}
+{{- fail "Error: metrics.additionalLabels was moved to metrics.serviceMonitor.additionalLabels" }}
+{{- end }}

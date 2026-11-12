@@ -1,0 +1,88 @@
+suite: operator metrics service tests
+templates:
+- metrics_service.yaml
+
+tests:
+
+- it: should not render metrics Service by default
+  release:
+    name: sops
+    namespace: sops
+  asserts:
+  - hasDocuments:
+      count: 0
+
+- it: should render metrics Service when metrics enabled
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+  asserts:
+  - hasDocuments:
+      count: 1
+  - isKind:
+      of: Service
+  - isAPIVersion:
+      of: v1
+  - equal:
+      path: metadata.name
+      value: sops-sops-secrets-operator-metrics
+  - equal:
+      path: metadata.namespace
+      value: sops
+  - equal:
+      path: metadata.labels
+      # UPDATE_HERE
+      value:
+        app.kubernetes.io/component: metrics
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: sops-secrets-operator
+        app.kubernetes.io/version: "0.22.3"
+        helm.sh/chart: sops-secrets-operator-0.30.0
+  - equal:
+      path: spec.type
+      value: ClusterIP
+  - equal:
+      path: spec.selector
+      value:
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/name: sops-secrets-operator
+  - equal:
+      path: spec.ports
+      value:
+      - name: metrics
+        port: 8080
+        targetPort: metrics
+        protocol: TCP
+
+- it: should use custom metrics port in Service
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+      port: 9443
+  asserts:
+  - equal:
+      path: spec.ports[0].port
+      value: 9443
+  - equal:
+      path: spec.ports[0].targetPort
+      value: metrics
+
+- it: should render metrics Service into namespaceOverride
+  release:
+    name: sops
+    namespace: sops
+  set:
+    namespaceOverride: custom-ns
+    metrics:
+      enabled: true
+  asserts:
+  - equal:
+      path: metadata.namespace
+      value: custom-ns
