@@ -27,6 +27,7 @@ var _ = Describe("SopssecretController", func() {
 	TestSecretObject03 := &isindirv1alpha3.SopsSecret{}
 	TestSecretObject04 := &isindirv1alpha3.SopsSecret{}
 	TestSecretObject05 := &isindirv1alpha3.SopsSecret{}
+	TestSecretObject06 := &isindirv1alpha3.SopsSecret{}
 	BeforeEach(func() {
 		// 00 secret
 		content, err := os.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "00-test-secrets.yaml"))
@@ -75,6 +76,14 @@ var _ = Describe("SopssecretController", func() {
 		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
 		TestSecretObject05 = obj.(*isindirv1alpha3.SopsSecret)
 		Expect(err).Should(BeNil())
+
+		// 06 secret (encrypted only for an SSH recipient)
+		content, err = os.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "06-test-secrets-ssh-recipient.yaml"))
+		Expect(err).Should(BeNil())
+
+		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
+		TestSecretObject06 = obj.(*isindirv1alpha3.SopsSecret)
+		Expect(err).Should(BeNil())
 	})
 
 	// Define utility constants for object names and testing timeouts/durations and intervals.
@@ -96,6 +105,11 @@ var _ = Describe("SopssecretController", func() {
 			// File containing private key must exist
 			ageKeyFileName := os.Getenv("SOPS_AGE_KEY_FILE")
 			_, err := os.Stat(ageKeyFileName)
+			Expect(err).To(BeNil())
+
+			// File containing SSH identity must exist
+			sshIdentityFileName := os.Getenv("SOPS_AGE_SSH_PRIVATE_KEY_FILE")
+			_, err = os.Stat(sshIdentityFileName)
 			Expect(err).To(BeNil())
 		}, float64(timeout))
 	})
@@ -403,6 +417,34 @@ var _ = Describe("SopssecretController", func() {
 
 			By("By deleting SopsSecret version 05")
 			Expect(controller.K8sClient.Delete(ctx, TestSecretObject05)).To(Succeed())
+		})
+	})
+
+	Context("When Creating SopsSecret encrypted only for an SSH recipient", func() {
+		It("Should decrypt the child secret with the SSH identity using SopsSecret 06", func() {
+			ctx := context.Background()
+
+			By("By creating a new SopsSecret version 06 encrypted for an ssh-ed25519 recipient")
+			Expect(controller.K8sClient.Create(ctx, TestSecretObject06)).To(Succeed())
+
+			By("By checking that status of the SopsSecret is Healthy")
+			sourceSopsSecretNamespacedName := types.NamespacedName{Namespace: "default", Name: "test-sopssecret-06"}
+			Eventually(func(g Gomega) {
+				sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+				g.Expect(controller.K8sClient.Get(ctx, sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+				g.Expect(sourceSopsSecret.Status.Message).To(Equal("Healthy"))
+			}, timeout, interval).Should(Succeed())
+
+			By("By checking the decrypted content of the child secret")
+			childSecretNamespacedName := types.NamespacedName{Namespace: "default", Name: "test-ssh-recipient-token"}
+			Eventually(func(g Gomega) {
+				childSecret := &corev1.Secret{}
+				g.Expect(controller.K8sClient.Get(ctx, childSecretNamespacedName, childSecret)).To(Succeed())
+				g.Expect(string(childSecret.Data["token"])).To(Equal("sshRecipientEncryptedPlaintextValue1234567890"))
+			}, timeout, interval).Should(Succeed())
+
+			By("By deleting SopsSecret version 06")
+			Expect(controller.K8sClient.Delete(ctx, TestSecretObject06)).To(Succeed())
 		})
 	})
 
