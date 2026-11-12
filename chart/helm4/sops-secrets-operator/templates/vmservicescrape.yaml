@@ -1,0 +1,22 @@
+{{- if and .Values.metrics.enabled .Values.metrics.vmServiceScrape.enabled }}
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: {{ include "sops-secrets-operator.fullname" . }}-metrics-scrape
+  namespace: {{ include "sops-secrets-operator.namespace" . }}
+  labels:
+    {{- include "sops-secrets-operator.labels" . | nindent 4 }}
+    {{- with .Values.metrics.vmServiceScrape.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+    - path: /metrics
+      port: metrics
+      scheme: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "sops-secrets-operator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: metrics
+{{- end }}

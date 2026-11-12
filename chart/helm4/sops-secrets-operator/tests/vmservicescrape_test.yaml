@@ -1,0 +1,108 @@
+suite: operator victoria metrics service scrape tests
+templates:
+- vmservicescrape.yaml
+
+tests:
+
+- it: should not render any VMServiceScrape documents by default
+  release:
+    name: sops
+    namespace: sops
+  asserts:
+  - hasDocuments:
+      count: 0
+
+- it: should not render VMServiceScrape when only metrics are enabled
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+  asserts:
+  - hasDocuments:
+      count: 0
+
+- it: should set correct kind and apiVersion, one document and selector
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+      vmServiceScrape:
+        enabled: true
+  asserts:
+  - isKind:
+      of: VMServiceScrape
+  - isAPIVersion:
+      of: operator.victoriametrics.com/v1beta1
+  - hasDocuments:
+      count: 1
+  - equal:
+      path: metadata.name
+      value: sops-sops-secrets-operator-metrics-scrape
+  - equal:
+      path: metadata.namespace
+      value: sops
+  - equal:
+      path: spec.selector.matchLabels
+      value:
+        app.kubernetes.io/component: metrics
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/name: sops-secrets-operator
+
+- it: should scrape metrics Service port over plain HTTP
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+      vmServiceScrape:
+        enabled: true
+  asserts:
+  - equal:
+      path: spec.endpoints
+      value:
+      - path: /metrics
+        port: metrics
+        scheme: http
+
+- it: should render into namespaceOverride
+  release:
+    name: sops
+    namespace: sops
+  set:
+    namespaceOverride: custom-ns
+    metrics:
+      enabled: true
+      vmServiceScrape:
+        enabled: true
+  asserts:
+  - equal:
+      path: metadata.namespace
+      value: custom-ns
+
+- it: should include additional labels when set
+  release:
+    name: sops
+    namespace: sops
+  set:
+    metrics:
+      enabled: true
+      vmServiceScrape:
+        enabled: true
+        additionalLabels:
+          custom-label: custom-value
+  asserts:
+  - equal:
+      path: metadata.labels
+      # UPDATE_HERE
+      value:
+        app.kubernetes.io/instance: sops
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: sops-secrets-operator
+        app.kubernetes.io/version: "0.22.3"
+        helm.sh/chart: sops-secrets-operator-0.30.0
+        custom-label: custom-value

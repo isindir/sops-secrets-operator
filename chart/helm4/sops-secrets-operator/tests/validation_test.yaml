@@ -28,3 +28,61 @@ tests:
     asserts:
     - failedTemplate:
         errorMessage: "Error: serviceAccount 'name' must be set if serviceAccount 'enabled' is set to false"
+
+  - it: "should succeed if metrics and ServiceMonitor are both enabled"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+    asserts:
+    - notFailedTemplate: {}
+
+  - it: "should succeed if metrics and VMServiceScrape are both enabled, also side by side with ServiceMonitor"
+    set:
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+        vmServiceScrape:
+          enabled: true
+    asserts:
+    - notFailedTemplate: {}
+
+  - it: "should fail if VMServiceScrape is enabled while metrics are disabled"
+    set:
+      metrics:
+        enabled: false
+        vmServiceScrape:
+          enabled: true
+    asserts:
+    - failedTemplate:
+        errorMessage: "Error: metrics.vmServiceScrape.enabled requires metrics.enabled to be true"
+
+  - it: "should fail if ServiceMonitor is enabled while metrics are disabled"
+    set:
+      metrics:
+        enabled: false
+        serviceMonitor:
+          enabled: true
+    asserts:
+    - failedTemplate:
+        errorMessage: "Error: metrics.serviceMonitor.enabled requires metrics.enabled to be true"
+
+  - it: "should succeed if the removed metrics.additionalLabels is left empty (copied default values)"
+    set:
+      metrics:
+        enabled: true
+        additionalLabels: {}
+    asserts:
+    - notFailedTemplate: {}
+
+  - it: "should fail if the removed metrics.additionalLabels is set"
+    set:
+      metrics:
+        enabled: true
+        additionalLabels:
+          release: prometheus
+    asserts:
+    - failedTemplate:
+        errorMessage: "Error: metrics.additionalLabels was moved to metrics.serviceMonitor.additionalLabels"

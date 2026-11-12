@@ -42,10 +42,15 @@ lint: ## runs helm chart linting
 .PHONY: validate
 validate: ## validates rendered chart templates using 'kubeconform'
 	helm template . \
-		--set securityContextenabled=true \
+		--set securityContext.enabled=true \
+		--set securityContext.container.enabled=true \
 		--set metrics.enabled=true \
+		--set metrics.serviceMonitor.enabled=true \
+		--set metrics.vmServiceScrape.enabled=true \
 		--set gcp.enabled=true \
 		--set azure.enabled=true \
+		--set "extraVolumes[0].name=extra,extraVolumes[0].emptyDir.medium=Memory" \
+		--set "extraVolumeMounts[0].name=extra,extraVolumeMounts[0].mountPath=/mnt/extra" \
 		| kubeconform  -summary \
 				-verbose \
 				-strict \
