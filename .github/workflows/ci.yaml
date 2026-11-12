@@ -49,6 +49,15 @@ jobs:
       - name: Verify helm chart version is packaged
         run: hack/chart-release.sh verify
 
+      # same arguments as the helm-docs pre-commit hook
+      - name: Verify helm chart README is up to date
+        run: |
+          helm-docs --chart-search-root=chart/helm4/ --template-files=./README.md.gotmpl
+          git diff --exit-code -- chart/helm4/ || {
+            echo "ERROR: chart README is out of date, run 'pre-commit run helm-docs --all-files' and commit the result" >&2
+            exit 1
+          }
+
       - name: Test helm charts
         run: make test-helm
 
