@@ -82,6 +82,13 @@ func (r *SopsSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return reconcile.Result{}, err
 	}
 
+	// Owned Secrets are garbage collected via owner references. Recreating them
+	// while the SopsSecret is being deleted blocks foreground deletion forever.
+	if !encryptedSopsSecret.DeletionTimestamp.IsZero() {
+		r.Log.V(0).Info("SopsSecret is being deleted, skipping reconciliation", "sopssecret", req.NamespacedName)
+		return reconcile.Result{}, nil
+	}
+
 	if r.isSecretSuspended(ctx, encryptedSopsSecret, req) {
 		sopsSecretsReconciliationsSuspended.Inc()
 		return reconcile.Result{}, nil

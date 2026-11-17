@@ -7,6 +7,7 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,6 +29,7 @@ var _ = Describe("SopssecretController", func() {
 	TestSecretObject04 := &isindirv1alpha3.SopsSecret{}
 	TestSecretObject05 := &isindirv1alpha3.SopsSecret{}
 	TestSecretObject06 := &isindirv1alpha3.SopsSecret{}
+	TestSecretObject07 := &isindirv1alpha3.SopsSecret{}
 	BeforeEach(func() {
 		// 00 secret
 		content, err := os.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "00-test-secrets.yaml"))
@@ -83,6 +85,14 @@ var _ = Describe("SopssecretController", func() {
 
 		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
 		TestSecretObject06 = obj.(*isindirv1alpha3.SopsSecret)
+		Expect(err).Should(BeNil())
+
+		// 07 secret (deleted with foreground propagation)
+		content, err = os.ReadFile(filepath.Join("..", "..", "config", "age-test-key", "07-test-secrets-foreground-deletion.yaml"))
+		Expect(err).Should(BeNil())
+
+		obj, _, err = scheme.Codecs.UniversalDeserializer().Decode(content, nil, nil)
+		TestSecretObject07 = obj.(*isindirv1alpha3.SopsSecret)
 		Expect(err).Should(BeNil())
 	})
 
@@ -445,6 +455,55 @@ var _ = Describe("SopssecretController", func() {
 
 			By("By deleting SopsSecret version 06")
 			Expect(controller.K8sClient.Delete(ctx, TestSecretObject06)).To(Succeed())
+		})
+	})
+
+	Context("When deleting SopsSecret with foreground propagation", func() {
+		It("Should not recreate the child secret of SopsSecret 07 once it is being deleted", func() {
+			ctx := context.Background()
+			sourceSopsSecretNamespacedName := types.NamespacedName{Namespace: "default", Name: "test-sopssecret-07"}
+			childSecretNamespacedName := types.NamespacedName{Namespace: "default", Name: "test-foreground-deletion-token"}
+
+			By("By creating a new SopsSecret version 07")
+			Expect(controller.K8sClient.Create(ctx, TestSecretObject07)).To(Succeed())
+
+			By("By checking that the child secret was created")
+			Eventually(func(g Gomega) {
+				g.Expect(controller.K8sClient.Get(ctx, childSecretNamespacedName, &corev1.Secret{})).To(Succeed())
+			}, timeout, interval).Should(Succeed())
+
+			By("By deleting SopsSecret version 07 with foreground propagation")
+			Expect(controller.K8sClient.Delete(ctx, TestSecretObject07, client.PropagationPolicy(metav1.DeletePropagationForeground))).To(Succeed())
+			Eventually(func(g Gomega) {
+				sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+				g.Expect(controller.K8sClient.Get(ctx, sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+				g.Expect(sourceSopsSecret.DeletionTimestamp).NotTo(BeNil())
+				g.Expect(sourceSopsSecret.Finalizers).To(ContainElement(metav1.FinalizerDeleteDependents))
+			}, timeout, interval).Should(Succeed())
+
+			// envtest runs no garbage collector: delete the dependent the way it would.
+			By("By deleting the child secret like the garbage collector does")
+			childSecret := &corev1.Secret{}
+			Expect(controller.K8sClient.Get(ctx, childSecretNamespacedName, childSecret)).To(Succeed())
+			Expect(controller.K8sClient.Delete(ctx, childSecret)).To(Succeed())
+
+			By("By checking that the child secret is not recreated")
+			Consistently(func(g Gomega) {
+				err := controller.K8sClient.Get(ctx, childSecretNamespacedName, &corev1.Secret{})
+				g.Expect(apierrors.IsNotFound(err)).To(BeTrue(), "child secret must stay deleted, got: %v", err)
+			}, time.Second*3, interval).Should(Succeed())
+
+			By("By removing the foregroundDeletion finalizer like the garbage collector does")
+			Eventually(func(g Gomega) {
+				sourceSopsSecret := &isindirv1alpha3.SopsSecret{}
+				g.Expect(controller.K8sClient.Get(ctx, sourceSopsSecretNamespacedName, sourceSopsSecret)).To(Succeed())
+				sourceSopsSecret.Finalizers = nil
+				g.Expect(controller.K8sClient.Update(ctx, sourceSopsSecret)).To(Succeed())
+			}, timeout, interval).Should(Succeed())
+			Eventually(func(g Gomega) {
+				err := controller.K8sClient.Get(ctx, sourceSopsSecretNamespacedName, &isindirv1alpha3.SopsSecret{})
+				g.Expect(apierrors.IsNotFound(err)).To(BeTrue())
+			}, timeout, interval).Should(Succeed())
 		})
 	})
 

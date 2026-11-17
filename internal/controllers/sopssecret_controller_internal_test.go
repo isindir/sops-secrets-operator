@@ -11,6 +11,7 @@ import (
 	"maps"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -436,6 +437,46 @@ func TestStatusUpdateFailureIsLoggedAtDebugLevel(t *testing.T) {
 	}
 	if !slices.ContainsFunc(e.kv, func(v any) bool { err, ok := v.(error); return ok && errors.Is(err, updateErr) }) {
 		t.Errorf("status update failure log must carry the update error; key/values: %v", e.kv)
+	}
+}
+
+func TestReconcileSkipsSopsSecretBeingDeleted(t *testing.T) {
+	owner := newTestSopsSecret()
+	owner.DeletionTimestamp = &metav1.Time{Time: time.Now()}
+	owner.Finalizers = []string{metav1.FinalizerDeleteDependents}
+	owner.Spec.SecretsTemplate = []isindirv1alpha3.SopsSecretTemplate{
+		{Name: "child", StringData: map[string]string{"password": "s3cr3t"}},
+	}
+	var writes []string
+	r, _ := newTestReconciler(t, interceptor.Funcs{
+		Create: func(context.Context, client.WithWatch, client.Object, ...client.CreateOption) error {
+			writes = append(writes, "create")
+			return nil
+		},
+		Update: func(context.Context, client.WithWatch, client.Object, ...client.UpdateOption) error {
+			writes = append(writes, "update")
+			return nil
+		},
+		Delete: func(context.Context, client.WithWatch, client.Object, ...client.DeleteOption) error {
+			writes = append(writes, "delete")
+			return nil
+		},
+		SubResourceUpdate: func(context.Context, client.Client, string, client.Object, ...client.SubResourceUpdateOption) error {
+			writes = append(writes, "status update")
+			return nil
+		},
+	}, owner)
+
+	result, err := r.Reconcile(t.Context(), requestFor(owner))
+
+	if err != nil {
+		t.Fatalf("Reconcile() error: %v", err)
+	}
+	if result != (ctrl.Result{}) {
+		t.Errorf("Reconcile() result = %+v, want no requeue for a SopsSecret being deleted", result)
+	}
+	if len(writes) != 0 {
+		t.Errorf("a SopsSecret being deleted must be left to the garbage collector; writes: %v", writes)
 	}
 }
 
