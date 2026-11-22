@@ -18,11 +18,12 @@ Dockerfile
 * golang, tools to build and test
 
 ```
-.circleci/config.yml
-.tool-versions
+.github/workflows/*.yaml
+mise.toml
 Dockerfile
 go.mod
 ```
+> after changing `mise.toml` run `make tools`
 
 * Dependencies - libraries
 

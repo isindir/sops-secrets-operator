@@ -44,7 +44,18 @@ encrypted files stored in `git` repository.
 
 # Requirements for building operator from source code
 
-Requirements for building operator from source code can be found in [.tool-versions](.tool-versions), this file can be used with [asdf](https://asdf-vm.com/#/)
+Tool versions (Go, kubebuilder, sops, kustomize, k3d, kubectl, helm, helm-docs, kubeconform, git-chglog,
+golangci-lint, github-cli) are pinned in [mise.toml](mise.toml) and installed with [mise](https://mise.jdx.dev/):
+
+```bash
+mise trust     # once per clone
+make tools     # mise install
+make test      # unit and envtest integration tests
+make help      # list all targets
+```
+
+CI workflows use the same `mise.toml` via [jdx/mise-action](https://github.com/jdx/mise-action), the `Dockerfile`
+installs the Go version pinned in `mise.toml`. Local overrides can be placed in `mise.local.toml` (git ignored).
 
 # Operator Installation
 
