@@ -1173,5 +1173,7 @@ FodyWeavers.xsd
 # mise local overrides
 mise.local.toml
 .mise.local.toml
+mise.local.lock
+.mise/locks/mise.local/
 
 # End of https://www.toptal.com/developers/gitignore/api/go,vim,tags,macos,linux,emacs,eclipse,ansible,windows,pycharm,netbeans,intellij,terraform,terragrunt,pycharm+iml,pycharm+all,intellij+all,intellij+iml,vscode,visualstudio,visualstudiocode,openframeworks+visualstudio,sublimetext

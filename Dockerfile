@@ -22,8 +22,8 @@ RUN curl -fsSL https://mise.run | MISE_VERSION=${MISE_VERSION} MISE_INSTALL_PATH
 
 # Install go pinned in mise.toml, other tools from mise.toml are not needed to build the binary
 WORKDIR /workspace
-COPY mise.toml .
-RUN mise trust mise.toml && mise install go
+COPY mise.toml mise.lock ./
+RUN mise trust mise.toml && mise install --locked go
 ENV PATH="/root/.local/share/mise/shims:$PATH"
 
 # Compile source code

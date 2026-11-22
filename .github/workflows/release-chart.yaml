@@ -46,6 +46,8 @@ jobs:
         with:
           # https://github.com/jdx/mise/releases
           version: 2026.11.12
+          # only helm is needed to publish the chart
+          install_args: helm
 
       - name: Log in to Quay.io
         env:

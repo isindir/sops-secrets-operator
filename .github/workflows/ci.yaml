@@ -34,6 +34,10 @@ jobs:
           # https://github.com/jdx/mise/releases
           version: 2026.11.12
 
+      # all platforms (CI, docker, local development), install above only covers linux-x64
+      - name: Verify mise.lock is up to date
+        run: mise lock --check
+
       - name: install gpg2
         run: |
           sudo apt update

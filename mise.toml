@@ -1,6 +1,12 @@
 # UPDATE_HERE
 # https://github.com/jdx/mise/releases
-min_version = "2026.11.6"
+min_version = "2026.11.12"
+
+[settings]
+# keep mise.lock (versions, download URLs, checksums) up to date on install/upgrade
+lockfile = true
+# CI runners (linux-x64), docker multi-arch builds (linux-x64, linux-arm64) and local development (macos)
+lockfile_platforms = ["linux-x64", "linux-arm64", "macos-arm64", "macos-x64"]
 
 [tools]
 # UPDATE_HERE

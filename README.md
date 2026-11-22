@@ -45,17 +45,21 @@ encrypted files stored in `git` repository.
 # Requirements for building operator from source code
 
 Tool versions (Go, kubebuilder, sops, kustomize, k3d, kubectl, helm, helm-docs, kubeconform, git-chglog,
-golangci-lint, github-cli) are pinned in [mise.toml](mise.toml) and installed with [mise](https://mise.jdx.dev/):
+golangci-lint, github-cli) are pinned in [mise.toml](mise.toml) and installed with [mise](https://mise.jdx.dev/).
+Resolved download URLs and checksums for all supported platforms are locked in [mise.lock](mise.lock):
 
 ```bash
 mise trust     # once per clone
-make tools     # mise install
+make tools     # mise install --locked
 make test      # unit and envtest integration tests
 make help      # list all targets
 ```
 
-CI workflows use the same `mise.toml` via [jdx/mise-action](https://github.com/jdx/mise-action), the `Dockerfile`
-installs the Go version pinned in `mise.toml`. Local overrides can be placed in `mise.local.toml` (git ignored).
+After changing a tool version in `mise.toml` run `make tools-lock` and commit `mise.toml` together with `mise.lock`,
+CI fails (`mise lock --check`) if they are out of sync.
+
+CI workflows use the same `mise.toml` and `mise.lock` via [jdx/mise-action](https://github.com/jdx/mise-action), the
+`Dockerfile` installs the Go version pinned in them. Local overrides can be placed in `mise.local.toml` (git ignored).
 
 # Operator Installation
 
