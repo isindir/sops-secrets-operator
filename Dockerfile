@@ -5,43 +5,28 @@
 # https://gallery.ecr.aws/lts/ubuntu
 #   crane ls public.ecr.aws/lts/ubuntu
 # UPDATE_HERE
-FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS install-asdf
+FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS mise-builder
 
 # UPDATE_HERE
-# https://github.com/asdf-vm/asdf/releases
-ARG ASDF_VERSION=v0.20.2
-
-# hadolint ignore=DL3008
-RUN apt-get -y update \
-  && apt-get -y install --no-install-recommends git bash golang ca-certificates \
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN go install github.com/asdf-vm/asdf/cmd/asdf@${ASDF_VERSION}
-
-############################################################
-# UPDATE_HERE
-FROM public.ecr.aws/ubuntu/ubuntu:26.04 AS asdf-builder
-
-COPY --from=install-asdf /root/go/bin/asdf /usr/local/bin/
+# https://github.com/jdx/mise/releases
+ARG MISE_VERSION=v2026.11.12
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install build tools
+# hadolint ignore=DL3008
 RUN apt-get -y update \
-  && apt-get -y install --no-install-recommends build-essential \
-  && apt-get -y install --no-install-recommends autoconf automake gdb git libffi-dev zlib1g-dev libssl-dev curl wget ca-certificates \
+  && apt-get -y install --no-install-recommends git curl ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install project build tools and linters using asdf
-WORKDIR /root
-COPY .tool-versions .
+RUN curl -fsSL https://mise.run | MISE_VERSION=${MISE_VERSION} MISE_INSTALL_PATH=/usr/local/bin/mise sh
 
-RUN awk '$0 !~ /^#/ {print $1}' .tool-versions|xargs -I{} asdf plugin add  {} \
-  && asdf install && asdf reshim
-ENV PATH="/root/.asdf/shims:/root/.asdf/bin:$PATH"
+# Install go pinned in mise.toml, other tools from mise.toml are not needed to build the binary
+WORKDIR /workspace
+COPY mise.toml mise.lock ./
+RUN mise trust mise.toml && mise install --locked go
+ENV PATH="/root/.local/share/mise/shims:$PATH"
 
 # Compile source code
-WORKDIR /workspace
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum
@@ -68,7 +53,7 @@ RUN apt-get -y update \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
-COPY --from=asdf-builder /workspace/manager .
+COPY --from=mise-builder /workspace/manager .
 
 RUN useradd --create-home --user-group nonroot
 USER nonroot:nonroot

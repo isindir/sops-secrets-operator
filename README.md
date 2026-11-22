@@ -23,7 +23,7 @@ encrypted files stored in `git` repository.
 
 | Kubernetes | Sops    | Chart  | Operator |
 | ---------- | ------- | ------ | -------- |
-| v1.37.x    | v3.13.3 | 0.30.1 | 0.22.4   |
+| v1.37.x    | v3.13.3 | 0.30.2 | 0.22.5   |
 | v1.36.x    | v3.13.3 | 0.28.1 | 0.21.2   |
 | v1.35.x    | v3.12.2 | 0.26.0 | 0.20.2   |
 | v1.35.x    | v3.12.2 | 0.25.4 | 0.20.1   |
@@ -44,7 +44,22 @@ encrypted files stored in `git` repository.
 
 # Requirements for building operator from source code
 
-Requirements for building operator from source code can be found in [.tool-versions](.tool-versions), this file can be used with [asdf](https://asdf-vm.com/#/)
+Tool versions (Go, kubebuilder, sops, kustomize, k3d, kubectl, helm, helm-docs, kubeconform, git-chglog,
+golangci-lint, github-cli) are pinned in [mise.toml](mise.toml) and installed with [mise](https://mise.jdx.dev/).
+Resolved download URLs and checksums for all supported platforms are locked in [mise.lock](mise.lock):
+
+```bash
+mise trust     # once per clone
+make tools     # mise install --locked
+make test      # unit and envtest integration tests
+make help      # list all targets
+```
+
+After changing a tool version in `mise.toml` run `make tools-lock` and commit `mise.toml` together with `mise.lock`,
+CI fails (`mise lock --check`) if they are out of sync.
+
+CI workflows use the same `mise.toml` and `mise.lock` via [jdx/mise-action](https://github.com/jdx/mise-action), the
+`Dockerfile` installs the Go version pinned in them. Local overrides can be placed in `mise.local.toml` (git ignored).
 
 # Operator Installation
 

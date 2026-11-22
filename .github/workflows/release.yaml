@@ -41,13 +41,13 @@ jobs:
           echo "Skip release, tag found for ${VERSION}"
 
       # UPDATE_HERE
-      # https://github.com/asdf-vm/actions/releases
-      - name: Install asdf tools
+      # https://github.com/jdx/mise-action/releases
+      - name: Install mise & tools
         if: env.SKIP_RELEASE == ''
-        uses: asdf-vm/actions/install@v4
+        uses: jdx/mise-action@v5
         with:
-          # https://github.com/asdf-vm/asdf/releases
-          asdf_version: 0.20.2
+          # https://github.com/jdx/mise/releases
+          version: 2026.11.12
 
       # UPDATE_HERE
       # https://github.com/docker/setup-qemu-action/releases

@@ -27,12 +27,16 @@ jobs:
         name: Check out code
 
       # UPDATE_HERE
-      # https://github.com/asdf-vm/actions/releases
-      - name: Install asdf tools
-        uses: asdf-vm/actions/install@v4
+      # https://github.com/jdx/mise-action/releases
+      - name: Install mise & tools
+        uses: jdx/mise-action@v5
         with:
-          # https://github.com/asdf-vm/asdf/releases
-          asdf_version: 0.20.2
+          # https://github.com/jdx/mise/releases
+          version: 2026.11.12
+
+      # all platforms (CI, docker, local development), install above only covers linux-x64
+      - name: Verify mise.lock is up to date
+        run: mise lock --check
 
       - name: install gpg2
         run: |

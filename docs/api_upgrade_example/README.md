@@ -10,9 +10,9 @@ another and install the latest operator without disruption.
 Let's take as an example current deployment which `sops-secrets-operator`
 chart version `0.1.7` and application version `0.0.9`, which needs
 to be upgraded to the latest at the time of writing version of chart `0.9.0`
-and application version `0.3.0`. Assuming we have [asdf](https://asdf-vm.com/#/)
-installed and `sops`, `kind`, `kubectl` and `helm` plugins added (which
-will be needed to manage multiple versions of mozilla `sops` tool)
+and application version `0.3.0`. Assuming we have [mise](https://mise.jdx.dev/)
+installed (which will be needed to manage multiple versions of mozilla `sops`,
+`kind`, `kubectl` and `helm` tools)
 and that current helm release deployed via `helm` version `3.x.x`
 and we are using latest `helm` version to upgrade the release.
 
@@ -78,8 +78,8 @@ module github.com/isindir/sops-secrets-operator
 For version `0.0.9` of operator it is recommended to use version `3.5.0` of `sops`:
 
 ```bash
-asdf install sops 3.5.0
-asdf shell sops 3.5.0
+mise install sops@3.5.0
+mise shell sops@3.5.0
 ```
 
 For older versions `git` commit sha we are interested in is in version,
@@ -97,7 +97,7 @@ git describe --tags --abbrev=0
 3.3.1
 ```
 
-> install and use `sops` version `3.3.1` via `asdf`
+> install and use `sops` version `3.3.1` via `mise`
 
 # Installing old CRD/Operator/SopsSecret
 
